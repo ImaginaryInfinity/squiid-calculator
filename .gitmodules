@@ -1,6 +1,0 @@
-[submodule "squiid-parser"]
-	path = squiid-parser
-	url = git@gitlab.com:ImaginaryInfinity/squiid-calculator/squiid-parser.git
-[submodule "squiid-engine"]
-	path = squiid-engine
-	url = git@gitlab.com:ImaginaryInfinity/squiid-calculator/squiid-engine.git

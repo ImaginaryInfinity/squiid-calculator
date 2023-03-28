@@ -1,0 +1,31 @@
+[package]
+name = "squiid-parser"
+version = "0.1.0"
+description = "This repository contains the algebraic expression parser for the Squiid Calculator. The parser is implemented using a version of the Shunting-Yard Algorithm"
+repository = "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-parser"
+license = "GPL-3.0"
+authors = ["Connor Sample <tabulatejarl8@gmail.com>", "Finian Wright <turbowafflz@gmail.com>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[profile.release]
+strip = true
+lto = true
+
+[lib]
+name = "squiid_parser"
+crate-type = ["lib", "cdylib"]
+path = "src/lib.rs"
+
+# example binary stuff
+[[bin]]
+name = "parser_example"
+path = "src/main.rs"
+required-features = ["bin"]
+
+[dependencies]
+zmq = { version = "0.10.0", optional = true }
+
+[features]
+bin = ["dep:zmq"]

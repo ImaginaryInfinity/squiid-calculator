@@ -309,7 +309,15 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
         .iter()
         .enumerate()
         .map(|(i, m)| {
-            let content = Spans::from(Span::raw(format!("{}: {}", i, m)));
+            let content = Spans::from(Span::raw(format!(
+                "{}: {}",
+                match app.input_mode {
+                    InputMode::Editing => i,
+                    InputMode::Normal => i,
+                    InputMode::RPN => app.messages.len() - i,
+                },
+                m
+            )));
             ListItem::new(content)
         })
         .collect();

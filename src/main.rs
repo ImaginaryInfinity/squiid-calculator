@@ -10,8 +10,10 @@
 ///   * Pressing Enter pushes the current input in the history of previous
 ///   messages
 use crossterm::{
+    cursor,
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
     execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::{
@@ -219,7 +221,7 @@ fn run_app<B: Backend>(
                         // Create variable to store response from engine
                         let mut msg_as_str = String::new();
                         // Send to backend and get response
-                        msg_as_str = send_data(socket, command.as_str());
+                        let msg_as_str = send_data(socket, command.as_str());
                         // Update stack display
                         app.stack = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
                     }
@@ -251,7 +253,7 @@ fn run_app<B: Backend>(
                             _ => "there is no way for this to occur",
                         };
                         // Send operation
-                        msg_as_str = send_data(socket, operation);
+                        let msg_as_str = send_data(socket, operation);
                         // Update stack display
                         app.stack = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
                     }
@@ -389,7 +391,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let help_message = Paragraph::new(text);
     f.render_widget(help_message, chunks[1]);
 
-    if app.input_mode == InputMode::Algebraic || app.input_mode == InputMode::RPN{
+    if app.input_mode == InputMode::Algebraic || app.input_mode == InputMode::RPN {
         let input = Paragraph::new(app.input.as_ref())
             .style(match app.input_mode {
                 InputMode::None => Style::default(),

@@ -362,13 +362,23 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             ],
             Style::default(),
         ),
-        InputMode::Algebraic | InputMode::RPN => (
+        InputMode::Algebraic => (
             vec![
                 Span::raw("Press "),
                 Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to stop editing, "),
+                Span::raw(" for options, "),
                 Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to record the message"),
+                Span::raw(" to evaluate"),
+            ],
+            Style::default(),
+        ),
+        InputMode::RPN => (
+            vec![
+                Span::raw("Press "),
+                Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
+                Span::raw(" for options, "),
+                Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
+                Span::raw(" to add to stack, or press or type an operation"),
             ],
             Style::default(),
         ),

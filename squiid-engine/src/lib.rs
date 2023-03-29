@@ -78,6 +78,10 @@ pub fn start_server(address: Option<&str>) {
                 StackableString(i) => formatted_stack.push_str(&format!("\"{}\" ", i)),
             }
         }
+        // Remove trailing space
+        if formatted_stack.chars().last().unwrap()==' '{
+            formatted_stack.remove(formatted_stack.len()-1);
+        }
         // respond to client with the stack as a string
         responder.send(&formatted_stack, 0).unwrap();
     }

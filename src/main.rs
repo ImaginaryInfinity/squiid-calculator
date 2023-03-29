@@ -30,6 +30,7 @@ use zmq::Socket;
 enum InputMode {
     Normal,
     Editing,
+    RPN,
 }
 
 /// App holds the state of the application
@@ -108,6 +109,9 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App, socket: &Socket
                     KeyCode::Char('e') => {
                         app.input_mode = InputMode::Editing;
                     }
+                    KeyCode::Char('r') => {
+                        app.input_mode = InputMode::RPN;
+                    }
                     KeyCode::Char('q') => {
                         return Ok(());
                     }
@@ -128,12 +132,43 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App, socket: &Socket
                                 "^" => "power",
                                 _ => command_raw,
                             };
-                            
+
                             msg_as_str = send_data(socket, command);
                             // if msg_as_str == "quit" {
                             //     break 'input_loop;
                             // }
                         }
+                        app.messages.push(msg_as_str);
+                    }
+                    KeyCode::Char(c) => {
+                        app.input.push(c);
+                    }
+                    KeyCode::Backspace => {
+                        app.input.pop();
+                    }
+                    KeyCode::Esc => {
+                        app.input_mode = InputMode::Normal;
+                    }
+                    _ => {}
+                },
+                InputMode::RPN if key.kind == KeyEventKind::Press => match key.code {
+                    // User pressed enter, add input to stack
+                    KeyCode::Enter => {
+                        let command: String = app.input.drain(..).collect();
+                        let mut msg_as_str = String::new();
+                        // Send to backend
+                        msg_as_str = send_data(socket, command.as_str());
+                        // Add result to ui
+                        app.messages = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
+                    }
+                    KeyCode::Char('+') => {
+                        let command: String = app.input.drain(..).collect();
+                        let mut msg_as_str = String::new();
+                        // Send operand to backend
+                        _ = send_data(socket, command.as_str());
+                        // Add
+                        msg_as_str = send_data(socket, "add");
+                        // Add result to ui
                         app.messages.push(msg_as_str);
                     }
                     KeyCode::Char(c) => {
@@ -174,11 +209,23 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
                 Span::styled("q", Style::default().add_modifier(Modifier::BOLD)),
                 Span::raw(" to exit, "),
                 Span::styled("e", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to start editing."),
+                Span::raw(" to start editing in algebraic mode, "),
+                Span::styled("r", Style::default().add_modifier(Modifier::BOLD)),
+                Span::raw(" to start entering in RPN mode."),
             ],
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
         InputMode::Editing => (
+            vec![
+                Span::raw("Press "),
+                Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
+                Span::raw(" to stop editing, "),
+                Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
+                Span::raw(" to record the message"),
+            ],
+            Style::default(),
+        ),
+        InputMode::RPN => (
             vec![
                 Span::raw("Press "),
                 Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
@@ -212,6 +259,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
         .style(match app.input_mode {
             InputMode::Normal => Style::default(),
             InputMode::Editing => Style::default().fg(Color::Yellow),
+            InputMode::RPN => Style::default().fg(Color::Red),
         })
         .block(Block::default().borders(Borders::ALL).title("Input"));
     f.render_widget(input, chunks[2]);
@@ -221,6 +269,16 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
             {}
 
         InputMode::Editing => {
+            // Make the cursor visible and ask ratatui to put it at the specified coordinates after rendering
+            f.set_cursor(
+                // Put cursor past the end of the input text
+                chunks[2].x + app.input.width() as u16 + 1,
+                // Move one line down, from the border to the input line
+                chunks[2].y + 1,
+            )
+        }
+
+        InputMode::RPN => {
             // Make the cursor visible and ask ratatui to put it at the specified coordinates after rendering
             f.set_cursor(
                 // Put cursor past the end of the input text

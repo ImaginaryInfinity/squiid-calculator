@@ -173,19 +173,32 @@ fn run_app<B: Backend>(
                             //     break 'input_loop;
                             // }
                         }
-                        // Add result to ui
-                        app.messages.push(msg_as_str);
+                        // Update stack
+                        app.stack = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
+
+                        // Last item in stack is result of this expression
+                        let result = app.stack.last().unwrap();
+
+                        // Combine entry and result into line to print
+                        let mut history_entry = entered_expression;
+                        history_entry.push_str(" = ");
+                        history_entry.push_str(result);
+
+                        // Add to history
+                        app.messages.push(history_entry);
                     }
                     // Handle typing characters
                     KeyCode::Char(c) => {
                         // Add character to input box
-                        let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
+                        let index =
+                            current_char_index(app.left_cursor_offset as usize, app.input.len());
                         app.input.insert(index, c);
                     }
                     // Handle backspace
                     KeyCode::Backspace => {
                         // Remove character from input box
-                        let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
+                        let index =
+                            current_char_index(app.left_cursor_offset as usize, app.input.len());
                         if index > 0 {
                             app.input.remove(index - 1);
                         }
@@ -218,8 +231,15 @@ fn run_app<B: Backend>(
                         let command: String = app.input.drain(..).collect();
                         // reset cursor offset
                         app.left_cursor_offset = 0;
-                        // Send to backend and get response
-                        let msg_as_str = send_data(socket, command.as_str());
+                        let mut msg_as_str = String::new();
+                        // Send command if there is one, otherwise duplicate last item in stack
+                        if command.len() > 0 {
+                            // Send to backend and get response
+                            msg_as_str = send_data(socket, command.as_str());
+                        } else {
+                            // Empty input, duplicate
+                            msg_as_str = send_data(socket, "dup");
+                        }
                         // Update stack display
                         app.stack = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
                     }
@@ -256,7 +276,8 @@ fn run_app<B: Backend>(
                     // Handle typing characters
                     KeyCode::Char(c) => {
                         // Add character to input box
-                        let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
+                        let index =
+                            current_char_index(app.left_cursor_offset as usize, app.input.len());
                         app.input.insert(index, c);
 
                         // TODO: Add a way for the engine to send its command list
@@ -294,7 +315,8 @@ fn run_app<B: Backend>(
                     // Handle backspace
                     KeyCode::Backspace => {
                         // Remove character from input box
-                        let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
+                        let index =
+                            current_char_index(app.left_cursor_offset as usize, app.input.len());
                         if index > 0 {
                             app.input.remove(index - 1);
                         }

@@ -194,7 +194,8 @@ fn run_app<B: Backend>(
                     | KeyCode::Char('-')
                     | KeyCode::Char('*')
                     | KeyCode::Char('/')
-                    | KeyCode::Char('^') => {
+                    | KeyCode::Char('^')
+                    | KeyCode::Char('_') => {
                         // Get operand from input box and empty it
                         let command: String = app.input.drain(..).collect();
                         // Create variable to store response from engine
@@ -210,6 +211,7 @@ fn run_app<B: Backend>(
                             KeyCode::Char('*') => "multiply",
                             KeyCode::Char('/') => "divide",
                             KeyCode::Char('^') => "power",
+                            KeyCode::Char('_') => "invert",
                             _ => "there is no way for this to occur",
                         };
                         // Send operation

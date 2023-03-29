@@ -27,6 +27,7 @@ use unicode_width::UnicodeWidthStr;
 
 use zmq::Socket;
 
+#[derive(PartialEq)]
 enum InputMode {
     None,
     Algebraic,

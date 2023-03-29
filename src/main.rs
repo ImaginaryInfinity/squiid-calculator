@@ -336,14 +336,16 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
     let help_message = Paragraph::new(text);
     f.render_widget(help_message, chunks[1]);
 
-    let input = Paragraph::new(app.input.as_ref())
-        .style(match app.input_mode {
-            InputMode::None => Style::default(),
-            InputMode::Algebraic => Style::default().fg(Color::Yellow),
-            InputMode::RPN => Style::default().fg(Color::Red),
-        })
-        .block(Block::default().borders(Borders::ALL).title("Input"));
-    f.render_widget(input, chunks[2]);
+    if app.input_mode == InputMode::Algebraic || app.input_mode == InputMode::RPN{
+        let input = Paragraph::new(app.input.as_ref())
+            .style(match app.input_mode {
+                InputMode::None => Style::default(),
+                InputMode::Algebraic => Style::default().fg(Color::Yellow),
+                InputMode::RPN => Style::default().fg(Color::Red),
+            })
+            .block(Block::default().borders(Borders::ALL).title("Input"));
+        f.render_widget(input, chunks[2]);
+    }
     match app.input_mode {
         InputMode::None =>
             // Hide the cursor. `Frame` does this by default, so we don't need to do anything here

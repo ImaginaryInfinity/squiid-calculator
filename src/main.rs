@@ -91,7 +91,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-
 fn send_data(socket: &Socket, command: &str) -> String {
     let mut msg = zmq::Message::new();
     let _ = socket.send(command, 0);
@@ -99,7 +98,11 @@ fn send_data(socket: &Socket, command: &str) -> String {
     msg.as_str().unwrap().to_string()
 }
 
-fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App, socket: &Socket) -> io::Result<()> {
+fn run_app<B: Backend>(
+    terminal: &mut Terminal<B>,
+    mut app: App,
+    socket: &Socket,
+) -> io::Result<()> {
     loop {
         terminal.draw(|f| ui(f, &app))?;
 
@@ -161,15 +164,30 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App, socket: &Socket
                         // Add result to ui
                         app.messages = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
                     }
-                    KeyCode::Char('+') => {
+                    KeyCode::Char('+')
+                    | KeyCode::Char('-')
+                    | KeyCode::Char('*')
+                    | KeyCode::Char('/')
+                    | KeyCode::Char('^') => {
                         let command: String = app.input.drain(..).collect();
                         let mut msg_as_str = String::new();
-                        // Send operand to backend
-                        _ = send_data(socket, command.as_str());
-                        // Add
-                        msg_as_str = send_data(socket, "add");
+                        // Send operand to backend if there is one
+                        if command.len() > 0 {
+                            _ = send_data(socket, command.as_str());
+                        }
+                        // Select operation
+                        let operation = match key.code {
+                            KeyCode::Char('+') => "add",
+                            KeyCode::Char('-') => "subtract",
+                            KeyCode::Char('*') => "multiply",
+                            KeyCode::Char('/') => "divide",
+                            KeyCode::Char('^') => "power",
+                            _ => "there is no way for this to occur",
+                        };
+                        // Send operation
+                        msg_as_str = send_data(socket, operation);
                         // Add result to ui
-                        app.messages.push(msg_as_str);
+                        app.messages = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
                     }
                     KeyCode::Char(c) => {
                         app.input.push(c);

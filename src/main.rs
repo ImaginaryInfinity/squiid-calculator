@@ -91,6 +91,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+// Send data to backend
 fn send_data(socket: &Socket, command: &str) -> String {
     let mut msg = zmq::Message::new();
     let _ = socket.send(command, 0);
@@ -106,8 +107,11 @@ fn run_app<B: Backend>(
     loop {
         terminal.draw(|f| ui(f, &app))?;
 
+        // Handle keypresses
         if let Event::Key(key) = event::read()? {
+            // Determine which mode the calculator is in
             match app.input_mode {
+                // Handle keypresses for normal (non-editing) mode
                 InputMode::Normal => match key.code {
                     KeyCode::Char('e') => {
                         app.input_mode = InputMode::Editing;
@@ -120,13 +124,20 @@ fn run_app<B: Backend>(
                     }
                     _ => {}
                 },
+                // Handle keypresses for algebraic input mode
                 InputMode::Editing if key.kind == KeyEventKind::Press => match key.code {
+                    // Handle enter
                     KeyCode::Enter => {
+                        // Get string from input box and empty it
                         let entered_expression: String = app.input.drain(..).collect();
+                        // Parse algebraic expression into postfix expression
                         let rpn_expression = squiid_parser::parse(entered_expression.trim());
+                        // Create variable to store result from engine
                         let mut msg_as_str = String::new();
 
+                        // Iterate through expression
                         for command_raw in rpn_expression.iter() {
+                            // Convert operator symbols to engine commands
                             let command = match command_raw.as_str() {
                                 "+" => "add",
                                 "-" => "subtract",
@@ -135,41 +146,55 @@ fn run_app<B: Backend>(
                                 "^" => "power",
                                 _ => command_raw,
                             };
-
+                            // Send command to server
                             msg_as_str = send_data(socket, command);
                             // if msg_as_str == "quit" {
                             //     break 'input_loop;
                             // }
                         }
+                        // Add result to ui
                         app.messages.push(msg_as_str);
                     }
+                    // Handle typing characters
                     KeyCode::Char(c) => {
+                        // Add character to input box
                         app.input.push(c);
                     }
+                    // Handle backspace
                     KeyCode::Backspace => {
+                        // Remove character from input box
                         app.input.pop();
                     }
+                    // Handle escape
                     KeyCode::Esc => {
+                        // Return to normal mode
                         app.input_mode = InputMode::Normal;
                     }
+                    // Ignore all other keys
                     _ => {}
                 },
+                // Handle keypresses for RPN input mode
                 InputMode::RPN if key.kind == KeyEventKind::Press => match key.code {
-                    // User pressed enter, add input to stack
+                    // Handle enter
                     KeyCode::Enter => {
+                        // Get command from input box and empty it
                         let command: String = app.input.drain(..).collect();
+                        // Create variable to store response from engine
                         let mut msg_as_str = String::new();
-                        // Send to backend
+                        // Send to backend and get response
                         msg_as_str = send_data(socket, command.as_str());
-                        // Add result to ui
+                        // Update stack display
                         app.messages = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
                     }
+                    // Handle single character operators
                     KeyCode::Char('+')
                     | KeyCode::Char('-')
                     | KeyCode::Char('*')
                     | KeyCode::Char('/')
                     | KeyCode::Char('^') => {
+                        // Get operand from input box and empty it
                         let command: String = app.input.drain(..).collect();
+                        // Create variable to store response from engine
                         let mut msg_as_str = String::new();
                         // Send operand to backend if there is one
                         if command.len() > 0 {
@@ -186,10 +211,12 @@ fn run_app<B: Backend>(
                         };
                         // Send operation
                         msg_as_str = send_data(socket, operation);
-                        // Add result to ui
+                        // Update stack display
                         app.messages = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
                     }
+                    // Handle typing characters
                     KeyCode::Char(c) => {
+                        // Add character to input box
                         app.input.push(c);
                         // TODO: Add a way for the engine to send its command list
                         let commands = [
@@ -199,7 +226,7 @@ fn run_app<B: Backend>(
                             "round", "invert", "drop", "swap", "dup", "rolldown", "rollup",
                             "store", "clear", "quit",
                         ];
-                        // Check if input is a command
+                        // Check if input box contains a command, if so, automatically execute it
                         if commands.contains(&(app.input.as_str())) {
                             // Send command
                             let msg_as_str = send_data(socket, app.input.as_str());
@@ -209,12 +236,17 @@ fn run_app<B: Backend>(
                             app.input.drain(..);
                         }
                     }
+                    // Handle backspace
                     KeyCode::Backspace => {
+                        // Remove character from input box
                         app.input.pop();
                     }
+                    // Handle escape
                     KeyCode::Esc => {
+                        // Return to normal mode
                         app.input_mode = InputMode::Normal;
                     }
+                    // Ignore all other keys
                     _ => {}
                 },
                 _ => {}

@@ -20,7 +20,7 @@ impl Engine {
     }
 
     // add item to stack
-    pub fn add_item_to_stack(&mut self, item: StackableItems) -> Result<(), &'static str> {
+    pub fn add_item_to_stack(&mut self, item: StackableItems){
         // Convert item to string
         let mut item_string = item.to_string();
         let mut invert = false;
@@ -62,9 +62,8 @@ impl Engine {
 
         // Invert if originally began with _
         if invert {
-            self.invert();
+            _ = self.invert();
         }
-        Ok(())
     }
 
     // Get operands from stack
@@ -90,7 +89,7 @@ impl Engine {
     pub fn add(&mut self) -> Result<(), &'static str> {
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -103,7 +102,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -116,7 +115,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -129,7 +128,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -142,7 +141,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -155,7 +154,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -168,7 +167,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -181,7 +180,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -194,7 +193,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -207,7 +206,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -220,7 +219,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -233,7 +232,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -246,7 +245,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -259,7 +258,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -272,7 +271,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -285,7 +284,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -298,7 +297,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -311,7 +310,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -324,7 +323,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -337,7 +336,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -350,7 +349,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -363,7 +362,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -376,7 +375,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -389,7 +388,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -402,7 +401,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -415,7 +414,7 @@ impl Engine {
         // Get operands
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -428,7 +427,7 @@ impl Engine {
         // Get operand
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Put result on stack
@@ -448,7 +447,7 @@ impl Engine {
         // Get last two values from stack
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Insert in reverse order
@@ -462,7 +461,7 @@ impl Engine {
         // Get the last value from the stack
         let operands = match self.get_operands(1) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Insert twice
@@ -490,7 +489,7 @@ impl Engine {
         // Get 2 operands from stack
         let operands = match self.get_operands(2) {
             Ok(content) => content,
-            Err(error) => return (Err(error)),
+            Err(error) => return Err(error),
         };
 
         // Only store if first character of second operand is @

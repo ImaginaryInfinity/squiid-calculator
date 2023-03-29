@@ -28,8 +28,8 @@ use unicode_width::UnicodeWidthStr;
 use zmq::Socket;
 
 enum InputMode {
-    Normal,
-    Editing,
+    None,
+    Algebraic,
     RPN,
 }
 
@@ -49,7 +49,7 @@ impl Default for App {
     fn default() -> App {
         App {
             input: String::new(),
-            input_mode: InputMode::Normal,
+            input_mode: InputMode::None,
             messages: Vec::new(),
             stack: Vec::new(),
         }
@@ -115,9 +115,9 @@ fn run_app<B: Backend>(
             // Determine which mode the calculator is in
             match app.input_mode {
                 // Handle keypresses for normal (non-editing) mode
-                InputMode::Normal => match key.code {
+                InputMode::None => match key.code {
                     KeyCode::Char('e') => {
-                        app.input_mode = InputMode::Editing;
+                        app.input_mode = InputMode::Algebraic;
                     }
                     KeyCode::Char('r') => {
                         app.input_mode = InputMode::RPN;
@@ -128,7 +128,7 @@ fn run_app<B: Backend>(
                     _ => {}
                 },
                 // Handle keypresses for algebraic input mode
-                InputMode::Editing if key.kind == KeyEventKind::Press => match key.code {
+                InputMode::Algebraic if key.kind == KeyEventKind::Press => match key.code {
                     // Handle enter
                     KeyCode::Enter => {
                         // Get string from input box and empty it
@@ -171,7 +171,7 @@ fn run_app<B: Backend>(
                     // Handle escape
                     KeyCode::Esc => {
                         // Return to normal mode
-                        app.input_mode = InputMode::Normal;
+                        app.input_mode = InputMode::None;
                     }
                     // Ignore all other keys
                     _ => {}
@@ -247,7 +247,7 @@ fn run_app<B: Backend>(
                     // Handle escape
                     KeyCode::Esc => {
                         // Return to normal mode
-                        app.input_mode = InputMode::Normal;
+                        app.input_mode = InputMode::None;
                     }
                     // Ignore all other keys
                     _ => {}
@@ -273,7 +273,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
         .split(f.size());
 
     let (msg, style) = match app.input_mode {
-        InputMode::Normal => (
+        InputMode::None => (
             vec![
                 Span::raw("Press "),
                 Span::styled("q", Style::default().add_modifier(Modifier::BOLD)),
@@ -285,7 +285,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
             ],
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
-        InputMode::Editing => (
+        InputMode::Algebraic => (
             vec![
                 Span::raw("Press "),
                 Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
@@ -308,8 +308,8 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
     };
 
     let display = match app.input_mode {
-        InputMode::Normal => &app.messages,
-        InputMode::Editing => &app.messages,
+        InputMode::None => &app.messages,
+        InputMode::Algebraic => &app.messages,
         InputMode::RPN => &app.stack,
     };
 
@@ -320,8 +320,8 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
             let content = Spans::from(Span::raw(format!(
                 "{}: {}",
                 match app.input_mode {
-                    InputMode::Editing => i,
-                    InputMode::Normal => i,
+                    InputMode::Algebraic => i,
+                    InputMode::None => i,
                     InputMode::RPN => app.stack.len() - i,
                 },
                 m
@@ -331,9 +331,9 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
         .collect();
     // Change title based on input mode
     let list_title = match app.input_mode {
-        InputMode::Editing => "History",
+        InputMode::Algebraic => "History",
         InputMode::RPN => "Stack",
-        InputMode::Normal => "Messages",
+        InputMode::None => "Messages",
     };
     let messages =
         List::new(messages).block(Block::default().borders(Borders::ALL).title(list_title));
@@ -346,18 +346,18 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
 
     let input = Paragraph::new(app.input.as_ref())
         .style(match app.input_mode {
-            InputMode::Normal => Style::default(),
-            InputMode::Editing => Style::default().fg(Color::Yellow),
+            InputMode::None => Style::default(),
+            InputMode::Algebraic => Style::default().fg(Color::Yellow),
             InputMode::RPN => Style::default().fg(Color::Red),
         })
         .block(Block::default().borders(Borders::ALL).title("Input"));
     f.render_widget(input, chunks[2]);
     match app.input_mode {
-        InputMode::Normal =>
+        InputMode::None =>
             // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
             {}
 
-        InputMode::Editing => {
+        InputMode::Algebraic => {
             // Make the cursor visible and ask ratatui to put it at the specified coordinates after rendering
             f.set_cursor(
                 // Put cursor past the end of the input text

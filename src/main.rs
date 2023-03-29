@@ -191,6 +191,14 @@ fn run_app<B: Backend>(
                     }
                     KeyCode::Char(c) => {
                         app.input.push(c);
+                        match app.input.as_str() {
+                            "sqrt" => {
+                                let msg_as_str = send_data(socket, "sqrt");
+                                app.messages = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
+                                app.input.drain(..);
+                            },
+                            _ => {},
+                        }
                     }
                     KeyCode::Backspace => {
                         app.input.pop();
@@ -264,8 +272,14 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
             ListItem::new(content)
         })
         .collect();
+    // Change title based on input mode
+    let list_title = match app.input_mode{
+        InputMode::Editing => "History",
+        InputMode::RPN => "Stack",
+        InputMode::Normal => "Messages"
+    };
     let messages =
-        List::new(messages).block(Block::default().borders(Borders::ALL).title("Messages"));
+        List::new(messages).block(Block::default().borders(Borders::ALL).title(list_title));
     f.render_widget(messages, chunks[0]);
 
     let mut text = Text::from(Spans::from(msg));

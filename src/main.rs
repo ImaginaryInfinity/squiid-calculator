@@ -283,7 +283,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
                 Span::styled("r", Style::default().add_modifier(Modifier::BOLD)),
                 Span::raw(" to start entering in RPN mode."),
             ],
-            Style::default().add_modifier(Modifier::RAPID_BLINK),
+            Style::default(),
         ),
         InputMode::Algebraic => (
             vec![

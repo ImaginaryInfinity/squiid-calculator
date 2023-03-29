@@ -118,6 +118,120 @@ fn current_char_index(left_cursor_offset: usize, input_len: usize) -> usize {
     index
 }
 
+// Handle algebraic expressions
+fn algebraic_eval(app: &mut App, socket: &Socket) {
+    // Get string from input box and empty it
+    let entered_expression: String = app.input.drain(..).collect();
+    // reset cursor offset
+    app.left_cursor_offset = 0;
+    // Parse algebraic expression into postfix expression
+    let rpn_expression = squiid_parser::parse(entered_expression.trim());
+    // Create variable to store result from engine
+    let mut msg_as_str = String::new();
+
+    // Iterate through expression
+    for command_raw in rpn_expression.iter() {
+        // Convert operator symbols to engine commands
+        let command = match command_raw.as_str() {
+            "+" => "add",
+            "-" => "subtract",
+            "*" => "multiply",
+            "/" => "divide",
+            "^" => "power",
+            _ => command_raw,
+        };
+        // Send command to server
+        msg_as_str = send_data(socket, command);
+        // if msg_as_str == "quit" {
+        //     break 'input_loop;
+        // }
+    }
+    // Update stack
+    app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
+
+    // Last item in stack is result of this expression
+    let result = app.stack.last().unwrap();
+
+    // Combine entry and result into line to print
+    let mut history_entry = entered_expression;
+    history_entry.push_str(" = ");
+    history_entry.push_str(result);
+
+    // Add to history
+    app.messages.push(history_entry);
+}
+
+// Handle typing in RPN mode
+fn rpn_input(app: &mut App, socket: &Socket, c: char) {
+    // Add character to input box
+    let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
+    app.input.insert(index, c);
+
+    // TODO: Add a way for the engine to send its command list
+    let commands = [
+        "add", "subtract", "multiply", "divide", "power", "sqrt", "mod", "sin", "cos", "tan",
+        "sec", "csc", "cot", "asin", "acos", "atan", "acos", "atan", "log", "logb", "ln", "abs",
+        "eq", "gt", "lt", "gte", "lte", "round", "invert", "drop", "swap", "dup", "rolldown",
+        "rollup", "store", "clear", "quit",
+    ];
+    // Check if input box contains a command, if so, automatically execute it
+    if commands.contains(&(app.input.as_str())) {
+        // Send command
+        let msg_as_str = send_data(socket, app.input.as_str());
+        // Update stack display
+        app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
+        // Clear input
+        app.input.drain(..);
+        // reset cursor offset
+        app.left_cursor_offset = 0;
+    }
+}
+
+// Handle RPN enter
+fn rpn_enter(app: &mut App, socket: &Socket) {
+    // Get command from input box and empty it
+    let command: String = app.input.drain(..).collect();
+    // reset cursor offset
+    app.left_cursor_offset = 0;
+    let mut msg_as_str = String::new();
+    // Send command if there is one, otherwise duplicate last item in stack
+    if command.len() > 0 {
+        // Send to backend and get response
+        msg_as_str = send_data(socket, command.as_str());
+    } else {
+        // Empty input, duplicate
+        msg_as_str = send_data(socket, "dup");
+    }
+    // Update stack display
+    app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
+}
+
+// Handle RPN operators
+fn rpn_operator(app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
+    // Get operand from input box and empty it
+    let command: String = app.input.drain(..).collect();
+    // reset cursor offset
+    app.left_cursor_offset = 0;
+    // Send operand to backend if there is one
+    if command.len() > 0 {
+        _ = send_data(socket, command.as_str());
+    }
+    // Select operation
+    let operation = match key.code {
+        KeyCode::Char('+') => "add",
+        KeyCode::Char('-') => "subtract",
+        KeyCode::Char('*') => "multiply",
+        KeyCode::Char('/') => "divide",
+        KeyCode::Char('^') => "power",
+        KeyCode::Char('_') => "invert",
+        _ => "there is no way for this to occur",
+    };
+    // Send operation
+    let msg_as_str = send_data(socket, operation);
+    // Update stack display
+    app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
+}
+
 fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     mut app: App,
@@ -147,45 +261,7 @@ fn run_app<B: Backend>(
                 InputMode::Algebraic if key.kind == KeyEventKind::Press => match key.code {
                     // Handle enter
                     KeyCode::Enter => {
-                        // Get string from input box and empty it
-                        let entered_expression: String = app.input.drain(..).collect();
-                        // reset cursor offset
-                        app.left_cursor_offset = 0;
-                        // Parse algebraic expression into postfix expression
-                        let rpn_expression = squiid_parser::parse(entered_expression.trim());
-                        // Create variable to store result from engine
-                        let mut msg_as_str = String::new();
-
-                        // Iterate through expression
-                        for command_raw in rpn_expression.iter() {
-                            // Convert operator symbols to engine commands
-                            let command = match command_raw.as_str() {
-                                "+" => "add",
-                                "-" => "subtract",
-                                "*" => "multiply",
-                                "/" => "divide",
-                                "^" => "power",
-                                _ => command_raw,
-                            };
-                            // Send command to server
-                            msg_as_str = send_data(socket, command);
-                            // if msg_as_str == "quit" {
-                            //     break 'input_loop;
-                            // }
-                        }
-                        // Update stack
-                        app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
-
-                        // Last item in stack is result of this expression
-                        let result = app.stack.last().unwrap();
-
-                        // Combine entry and result into line to print
-                        let mut history_entry = entered_expression;
-                        history_entry.push_str(" = ");
-                        history_entry.push_str(result);
-
-                        // Add to history
-                        app.messages.push(history_entry);
+                        algebraic_eval(&mut app, socket);
                     }
                     // Handle typing characters
                     KeyCode::Char(c) => {
@@ -227,21 +303,7 @@ fn run_app<B: Backend>(
                 InputMode::RPN if key.kind == KeyEventKind::Press => match key.code {
                     // Handle enter
                     KeyCode::Enter => {
-                        // Get command from input box and empty it
-                        let command: String = app.input.drain(..).collect();
-                        // reset cursor offset
-                        app.left_cursor_offset = 0;
-                        let mut msg_as_str = String::new();
-                        // Send command if there is one, otherwise duplicate last item in stack
-                        if command.len() > 0 {
-                            // Send to backend and get response
-                            msg_as_str = send_data(socket, command.as_str());
-                        } else {
-                            // Empty input, duplicate
-                            msg_as_str = send_data(socket, "dup");
-                        }
-                        // Update stack display
-                        app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
+                        rpn_enter(&mut app, socket);
                     }
                     // Handle single character operators
                     KeyCode::Char('+')
@@ -250,55 +312,11 @@ fn run_app<B: Backend>(
                     | KeyCode::Char('/')
                     | KeyCode::Char('^')
                     | KeyCode::Char('_') => {
-                        // Get operand from input box and empty it
-                        let command: String = app.input.drain(..).collect();
-                        // reset cursor offset
-                        app.left_cursor_offset = 0;
-                        // Send operand to backend if there is one
-                        if command.len() > 0 {
-                            _ = send_data(socket, command.as_str());
-                        }
-                        // Select operation
-                        let operation = match key.code {
-                            KeyCode::Char('+') => "add",
-                            KeyCode::Char('-') => "subtract",
-                            KeyCode::Char('*') => "multiply",
-                            KeyCode::Char('/') => "divide",
-                            KeyCode::Char('^') => "power",
-                            KeyCode::Char('_') => "invert",
-                            _ => "there is no way for this to occur",
-                        };
-                        // Send operation
-                        let msg_as_str = send_data(socket, operation);
-                        // Update stack display
-                        app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
+                        rpn_operator(&mut app, socket, key);
                     }
                     // Handle typing characters
                     KeyCode::Char(c) => {
-                        // Add character to input box
-                        let index =
-                            current_char_index(app.left_cursor_offset as usize, app.input.len());
-                        app.input.insert(index, c);
-
-                        // TODO: Add a way for the engine to send its command list
-                        let commands = [
-                            "add", "subtract", "multiply", "divide", "power", "sqrt", "mod", "sin",
-                            "cos", "tan", "sec", "csc", "cot", "asin", "acos", "atan", "acos",
-                            "atan", "log", "logb", "ln", "abs", "eq", "gt", "lt", "gte", "lte",
-                            "round", "invert", "drop", "swap", "dup", "rolldown", "rollup",
-                            "store", "clear", "quit",
-                        ];
-                        // Check if input box contains a command, if so, automatically execute it
-                        if commands.contains(&(app.input.as_str())) {
-                            // Send command
-                            let msg_as_str = send_data(socket, app.input.as_str());
-                            // Update stack display
-                            app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
-                            // Clear input
-                            app.input.drain(..);
-                            // reset cursor offset
-                            app.left_cursor_offset = 0;
-                        }
+                        rpn_input(&mut app, socket, c);
                     }
                     // left keypress
                     KeyCode::Left => {

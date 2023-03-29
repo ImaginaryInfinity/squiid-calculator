@@ -191,14 +191,22 @@ fn run_app<B: Backend>(
                     }
                     KeyCode::Char(c) => {
                         app.input.push(c);
-                        match app.input.as_str() {
-                            "sqrt" => {
-                                let msg_as_str = send_data(socket, "sqrt");
-                                app.messages =
-                                    msg_as_str.split(" ").map(|x| x.to_owned()).collect();
-                                app.input.drain(..);
-                            }
-                            _ => {}
+                        // TODO: Add a way for the engine to send its command list
+                        let commands = [
+                            "add", "subtract", "multiply", "divide", "power", "sqrt", "mod", "sin",
+                            "cos", "tan", "sec", "csc", "cot", "asin", "acos", "atan", "acos",
+                            "atan", "log", "logb", "ln", "abs", "eq", "gt", "lt", "gte", "lte",
+                            "round", "invert", "drop", "swap", "dup", "rolldown", "rollup",
+                            "store", "clear", "quit",
+                        ];
+                        // Check if input is a command
+                        if commands.contains(&(app.input.as_str())) {
+                            // Send command
+                            let msg_as_str = send_data(socket, app.input.as_str());
+                            // Add result to ui
+                            app.messages = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
+                            // Clear input
+                            app.input.drain(..);
                         }
                     }
                     KeyCode::Backspace => {

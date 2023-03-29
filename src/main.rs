@@ -186,7 +186,9 @@ fn run_app<B: Backend>(
                     KeyCode::Backspace => {
                         // Remove character from input box
                         let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
-                        app.input.remove(index);
+                        if index > 0 {
+                            app.input.remove(index - 1);
+                        }
                     }
                     // Handle escape
                     KeyCode::Esc => {
@@ -216,8 +218,6 @@ fn run_app<B: Backend>(
                         let command: String = app.input.drain(..).collect();
                         // reset cursor offset
                         app.left_cursor_offset = 0;
-                        // Create variable to store response from engine
-                        let mut msg_as_str = String::new();
                         // Send to backend and get response
                         let msg_as_str = send_data(socket, command.as_str());
                         // Update stack display
@@ -234,8 +234,6 @@ fn run_app<B: Backend>(
                         let command: String = app.input.drain(..).collect();
                         // reset cursor offset
                         app.left_cursor_offset = 0;
-                        // Create variable to store response from engine
-                        let mut msg_as_str = String::new();
                         // Send operand to backend if there is one
                         if command.len() > 0 {
                             _ = send_data(socket, command.as_str());
@@ -297,7 +295,9 @@ fn run_app<B: Backend>(
                     KeyCode::Backspace => {
                         // Remove character from input box
                         let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
-                        app.input.remove(index);
+                        if index > 0 {
+                            app.input.remove(index - 1);
+                        }
                     }
                     // Handle escape
                     KeyCode::Esc => {

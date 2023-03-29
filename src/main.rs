@@ -132,7 +132,7 @@ fn run_app<B: Backend>(
             match app.input_mode {
                 // Handle keypresses for normal (non-editing) mode
                 InputMode::None => match key.code {
-                    KeyCode::Char('e') => {
+                    KeyCode::Char('a') => {
                         app.input_mode = InputMode::Algebraic;
                     }
                     KeyCode::Char('r') => {
@@ -355,10 +355,10 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 Span::raw("Press "),
                 Span::styled("q", Style::default().add_modifier(Modifier::BOLD)),
                 Span::raw(" to exit, "),
-                Span::styled("e", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to start editing in algebraic mode, "),
+                Span::styled("a", Style::default().add_modifier(Modifier::BOLD)),
+                Span::raw(" for algebraic mode, "),
                 Span::styled("r", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to start entering in RPN mode."),
+                Span::raw(" for RPN mode."),
             ],
             Style::default(),
         ),

@@ -224,6 +224,7 @@ fn rpn_operator(app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
         KeyCode::Char('/') => "divide",
         KeyCode::Char('^') => "power",
         KeyCode::Char('_') => "invert",
+        KeyCode::Char('\\') => "drop",
         _ => "there is no way for this to occur",
     };
     // Send operation
@@ -311,7 +312,8 @@ fn run_app<B: Backend>(
                     | KeyCode::Char('*')
                     | KeyCode::Char('/')
                     | KeyCode::Char('^')
-                    | KeyCode::Char('_') => {
+                    | KeyCode::Char('_')
+                    | KeyCode::Char('\\') => {
                         rpn_operator(&mut app, socket, key);
                     }
                     // Handle typing characters

@@ -31,7 +31,7 @@ pub fn start_server(address: Option<&str>) {
         // Convert received message to a string
         let recieved = msg.as_str().unwrap();
 
-        match recieved {
+        let result = match recieved {
             "add" => engine.add(),
             "subtract" => engine.subtract(),
             "multiply" => engine.multiply(),
@@ -68,6 +68,13 @@ pub fn start_server(address: Option<&str>) {
             "clear" => engine.clear(),
             "quit" => break,
             recieved => engine.add_item_to_stack(StackableString(recieved.to_string())),
+        };
+
+        match result {
+            Ok(()) => {}
+            Err(error) => engine
+                .add_item_to_stack(StackableString(format!("Error: {:?}", error)))
+                .unwrap(),
         }
 
         // format the stack as a string
@@ -75,13 +82,13 @@ pub fn start_server(address: Option<&str>) {
         if engine.stack.len() > 0 {
             for item in &engine.stack {
                 match item {
-                    StackableFloat(i) => formatted_stack.push_str(&format!("{} ", i.to_string())),
-                    StackableString(i) => formatted_stack.push_str(&format!("\"{}\" ", i)),
+                    StackableFloat(i) => formatted_stack.push_str(&format!("{},", i.to_string())),
+                    StackableString(i) => formatted_stack.push_str(&format!("\"{}\",", i)),
                 }
             }
-            // Remove trailing space
-            if formatted_stack.chars().last().unwrap()==' '{
-                formatted_stack.remove(formatted_stack.len()-1);
+            // Remove trailing comma
+            if formatted_stack.chars().last().unwrap() == ',' {
+                formatted_stack.remove(formatted_stack.len() - 1);
             }
         }
 

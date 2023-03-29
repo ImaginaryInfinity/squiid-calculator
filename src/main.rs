@@ -174,7 +174,7 @@ fn run_app<B: Backend>(
                             // }
                         }
                         // Update stack
-                        app.stack = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
+                        app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
 
                         // Last item in stack is result of this expression
                         let result = app.stack.last().unwrap();
@@ -241,7 +241,7 @@ fn run_app<B: Backend>(
                             msg_as_str = send_data(socket, "dup");
                         }
                         // Update stack display
-                        app.stack = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
+                        app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
                     }
                     // Handle single character operators
                     KeyCode::Char('+')
@@ -271,7 +271,7 @@ fn run_app<B: Backend>(
                         // Send operation
                         let msg_as_str = send_data(socket, operation);
                         // Update stack display
-                        app.stack = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
+                        app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
                     }
                     // Handle typing characters
                     KeyCode::Char(c) => {
@@ -293,7 +293,7 @@ fn run_app<B: Backend>(
                             // Send command
                             let msg_as_str = send_data(socket, app.input.as_str());
                             // Update stack display
-                            app.stack = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
+                            app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
                             // Clear input
                             app.input.drain(..);
                             // reset cursor offset

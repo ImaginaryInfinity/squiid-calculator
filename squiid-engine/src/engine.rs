@@ -20,7 +20,7 @@ impl Engine {
     }
 
     // add item to stack
-    pub fn add_item_to_stack(&mut self, item: StackableItems) {
+    pub fn add_item_to_stack(&mut self, item: StackableItems) -> Result<(), &'static str> {
         // Convert item to string
         let mut item_string = item.to_string();
         let mut invert = false;
@@ -64,306 +64,434 @@ impl Engine {
         if invert {
             self.invert();
         }
+        Ok(())
     }
 
     // Get operands from stack
-    pub fn get_operands(&mut self, number: i32) -> Vec<StackableItems> {
-        // Create vector to store operands
-        let mut operands = Vec::new();
-        // Add requested number of operands from stack to vector and converts them to strings
-        for _ in 0..number {
-            let operand = self.stack.pop().unwrap();
-            operands.push(operand);
+    pub fn get_operands(&mut self, number: i32) -> Result<Vec<StackableItems>, &'static str> {
+        // Make sure there are actually enough items on the stack
+        if self.stack.len() as i32 >= number {
+            // Create vector to store operands
+            let mut operands = Vec::new();
+            // Add requested number of operands from stack to vector and converts them to strings
+            for _ in 0..number {
+                let operand = self.stack.pop().unwrap();
+                operands.push(operand);
+            }
+            // Make the new vector's order match the stack
+            operands.reverse();
+            Ok(operands)
+        } else {
+            Err("Not enough items on stack for operation")
         }
-        // Make the new vector's order match the stack
-        operands.reverse();
-        operands
     }
 
     // Add
-    pub fn add(&mut self) {
-        let operands = self.get_operands(2);
+    pub fn add(&mut self) -> Result<(), &'static str> {
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].add(operands[1].clone()));
+        Ok(())
     }
 
     // Subtract
-    pub fn subtract(&mut self) {
+    pub fn subtract(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(2);
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].sub(operands[1].clone()));
+        Ok(())
     }
 
     // Multiply
-    pub fn multiply(&mut self) {
+    pub fn multiply(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(2);
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].mul(operands[1].clone()));
+        Ok(())
     }
 
     // Divide
-    pub fn divide(&mut self) {
+    pub fn divide(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(2);
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].div(operands[1].clone()));
+        Ok(())
     }
 
     // Power
-    pub fn power(&mut self) {
+    pub fn power(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(2);
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].powf(operands[1].clone()));
+        Ok(())
     }
 
     // Square root
-    pub fn sqrt(&mut self) {
+    pub fn sqrt(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].sqrt());
+        Ok(())
     }
 
     // Modulo
-    pub fn modulo(&mut self) {
+    pub fn modulo(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(2);
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].modulo(operands[1].clone()));
+        Ok(())
     }
 
     // Sine
-    pub fn sin(&mut self) {
+    pub fn sin(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].sin());
+        Ok(())
     }
 
     // Cosine
-    pub fn cos(&mut self) {
+    pub fn cos(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].cos());
+        Ok(())
     }
 
     // Tangent
-    pub fn tan(&mut self) {
+    pub fn tan(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].tan());
+        Ok(())
     }
 
     // Secant
-    pub fn sec(&mut self) {
+    pub fn sec(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].sec());
+        Ok(())
     }
 
     // Cosecant
-    pub fn csc(&mut self) {
+    pub fn csc(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].csc());
+        Ok(())
     }
 
     // Cotangent
-    pub fn cot(&mut self) {
+    pub fn cot(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].cot());
+        Ok(())
     }
 
     // Asin
-    pub fn asin(&mut self) {
+    pub fn asin(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].asin());
+        Ok(())
     }
 
     // Acos
-    pub fn acos(&mut self) {
+    pub fn acos(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].acos());
+        Ok(())
     }
 
     // Atan
-    pub fn atan(&mut self) {
+    pub fn atan(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].atan());
+        Ok(())
     }
 
     // Invert
-    pub fn invert(&mut self) {
+    pub fn invert(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].mul(StackableFloat(-1.0)));
+        Ok(())
     }
 
     // Logarithm
-    pub fn log(&mut self) {
+    pub fn log(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].log(StackableFloat(10.0)));
+        Ok(())
     }
 
     // Logarithm with custom base
-    pub fn logb(&mut self) {
+    pub fn logb(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(2);
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].log(operands[1].clone()));
+        Ok(())
     }
 
     // Natural logarihm
-    pub fn ln(&mut self) {
+    pub fn ln(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].ln());
+        Ok(())
     }
 
     // Absolute value
-    pub fn abs(&mut self) {
+    pub fn abs(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].abs());
+        Ok(())
     }
 
     // Equal to
-    pub fn eq(&mut self) {
+    pub fn eq(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(2);
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].eq(operands[1].clone()));
+        Ok(())
     }
 
     // Greater than
-    pub fn gt(&mut self) {
+    pub fn gt(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(2);
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].gt(operands[1].clone()));
+        Ok(())
     }
 
     // Less than
-    pub fn lt(&mut self) {
+    pub fn lt(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(2);
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].lt(operands[1].clone()));
+        Ok(())
     }
 
     // Greater than or equal to
-    pub fn gte(&mut self) {
+    pub fn gte(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(2);
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].gte(operands[1].clone()))
+        self.add_item_to_stack(operands[0].gte(operands[1].clone()));
+        Ok(())
     }
 
     // Less than or equal to
-    pub fn lte(&mut self) {
+    pub fn lte(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = self.get_operands(2);
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].lte(operands[1].clone()));
+        Ok(())
     }
 
     // round to nearest int
-    pub fn round(&mut self) {
+    pub fn round(&mut self) -> Result<(), &'static str> {
         // Get operand
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Put result on stack
         self.add_item_to_stack(operands[0].round());
+        Ok(())
     }
 
     // Drop last item from stack
-    pub fn drop(&mut self) {
+    pub fn drop(&mut self) -> Result<(), &'static str> {
         // Remove last item from stack
         self.stack.pop();
+        Ok(())
     }
 
     // Swap last two items on stack
-    pub fn swap(&mut self) {
+    pub fn swap(&mut self) -> Result<(), &'static str> {
         // Get last two values from stack
-        let operands = self.get_operands(2);
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Insert in reverse order
         self.add_item_to_stack(operands[1].clone());
         self.add_item_to_stack(operands[0].clone());
+        Ok(())
     }
 
     // Duplicate the last item of the stack
-    pub fn dup(&mut self) {
+    pub fn dup(&mut self) -> Result<(), &'static str> {
         // Get the last value from the stack
-        let operands = self.get_operands(1);
+        let operands = match self.get_operands(1) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Insert twice
         self.add_item_to_stack(operands[0].clone());
         self.add_item_to_stack(operands[0].clone());
+        Ok(())
     }
 
     // Roll down
-    pub fn roll_down(&mut self) {
+    pub fn roll_down(&mut self) -> Result<(), &'static str> {
         // Rotate stack right
         self.stack.rotate_right(1);
+        Ok(())
     }
 
     // Roll up
-    pub fn roll_up(&mut self) {
+    pub fn roll_up(&mut self) -> Result<(), &'static str> {
         // Rotate stack left
         self.stack.rotate_left(1);
+        Ok(())
     }
 
     // Store value in variable
-    pub fn store(&mut self) {
+    pub fn store(&mut self) -> Result<(), &'static str> {
         // Get 2 operands from stack
-        let operands = self.get_operands(2);
+        let operands = match self.get_operands(2) {
+            Ok(content) => content,
+            Err(error) => return (Err(error)),
+        };
 
         // Only store if first character of second operand is @
         if operands[1].to_string().chars().next().unwrap() == '@' {
@@ -377,10 +505,12 @@ impl Engine {
             // Error if attempted to store in name not starting with @
             panic!("Cannot store in non-variable object");
         }
+        Ok(())
     }
 
-    pub fn clear(&mut self) {
+    pub fn clear(&mut self) -> Result<(), &'static str> {
         self.stack = Vec::new();
+        Ok(())
     }
 }
 

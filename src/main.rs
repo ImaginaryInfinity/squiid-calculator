@@ -12,7 +12,7 @@
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
     execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}, cursor,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::{
     backend::{Backend, CrosstermBackend},
@@ -106,6 +106,18 @@ fn send_data(socket: &Socket, command: &str) -> String {
     msg.as_str().unwrap().to_string()
 }
 
+// get current character index based on cursor position and text length
+fn current_char_index(left_cursor_offset: usize, input_len: usize) -> usize {
+    let index: usize;
+    if left_cursor_offset > input_len {
+        index = 0;
+    } else {
+        index = input_len - left_cursor_offset;
+    }
+
+    index
+}
+
 fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     mut app: App,
@@ -137,6 +149,8 @@ fn run_app<B: Backend>(
                     KeyCode::Enter => {
                         // Get string from input box and empty it
                         let entered_expression: String = app.input.drain(..).collect();
+                        // reset cursor offset
+                        app.left_cursor_offset = 0;
                         // Parse algebraic expression into postfix expression
                         let rpn_expression = squiid_parser::parse(entered_expression.trim());
                         // Create variable to store result from engine
@@ -165,12 +179,14 @@ fn run_app<B: Backend>(
                     // Handle typing characters
                     KeyCode::Char(c) => {
                         // Add character to input box
-                        app.input.push(c);
+                        let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
+                        app.input.insert(index, c);
                     }
                     // Handle backspace
                     KeyCode::Backspace => {
                         // Remove character from input box
-                        app.input.pop();
+                        let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
+                        app.input.remove(index);
                     }
                     // Handle escape
                     KeyCode::Esc => {
@@ -198,6 +214,8 @@ fn run_app<B: Backend>(
                     KeyCode::Enter => {
                         // Get command from input box and empty it
                         let command: String = app.input.drain(..).collect();
+                        // reset cursor offset
+                        app.left_cursor_offset = 0;
                         // Create variable to store response from engine
                         let mut msg_as_str = String::new();
                         // Send to backend and get response
@@ -214,6 +232,8 @@ fn run_app<B: Backend>(
                     | KeyCode::Char('_') => {
                         // Get operand from input box and empty it
                         let command: String = app.input.drain(..).collect();
+                        // reset cursor offset
+                        app.left_cursor_offset = 0;
                         // Create variable to store response from engine
                         let mut msg_as_str = String::new();
                         // Send operand to backend if there is one
@@ -238,7 +258,9 @@ fn run_app<B: Backend>(
                     // Handle typing characters
                     KeyCode::Char(c) => {
                         // Add character to input box
-                        app.input.push(c);
+                        let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
+                        app.input.insert(index, c);
+
                         // TODO: Add a way for the engine to send its command list
                         let commands = [
                             "add", "subtract", "multiply", "divide", "power", "sqrt", "mod", "sin",
@@ -255,12 +277,27 @@ fn run_app<B: Backend>(
                             app.stack = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
                             // Clear input
                             app.input.drain(..);
+                            // reset cursor offset
+                            app.left_cursor_offset = 0;
+                        }
+                    }
+                    // left keypress
+                    KeyCode::Left => {
+                        // left arrow key, adjust left cursor offset
+                        app.left_cursor_offset += 1;
+                    }
+                    // right keypress
+                    KeyCode::Right => {
+                        // right arrow key, adjust left cursor offset
+                        if app.left_cursor_offset > 0 {
+                            app.left_cursor_offset -= 1;
                         }
                     }
                     // Handle backspace
                     KeyCode::Backspace => {
                         // Remove character from input box
-                        app.input.pop();
+                        let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
+                        app.input.remove(index);
                     }
                     // Handle escape
                     KeyCode::Esc => {

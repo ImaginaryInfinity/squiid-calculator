@@ -17,7 +17,7 @@ pub fn start_server(address: Option<&str>) {
     };
 
     // Print and bind to selected port
-    println!("{} {}", "Bound to: ", address_to_bind);
+    // println!("{} {}", "Bound to: ", address_to_bind);
     assert!(responder.bind(address_to_bind).is_ok());
 
     // create message variable and engine
@@ -30,8 +30,6 @@ pub fn start_server(address: Option<&str>) {
         responder.recv(&mut msg, 0).unwrap();
         // Convert received message to a string
         let recieved = msg.as_str().unwrap();
-
-        println!("Recieved {}", recieved);
 
         match recieved {
             "add" => engine.add(),
@@ -80,7 +78,6 @@ pub fn start_server(address: Option<&str>) {
                 StackableString(i) => formatted_stack.push_str(&format!("\"{}\" ", i)),
             }
         }
-
         // respond to client with the stack as a string
         responder.send(&formatted_stack, 0).unwrap();
     }

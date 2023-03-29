@@ -98,7 +98,7 @@ pub fn parse(input: &str) -> Vec<String> {
             // is part of a number, push to number buffer
             current_token.push(char);
         } else {
-            println!("output: {:?}, operator: {:?}", output_stack, operator_stack);
+            // println!("output: {:?}, operator: {:?}", output_stack, operator_stack);
             // not a part of a number
 
             // test if current token is not empty, if so, push it to output stack

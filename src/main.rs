@@ -41,6 +41,8 @@ struct App {
     input_mode: InputMode,
     /// History of recorded messages
     messages: Vec<String>,
+    // Stack for RPN mode
+    stack: Vec<String>,
 }
 
 impl Default for App {
@@ -49,6 +51,7 @@ impl Default for App {
             input: String::new(),
             input_mode: InputMode::Normal,
             messages: Vec::new(),
+            stack: Vec::new(),
         }
     }
 }
@@ -184,7 +187,7 @@ fn run_app<B: Backend>(
                         // Send to backend and get response
                         msg_as_str = send_data(socket, command.as_str());
                         // Update stack display
-                        app.messages = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
+                        app.stack = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
                     }
                     // Handle single character operators
                     KeyCode::Char('+')
@@ -212,7 +215,7 @@ fn run_app<B: Backend>(
                         // Send operation
                         msg_as_str = send_data(socket, operation);
                         // Update stack display
-                        app.messages = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
+                        app.stack = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
                     }
                     // Handle typing characters
                     KeyCode::Char(c) => {
@@ -230,8 +233,8 @@ fn run_app<B: Backend>(
                         if commands.contains(&(app.input.as_str())) {
                             // Send command
                             let msg_as_str = send_data(socket, app.input.as_str());
-                            // Add result to ui
-                            app.messages = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
+                            // Update stack display
+                            app.stack = msg_as_str.split(" ").map(|x| x.to_owned()).collect();
                             // Clear input
                             app.input.drain(..);
                         }
@@ -304,8 +307,13 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
         ),
     };
 
-    let messages: Vec<ListItem> = app
-        .messages
+    let display = match app.input_mode {
+        InputMode::Normal => &app.messages,
+        InputMode::Editing => &app.messages,
+        InputMode::RPN => &app.stack,
+    };
+
+    let messages: Vec<ListItem> = display
         .iter()
         .enumerate()
         .map(|(i, m)| {
@@ -314,7 +322,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
                 match app.input_mode {
                     InputMode::Editing => i,
                     InputMode::Normal => i,
-                    InputMode::RPN => app.messages.len() - i,
+                    InputMode::RPN => app.stack.len() - i,
                 },
                 m
             )));

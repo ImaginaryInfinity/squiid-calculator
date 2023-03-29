@@ -287,17 +287,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
             ],
             Style::default(),
         ),
-        InputMode::Algebraic => (
-            vec![
-                Span::raw("Press "),
-                Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to stop editing, "),
-                Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to record the message"),
-            ],
-            Style::default(),
-        ),
-        InputMode::RPN => (
+        InputMode::Algebraic | InputMode::RPN => (
             vec![
                 Span::raw("Press "),
                 Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
@@ -359,17 +349,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
             // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
             {}
 
-        InputMode::Algebraic => {
-            // Make the cursor visible and ask ratatui to put it at the specified coordinates after rendering
-            f.set_cursor(
-                // Put cursor past the end of the input text
-                chunks[2].x + app.input.width() as u16 + 1,
-                // Move one line down, from the border to the input line
-                chunks[2].y + 1,
-            )
-        }
-
-        InputMode::RPN => {
+        InputMode::Algebraic | InputMode::RPN => {
             // Make the cursor visible and ask ratatui to put it at the specified coordinates after rendering
             f.set_cursor(
                 // Put cursor past the end of the input text

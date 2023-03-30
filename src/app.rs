@@ -9,7 +9,7 @@ use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 
 use ratatui::{
     backend::Backend,
-    layout::{Constraint, Direction, Layout},
+    layout::{Constraint, Corner, Direction, Layout},
     style::{Color, Modifier, Style},
     text::{Span, Spans, Text},
     widgets::{Block, Borders, List, ListItem, Paragraph},
@@ -351,11 +351,14 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     };
 
     // Set what to display in the upper box
-    let display = match app.input_mode {
-        InputMode::None => &app.info,
-        InputMode::Algebraic => &app.history,
-        InputMode::RPN => &app.stack,
+    let mut display = match app.input_mode {
+        InputMode::None => app.info.clone(),
+        InputMode::Algebraic => app.history.clone(),
+        InputMode::RPN => app.stack.clone(),
     };
+
+    // Reverse display since we're rendering from the bottom
+    display.reverse();
 
     let messages: Vec<ListItem> = display
         .iter()
@@ -364,9 +367,8 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             let content = Spans::from(Span::raw(format!(
                 "{}: {}",
                 match app.input_mode {
-                    InputMode::Algebraic => i.to_string(),
+                    InputMode::Algebraic | InputMode::RPN => i.to_string(),
                     InputMode::None => "".to_string(),
-                    InputMode::RPN => (app.stack.len() - i).to_string(),
                 },
                 m
             )));
@@ -379,8 +381,10 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         InputMode::RPN => "Stack",
         InputMode::None => "Squiid",
     };
-    let messages =
-        List::new(messages).block(Block::default().borders(Borders::ALL).title(list_title));
+    let messages = List::new(messages)
+        .block(Block::default().borders(Borders::ALL).title(list_title))
+        .start_corner(Corner::BottomLeft);
+
     f.render_widget(messages, chunks[0]);
 
     let mut text = Text::from(Spans::from(msg));

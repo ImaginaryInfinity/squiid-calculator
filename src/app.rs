@@ -314,14 +314,20 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         )
         .split(f.size());
 
+    // Set help message to display
     let (msg, style) = match app.input_mode {
+        // Display error if there is one
         _ if !app.error.is_empty() => (
             vec![Span::styled(
                 app.error.clone(),
-                Style::default().add_modifier(Modifier::BOLD),
+                Style::default()
+                    .add_modifier(Modifier::BOLD)
+                    .fg(Color::Red)
+                    .bg(Color::White),
             )],
             Style::default(),
         ),
+        // Display help for options screen
         InputMode::None => (
             vec![
                 Span::raw("Press "),
@@ -334,6 +340,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             ],
             Style::default(),
         ),
+        // Display help for algebraic mode
         InputMode::Algebraic => (
             vec![
                 Span::raw("Press "),
@@ -344,6 +351,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             ],
             Style::default(),
         ),
+        // Display help for RPN mode
         InputMode::RPN => (
             vec![
                 Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),

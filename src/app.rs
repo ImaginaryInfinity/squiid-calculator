@@ -1,4 +1,4 @@
-use std::{io, collections::HashMap};
+use std::{collections::HashMap, io};
 
 use lazy_static::lazy_static;
 use unicode_width::UnicodeWidthStr;
@@ -26,7 +26,7 @@ enum InputMode {
 }
 
 // RPN symbols and their corresponding commands
-lazy_static!{
+lazy_static! {
     static ref RPN_SYMBOL_MAP: HashMap<KeyCode, &'static str> = [
         (KeyCode::Char('+'), "add"),
         (KeyCode::Char('-'), "subtract"),
@@ -35,7 +35,10 @@ lazy_static!{
         (KeyCode::Char('^'), "power"),
         (KeyCode::Char('_'), "invert"),
         (KeyCode::Char('\\'), "drop"),
-    ].iter().copied().collect();
+    ]
+    .iter()
+    .copied()
+    .collect();
 }
 
 /// App holds the state of the application
@@ -60,7 +63,10 @@ impl Default for App {
             input: String::new(),
             input_mode: InputMode::None,
             messages: Vec::new(),
-            info: vec![format!("Squiid Calculator version {}", option_env!("CARGO_PKG_VERSION").unwrap())],
+            info: vec![format!(
+                "Squiid Calculator version {}",
+                option_env!("CARGO_PKG_VERSION").unwrap()
+            )],
             stack: Vec::new(),
             left_cursor_offset: 0,
         }
@@ -202,59 +208,65 @@ pub fn run_app<B: Backend>(
                     _ => {}
                 },
                 // Handle keypresses for algebraic input mode
-                InputMode::Algebraic | InputMode::RPN if key.kind == KeyEventKind::Press => match key.code {
-                    // Handle enter
-                    KeyCode::Enter => {
-                        if app.input_mode == InputMode::Algebraic {
-                            algebraic_eval(&mut app, socket);
-                        } else {
-                            rpn_enter(&mut app, socket);
+                InputMode::Algebraic | InputMode::RPN if key.kind == KeyEventKind::Press => {
+                    match key.code {
+                        // Handle enter
+                        KeyCode::Enter => {
+                            if app.input_mode == InputMode::Algebraic {
+                                algebraic_eval(&mut app, socket);
+                            } else {
+                                rpn_enter(&mut app, socket);
+                            }
                         }
-                    }
-                     // Handle single character operators
-                    _ if RPN_SYMBOL_MAP.contains_key(&key.code) => {
-                        rpn_operator(&mut app, socket, key);
-                    }
-                    // Handle typing characters
-                    KeyCode::Char(c) => {
-                        if app.input_mode == InputMode::Algebraic {
-                            // Add character to input box
-                            let index =
-                            current_char_index(app.left_cursor_offset as usize, app.input.len());
-                            app.input.insert(index, c);
-                        } else if app.input_mode == InputMode::RPN {
-                            rpn_input(&mut app, socket, c);
+                        // Handle single character operators
+                        _ if RPN_SYMBOL_MAP.contains_key(&key.code) => {
+                            rpn_operator(&mut app, socket, key);
                         }
-                    }
-                    // Handle backspace
-                    KeyCode::Backspace => {
-                        // Remove character from input box
-                        let index =
-                            current_char_index(app.left_cursor_offset as usize, app.input.len());
-                        if index > 0 {
-                            app.input.remove(index - 1);
+                        // Handle typing characters
+                        KeyCode::Char(c) => {
+                            if app.input_mode == InputMode::Algebraic {
+                                // Add character to input box
+                                let index = current_char_index(
+                                    app.left_cursor_offset as usize,
+                                    app.input.len(),
+                                );
+                                app.input.insert(index, c);
+                            } else if app.input_mode == InputMode::RPN {
+                                rpn_input(&mut app, socket, c);
+                            }
                         }
-                    }
-                    // Handle escape
-                    KeyCode::Esc => {
-                        // Return to normal mode
-                        app.input_mode = InputMode::None;
-                    }
-                    // left keypress
-                    KeyCode::Left => {
-                        // left arrow key, adjust left cursor offset
-                        app.left_cursor_offset += 1;
-                    }
-                    // right keypress
-                    KeyCode::Right => {
-                        // right arrow key, adjust left cursor offset
-                        if app.left_cursor_offset > 0 {
-                            app.left_cursor_offset -= 1;
+                        // Handle backspace
+                        KeyCode::Backspace => {
+                            // Remove character from input box
+                            let index = current_char_index(
+                                app.left_cursor_offset as usize,
+                                app.input.len(),
+                            );
+                            if index > 0 {
+                                app.input.remove(index - 1);
+                            }
                         }
+                        // Handle escape
+                        KeyCode::Esc => {
+                            // Return to normal mode
+                            app.input_mode = InputMode::None;
+                        }
+                        // left keypress
+                        KeyCode::Left => {
+                            // left arrow key, adjust left cursor offset
+                            app.left_cursor_offset += 1;
+                        }
+                        // right keypress
+                        KeyCode::Right => {
+                            // right arrow key, adjust left cursor offset
+                            if app.left_cursor_offset > 0 {
+                                app.left_cursor_offset -= 1;
+                            }
+                        }
+                        // Ignore all other keys
+                        _ => {}
                     }
-                    // Ignore all other keys
-                    _ => {}
-                },
+                }
                 _ => {}
             }
         }
@@ -316,7 +328,6 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         InputMode::Algebraic => &app.messages,
         InputMode::RPN => &app.stack,
     };
-
 
     let messages: Vec<ListItem> = display
         .iter()

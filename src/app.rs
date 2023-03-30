@@ -110,15 +110,22 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
         msg_as_str = send_data(socket, command);
     }
     // Update stack
-    update_stack_or_error(msg_as_str, &mut app);
+    update_stack_or_error(msg_as_str.clone(), &mut app);
 
     // Last item in stack is result of this expression
     let result = app.stack.last().unwrap();
 
     // Combine entry and result into line to print
     let mut history_entry = entered_expression;
-    history_entry.push_str(" = ");
-    history_entry.push_str(result);
+    if app.stack.len() <= 2 {
+        // Everything is normal, show result
+        history_entry.push_str(" = ");
+        history_entry.push_str(result);
+    } else {
+        // Everything is weird, show stack
+        history_entry.push_str(" : ");
+        history_entry.push_str(msg_as_str.as_str());
+    }
 
     // Add to history
     app.messages.push(history_entry);
@@ -234,7 +241,9 @@ pub fn run_app<B: Backend>(
                             }
                         }
                         // Handle single character operators
-                        _ if RPN_SYMBOL_MAP.contains_key(&key.code) => {
+                        _ if RPN_SYMBOL_MAP.contains_key(&key.code)
+                            && app.input_mode == InputMode::RPN =>
+                        {
                             rpn_operator(&mut app, socket, key);
                         }
                         // Handle typing characters

@@ -249,6 +249,7 @@ pub fn run_app<B: Backend>(
                         KeyCode::PageDown => {
                             update_stack_or_error(send_data(socket, "rolldown"), &mut app)
                         }
+                        KeyCode::Tab => update_stack_or_error(send_data(socket, "swap"), &mut app),
                         // Handle typing characters
                         KeyCode::Char(c) => {
                             if app.input_mode == InputMode::Algebraic {
@@ -364,7 +365,9 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 ),
                 Span::raw(": roll stack  "),
                 Span::styled("\\", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(": drop"),
+                Span::raw(": drop  "),
+                Span::styled("Tab", Style::default().add_modifier(Modifier::BOLD)),
+                Span::raw(": swap"),
             ],
             Style::default(),
         ),

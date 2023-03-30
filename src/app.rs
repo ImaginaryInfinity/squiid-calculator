@@ -365,7 +365,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .enumerate()
         .map(|(i, m)| {
             let content = Spans::from(Span::raw(format!(
-                "{}: {}",
+                "{: >3}: {}",
                 match app.input_mode {
                     InputMode::Algebraic | InputMode::RPN => i.to_string(),
                     InputMode::None => "".to_string(),

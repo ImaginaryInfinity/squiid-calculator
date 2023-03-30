@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use log::debug;
 
 // Left/Right Associativity enum for distinguising between right associative operations such as power
 #[derive(PartialEq)]
@@ -98,7 +99,7 @@ pub fn parse(input: &str) -> Vec<String> {
             // is part of a number, push to number buffer
             current_token.push(char);
         } else {
-            // println!("output: {:?}, operator: {:?}", output_stack, operator_stack);
+            debug!("output: {:?}, operator: {:?}", output_stack, operator_stack);
             // not a part of a number
 
             // test if current token is not empty, if so, push it to output stack

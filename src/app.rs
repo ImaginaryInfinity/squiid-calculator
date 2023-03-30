@@ -48,7 +48,7 @@ pub struct App {
     /// Current input mode
     input_mode: InputMode,
     /// History of recorded messages
-    messages: Vec<String>,
+    history: Vec<String>,
     // Calculator info
     info: Vec<String>,
     // Stack for RPN mode
@@ -64,7 +64,7 @@ impl Default for App {
         App {
             input: String::new(),
             input_mode: InputMode::None,
-            messages: Vec::new(),
+            history: Vec::new(),
             info: vec![
                 format!(
                     "Squiid Calculator version {}",
@@ -132,7 +132,7 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     }
 
     // Add to history
-    app.messages.push(history_entry);
+    app.history.push(history_entry);
 }
 
 // Handle typing in RPN mode
@@ -360,7 +360,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     // Set what to display in the upper box
     let display = match app.input_mode {
         InputMode::None => &app.info,
-        InputMode::Algebraic => &app.messages,
+        InputMode::Algebraic => &app.history,
         InputMode::RPN => &app.stack,
     };
 

@@ -13,3 +13,7 @@ squiid-engine = { path="./squiid-engine" }
 squiid-parser = { path="./squiid-parser" }
 unicode-width = "0.1.10"
 zmq = "0.10.0"
+
+[profile.release]
+strip = true
+lto = true

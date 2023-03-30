@@ -73,30 +73,31 @@ pub fn start_server(address: Option<&str>) {
             },
         };
 
+        let mut formatted_response = String::new();
         match result {
-            Ok(()) => {}
-            // TODO: handle engine unwrap
-            Err(error) => engine
-                .add_item_to_stack(StackableString(format!("Error: {:?}", error))).unwrap(),
-        }
-
-        // format the stack as a string
-        let mut formatted_stack = String::new();
-        if engine.stack.len() > 0 {
-            for item in &engine.stack {
-                match item {
-                    StackableFloat(i) => formatted_stack.push_str(&format!("{},", i.to_string())),
-                    StackableString(i) => formatted_stack.push_str(&format!("\"{}\",", i)),
+            Ok(()) => {
+                // format the stack as a string
+                if engine.stack.len() > 0 {
+                    for item in &engine.stack {
+                        match item {
+                            StackableFloat(i) => formatted_response.push_str(&format!("{},", i.to_string())),
+                            StackableString(i) => formatted_response.push_str(&format!("\"{}\",", i)),
+                        }
+                    }
+                    // Remove trailing comma
+                    if formatted_response.chars().last().unwrap() == ',' {
+                        formatted_response.remove(formatted_response.len() - 1);
+                    }
                 }
             }
-            // Remove trailing comma
-            if formatted_stack.chars().last().unwrap() == ',' {
-                formatted_stack.remove(formatted_stack.len() - 1);
-            }
+            Err(error) => {
+                formatted_response=format!("Error: {}", error.to_string());
+            },
         }
 
+
         // respond to client with the stack as a string
-        responder.send(&formatted_stack, 0).unwrap();
+        responder.send(&formatted_response, 0).unwrap();
     }
 
     // send quit message to client

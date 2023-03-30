@@ -77,11 +77,10 @@ impl Default for App {
 }
 
 fn update_stack_or_error(msg: String, app: &mut App) {
-    if msg.starts_with("\"Error: ") {
+    if msg.starts_with("Error: ") {
         app.error = msg.clone();
     } else {
         app.stack = msg.split(",").map(|x| x.to_owned()).collect();
-        app.error = String::new();
     }
 }
 
@@ -206,6 +205,8 @@ pub fn run_app<B: Backend>(
 
         // Handle keypresses
         if let Event::Key(key) = event::read()? {
+            // Clear error message on keypress
+            app.error = String::new();
             // Determine which mode the calculator is in
             match app.input_mode {
                 // Handle keypresses for normal (non-editing) mode

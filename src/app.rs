@@ -400,6 +400,11 @@ pub fn run_app<B: Backend>(
                 _ => {}
             }
         }
+        // Update stack if there is currently an error, since the last request will have gotten the error not the stack
+        if !app.error.is_empty() {
+            let msg = send_data(socket, "refresh");
+            app.stack = msg.split(",").map(|x| x.to_owned()).collect();
+        }
     }
 }
 

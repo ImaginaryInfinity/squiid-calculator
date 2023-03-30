@@ -325,9 +325,9 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             let content = Spans::from(Span::raw(format!(
                 "{}: {}",
                 match app.input_mode {
-                    InputMode::Algebraic => i,
-                    InputMode::None => i,
-                    InputMode::RPN => app.stack.len() - i,
+                    InputMode::Algebraic => i.to_string(),
+                    InputMode::None => "".to_string(),
+                    InputMode::RPN => (app.stack.len() - i).to_string(),
                 },
                 m
             )));

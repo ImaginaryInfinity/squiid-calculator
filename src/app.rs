@@ -76,8 +76,8 @@ impl Default for App {
     }
 }
 
-fn update_stack_or_error(msg: String, app: &mut App){
-    if msg.starts_with("\"Error: "){
+fn update_stack_or_error(msg: String, app: &mut App) {
+    if msg.starts_with("\"Error: ") {
         app.error = msg.clone();
     } else {
         app.stack = msg.split(",").map(|x| x.to_owned()).collect();
@@ -302,10 +302,11 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .split(f.size());
 
     let (msg, style) = match app.input_mode {
-        _ if ! app.error.is_empty() => (
-            vec![
-                Span::styled(app.error.clone(), Style::default().add_modifier(Modifier::BOLD)),
-            ],
+        _ if !app.error.is_empty() => (
+            vec![Span::styled(
+                app.error.clone(),
+                Style::default().add_modifier(Modifier::BOLD),
+            )],
             Style::default(),
         ),
         InputMode::None => (

@@ -355,16 +355,16 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         InputMode::RPN => (
             vec![
                 Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(": options "),
+                Span::raw(": options  "),
                 Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(": add to stack "),
+                Span::raw(": add to stack  "),
                 Span::styled(
                     "Page Up/Down",
                     Style::default().add_modifier(Modifier::BOLD),
                 ),
-                Span::raw(": roll stack "),
+                Span::raw(": roll stack  "),
                 Span::styled("\\", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(": drop "),
+                Span::raw(": drop"),
             ],
             Style::default(),
         ),

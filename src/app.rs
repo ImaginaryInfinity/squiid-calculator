@@ -93,10 +93,8 @@ impl StatefulTopPanel {
     fn selected_item(&mut self) -> String {
         let selected_index = self.state.selected();
         match selected_index {
-            Some(index) => {
-                self.items[index].clone()
-            }
-            None => "".to_string()
+            Some(index) => self.items[index].clone(),
+            None => "".to_string(),
         }
     }
 }
@@ -296,7 +294,13 @@ pub fn run_app<B: Backend>(
                         KeyCode::Enter => {
                             if app.top_panel_state.currently_selecting() {
                                 // currently selecting, insert into text
-                                let selected_item = app.top_panel_state.selected_item().split_once(": ").unwrap().1.to_string();
+                                let selected_item = app
+                                    .top_panel_state
+                                    .selected_item()
+                                    .split_once(": ")
+                                    .unwrap()
+                                    .1
+                                    .to_string();
 
                                 let mut index = current_char_index(
                                     app.left_cursor_offset as usize,
@@ -358,7 +362,7 @@ pub fn run_app<B: Backend>(
                                 app.top_panel_state.deselect();
                             } else {
                                 // Return to normal mode
-                            app.input_mode = InputMode::None;
+                                app.input_mode = InputMode::None;
                             }
                         }
                         // left keypress
@@ -576,6 +580,6 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             )
         }
 
-        _ => ()
+        _ => (),
     }
 }

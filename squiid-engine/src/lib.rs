@@ -68,15 +68,16 @@ pub fn start_server(address: Option<&str>) {
             "clear" => engine.clear(),
             "quit" => break,
             recieved => {
-                engine.add_item_to_stack(StackableString(recieved.to_string()));
+                let _ = engine.add_item_to_stack(StackableString(recieved.to_string()));
                 Ok(())
             },
         };
 
         match result {
             Ok(()) => {}
+            // TODO: handle engine unwrap
             Err(error) => engine
-                .add_item_to_stack(StackableString(format!("Error: {:?}", error))),
+                .add_item_to_stack(StackableString(format!("Error: {:?}", error))).unwrap(),
         }
 
         // format the stack as a string

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::Error;
 
 use crate::stackable_items::StackableItems::{self, StackableFloat, StackableString};
 use crate::utils::is_string_numeric;
@@ -20,7 +21,7 @@ impl Engine {
     }
 
     // add item to stack
-    pub fn add_item_to_stack(&mut self, item: StackableItems){
+    pub fn add_item_to_stack(&mut self, item: StackableItems) -> Result<(), Error> {
         // Convert item to string
         let mut item_string = item.to_string();
         let mut invert = false;
@@ -46,7 +47,8 @@ impl Engine {
             // Remove $ prefix from name
             item_string.remove(0);
             // Get variable from hashmap
-            item_string = self.variables[&item_string].to_string();
+            // TODO: actually error out when undefined variable is referenced
+            item_string = self.variables.get(&item_string).unwrap_or(&StackableString(String::from("0"))).to_string();
         }
 
         // create a StackableFloat if item_string is numeric, else StackableString
@@ -64,6 +66,8 @@ impl Engine {
         if invert {
             _ = self.invert();
         }
+
+        Ok(())
     }
 
     // Get operands from stack
@@ -93,7 +97,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].add(operands[1].clone()));
+        let _ = self.add_item_to_stack(operands[0].add(operands[1].clone()));
         Ok(())
     }
 
@@ -106,7 +110,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].sub(operands[1].clone()));
+        let _ = self.add_item_to_stack(operands[0].sub(operands[1].clone()));
         Ok(())
     }
 
@@ -119,7 +123,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].mul(operands[1].clone()));
+        let _ = self.add_item_to_stack(operands[0].mul(operands[1].clone()));
         Ok(())
     }
 
@@ -132,7 +136,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].div(operands[1].clone()));
+        let _ = self.add_item_to_stack(operands[0].div(operands[1].clone()));
         Ok(())
     }
 
@@ -145,7 +149,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].powf(operands[1].clone()));
+        let _ = self.add_item_to_stack(operands[0].powf(operands[1].clone()));
         Ok(())
     }
 
@@ -158,7 +162,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].sqrt());
+        let _ = self.add_item_to_stack(operands[0].sqrt());
         Ok(())
     }
 
@@ -171,7 +175,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].modulo(operands[1].clone()));
+        let _ = self.add_item_to_stack(operands[0].modulo(operands[1].clone()));
         Ok(())
     }
 
@@ -184,7 +188,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].sin());
+        let _ = self.add_item_to_stack(operands[0].sin());
         Ok(())
     }
 
@@ -197,7 +201,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].cos());
+        let _ = self.add_item_to_stack(operands[0].cos());
         Ok(())
     }
 
@@ -210,7 +214,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].tan());
+        let _ = self.add_item_to_stack(operands[0].tan());
         Ok(())
     }
 
@@ -223,7 +227,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].sec());
+        let _ = self.add_item_to_stack(operands[0].sec());
         Ok(())
     }
 
@@ -236,7 +240,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].csc());
+        let _ = self.add_item_to_stack(operands[0].csc());
         Ok(())
     }
 
@@ -249,7 +253,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].cot());
+        let _ = self.add_item_to_stack(operands[0].cot());
         Ok(())
     }
 
@@ -262,7 +266,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].asin());
+        let _ = self.add_item_to_stack(operands[0].asin());
         Ok(())
     }
 
@@ -275,7 +279,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].acos());
+        let _ = self.add_item_to_stack(operands[0].acos());
         Ok(())
     }
 
@@ -288,7 +292,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].atan());
+        let _ = self.add_item_to_stack(operands[0].atan());
         Ok(())
     }
 
@@ -301,7 +305,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].mul(StackableFloat(-1.0)));
+        let _ = self.add_item_to_stack(operands[0].mul(StackableFloat(-1.0)));
         Ok(())
     }
 
@@ -314,7 +318,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].log(StackableFloat(10.0)));
+        let _ = self.add_item_to_stack(operands[0].log(StackableFloat(10.0)));
         Ok(())
     }
 
@@ -327,7 +331,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].log(operands[1].clone()));
+        let _ = self.add_item_to_stack(operands[0].log(operands[1].clone()));
         Ok(())
     }
 
@@ -340,7 +344,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].ln());
+        let _ = self.add_item_to_stack(operands[0].ln());
         Ok(())
     }
 
@@ -353,7 +357,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].abs());
+        let _ = self.add_item_to_stack(operands[0].abs());
         Ok(())
     }
 
@@ -366,7 +370,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].eq(operands[1].clone()));
+        let _ = self.add_item_to_stack(operands[0].eq(operands[1].clone()));
         Ok(())
     }
 
@@ -379,7 +383,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].gt(operands[1].clone()));
+        let _ = self.add_item_to_stack(operands[0].gt(operands[1].clone()));
         Ok(())
     }
 
@@ -392,7 +396,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].lt(operands[1].clone()));
+        let _ = self.add_item_to_stack(operands[0].lt(operands[1].clone()));
         Ok(())
     }
 
@@ -405,7 +409,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].gte(operands[1].clone()));
+        let _ = self.add_item_to_stack(operands[0].gte(operands[1].clone()));
         Ok(())
     }
 
@@ -418,7 +422,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].lte(operands[1].clone()));
+        let _ = self.add_item_to_stack(operands[0].lte(operands[1].clone()));
         Ok(())
     }
 
@@ -431,7 +435,7 @@ impl Engine {
         };
 
         // Put result on stack
-        self.add_item_to_stack(operands[0].round());
+        let _ = self.add_item_to_stack(operands[0].round());
         Ok(())
     }
 
@@ -451,8 +455,8 @@ impl Engine {
         };
 
         // Insert in reverse order
-        self.add_item_to_stack(operands[1].clone());
-        self.add_item_to_stack(operands[0].clone());
+        let _ = self.add_item_to_stack(operands[1].clone());
+        let _ = self.add_item_to_stack(operands[0].clone());
         Ok(())
     }
 
@@ -465,8 +469,8 @@ impl Engine {
         };
 
         // Insert twice
-        self.add_item_to_stack(operands[0].clone());
-        self.add_item_to_stack(operands[0].clone());
+        let _ = self.add_item_to_stack(operands[0].clone());
+        let _ = self.add_item_to_stack(operands[0].clone());
         Ok(())
     }
 

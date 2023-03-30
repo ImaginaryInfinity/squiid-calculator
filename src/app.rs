@@ -484,7 +484,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
                 Span::raw(": options  "),
                 Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(": add to stack  "),
+                Span::raw(": enter in stack  "),
                 Span::styled(
                     "Page Up/Down",
                     Style::default().add_modifier(Modifier::BOLD),

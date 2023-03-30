@@ -1,5 +1,6 @@
-use std::io;
+use std::{io, collections::HashMap};
 
+use lazy_static::lazy_static;
 use unicode_width::UnicodeWidthStr;
 
 use zmq::Socket;
@@ -22,6 +23,19 @@ enum InputMode {
     None,
     Algebraic,
     RPN,
+}
+
+// RPN symbols and their corresponding commands
+lazy_static!{
+    static ref RPN_SYMBOL_MAP: HashMap<KeyCode, &'static str> = [
+        (KeyCode::Char('+'), "add"),
+        (KeyCode::Char('-'), "subtract"),
+        (KeyCode::Char('*'), "multiply"),
+        (KeyCode::Char('/'), "divide"),
+        (KeyCode::Char('^'), "power"),
+        (KeyCode::Char('_'), "invert"),
+        (KeyCode::Char('\\'), "drop"),
+    ].iter().copied().collect();
 }
 
 /// App holds the state of the application
@@ -128,7 +142,7 @@ fn rpn_enter(app: &mut App, socket: &Socket) {
     let command: String = app.input.drain(..).collect();
     // reset cursor offset
     app.left_cursor_offset = 0;
-    let mut msg_as_str = String::new();
+    let msg_as_str;
     // Send command if there is one, otherwise duplicate last item in stack
     if command.len() > 0 {
         // Send to backend and get response
@@ -153,13 +167,7 @@ fn rpn_operator(app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
     }
     // Select operation
     let operation = match key.code {
-        KeyCode::Char('+') => "add",
-        KeyCode::Char('-') => "subtract",
-        KeyCode::Char('*') => "multiply",
-        KeyCode::Char('/') => "divide",
-        KeyCode::Char('^') => "power",
-        KeyCode::Char('_') => "invert",
-        KeyCode::Char('\\') => "drop",
+        _ if RPN_SYMBOL_MAP.contains_key(&key.code) => RPN_SYMBOL_MAP.get(&key.code).unwrap(),
         _ => "there is no way for this to occur",
     };
     // Send operation
@@ -194,77 +202,28 @@ pub fn run_app<B: Backend>(
                     _ => {}
                 },
                 // Handle keypresses for algebraic input mode
-                InputMode::Algebraic if key.kind == KeyEventKind::Press => match key.code {
+                InputMode::Algebraic | InputMode::RPN if key.kind == KeyEventKind::Press => match key.code {
                     // Handle enter
                     KeyCode::Enter => {
-                        algebraic_eval(&mut app, socket);
-                    }
-                    // Handle typing characters
-                    KeyCode::Char(c) => {
-                        // Add character to input box
-                        let index =
-                            current_char_index(app.left_cursor_offset as usize, app.input.len());
-                        app.input.insert(index, c);
-                    }
-                    // Handle backspace
-                    KeyCode::Backspace => {
-                        // Remove character from input box
-                        let index =
-                            current_char_index(app.left_cursor_offset as usize, app.input.len());
-                        if index > 0 {
-                            app.input.remove(index - 1);
+                        if app.input_mode == InputMode::Algebraic {
+                            algebraic_eval(&mut app, socket);
+                        } else {
+                            rpn_enter(&mut app, socket);
                         }
                     }
-                    // Handle escape
-                    KeyCode::Esc => {
-                        // Return to normal mode
-                        app.input_mode = InputMode::None;
-                    }
-                    // left keypress
-                    KeyCode::Left => {
-                        // left arrow key, adjust left cursor offset
-                        app.left_cursor_offset += 1;
-                    }
-                    // right keypress
-                    KeyCode::Right => {
-                        // right arrow key, adjust left cursor offset
-                        if app.left_cursor_offset > 0 {
-                            app.left_cursor_offset -= 1;
-                        }
-                    }
-                    // Ignore all other keys
-                    _ => {}
-                },
-                // Handle keypresses for RPN input mode
-                InputMode::RPN if key.kind == KeyEventKind::Press => match key.code {
-                    // Handle enter
-                    KeyCode::Enter => {
-                        rpn_enter(&mut app, socket);
-                    }
-                    // Handle single character operators
-                    KeyCode::Char('+')
-                    | KeyCode::Char('-')
-                    | KeyCode::Char('*')
-                    | KeyCode::Char('/')
-                    | KeyCode::Char('^')
-                    | KeyCode::Char('_')
-                    | KeyCode::Char('\\') => {
+                     // Handle single character operators
+                    _ if RPN_SYMBOL_MAP.contains_key(&key.code) => {
                         rpn_operator(&mut app, socket, key);
                     }
                     // Handle typing characters
                     KeyCode::Char(c) => {
-                        rpn_input(&mut app, socket, c);
-                    }
-                    // left keypress
-                    KeyCode::Left => {
-                        // left arrow key, adjust left cursor offset
-                        app.left_cursor_offset += 1;
-                    }
-                    // right keypress
-                    KeyCode::Right => {
-                        // right arrow key, adjust left cursor offset
-                        if app.left_cursor_offset > 0 {
-                            app.left_cursor_offset -= 1;
+                        if app.input_mode == InputMode::Algebraic {
+                            // Add character to input box
+                            let index =
+                            current_char_index(app.left_cursor_offset as usize, app.input.len());
+                            app.input.insert(index, c);
+                        } else if app.input_mode == InputMode::RPN {
+                            rpn_input(&mut app, socket, c);
                         }
                     }
                     // Handle backspace
@@ -280,6 +239,18 @@ pub fn run_app<B: Backend>(
                     KeyCode::Esc => {
                         // Return to normal mode
                         app.input_mode = InputMode::None;
+                    }
+                    // left keypress
+                    KeyCode::Left => {
+                        // left arrow key, adjust left cursor offset
+                        app.left_cursor_offset += 1;
+                    }
+                    // right keypress
+                    KeyCode::Right => {
+                        // right arrow key, adjust left cursor offset
+                        if app.left_cursor_offset > 0 {
+                            app.left_cursor_offset -= 1;
+                        }
                     }
                     // Ignore all other keys
                     _ => {}

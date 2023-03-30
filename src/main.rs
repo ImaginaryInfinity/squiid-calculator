@@ -9,7 +9,7 @@
 ///   * Pressing Backspace erases a character
 ///   * Pressing Enter pushes the current input in the history of previous
 ///   messages
-use std::{error::Error, io, panic, thread};
+use std::{error::Error, io, thread};
 
 use ratatui::{backend::CrosstermBackend, Terminal};
 

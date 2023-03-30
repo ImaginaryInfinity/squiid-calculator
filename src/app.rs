@@ -48,7 +48,7 @@ pub struct App {
     /// Current input mode
     input_mode: InputMode,
     /// History of recorded messages
-    messages: Vec<String>,
+    history: Vec<String>,
     // Calculator info
     info: Vec<String>,
     // Stack for RPN mode
@@ -64,11 +64,15 @@ impl Default for App {
         App {
             input: String::new(),
             input_mode: InputMode::None,
-            messages: Vec::new(),
-            info: vec![format!(
-                "Squiid Calculator version {}",
-                option_env!("CARGO_PKG_VERSION").unwrap()
-            )],
+            history: Vec::new(),
+            info: vec![
+                format!(
+                    "Squiid Calculator version {}",
+                    option_env!("CARGO_PKG_VERSION").unwrap()
+                ),
+                "Copyright 2023 Connor Sample and Finian Wright".to_string(),
+                "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid".to_string(),
+            ],
             stack: Vec::new(),
             error: String::new(),
             left_cursor_offset: 0,
@@ -110,18 +114,25 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
         msg_as_str = send_data(socket, command);
     }
     // Update stack
-    update_stack_or_error(msg_as_str, &mut app);
+    update_stack_or_error(msg_as_str.clone(), &mut app);
 
     // Last item in stack is result of this expression
     let result = app.stack.last().unwrap();
 
     // Combine entry and result into line to print
     let mut history_entry = entered_expression;
-    history_entry.push_str(" = ");
-    history_entry.push_str(result);
+    if app.stack.len() <= 2 {
+        // Everything is normal, show result
+        history_entry.push_str(" = ");
+        history_entry.push_str(result);
+    } else {
+        // Everything is weird, show stack
+        history_entry.push_str(" : ");
+        history_entry.push_str(msg_as_str.as_str());
+    }
 
     // Add to history
-    app.messages.push(history_entry);
+    app.history.push(history_entry);
 }
 
 // Handle typing in RPN mode
@@ -234,7 +245,9 @@ pub fn run_app<B: Backend>(
                             }
                         }
                         // Handle single character operators
-                        _ if RPN_SYMBOL_MAP.contains_key(&key.code) => {
+                        _ if RPN_SYMBOL_MAP.contains_key(&key.code)
+                            && app.input_mode == InputMode::RPN =>
+                        {
                             rpn_operator(&mut app, socket, key);
                         }
                         // Handle typing characters
@@ -347,7 +360,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     // Set what to display in the upper box
     let display = match app.input_mode {
         InputMode::None => &app.info,
-        InputMode::Algebraic => &app.messages,
+        InputMode::Algebraic => &app.history,
         InputMode::RPN => &app.stack,
     };
 
@@ -371,7 +384,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let list_title = match app.input_mode {
         InputMode::Algebraic => "History",
         InputMode::RPN => "Stack",
-        InputMode::None => "Info",
+        InputMode::None => "Squiid",
     };
     let messages =
         List::new(messages).block(Block::default().borders(Borders::ALL).title(list_title));

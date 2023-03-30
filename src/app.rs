@@ -41,13 +41,13 @@ lazy_static! {
     .collect();
 }
 
-struct StatefulTopPanel<T> {
+struct StatefulTopPanel {
     state: ListState,
-    items: Vec<T>,
+    items: Vec<String>,
 }
 
-impl<T> StatefulTopPanel<T> {
-    fn with_items(items: Vec<T>) -> StatefulTopPanel<T> {
+impl StatefulTopPanel {
+    fn with_items(items: Vec<String>) -> StatefulTopPanel {
         StatefulTopPanel {
             state: ListState::default(),
             items: items,
@@ -85,6 +85,20 @@ impl<T> StatefulTopPanel<T> {
     fn deselect(&mut self) {
         self.state.select(None);
     }
+
+    fn currently_selecting(&mut self) -> bool {
+        self.state.selected().is_some()
+    }
+
+    fn selected_item(&mut self) -> String {
+        let selected_index = self.state.selected();
+        match selected_index {
+            Some(index) => {
+                self.items[index].clone()
+            }
+            None => "".to_string()
+        }
+    }
 }
 
 /// App holds the state of the application
@@ -104,7 +118,7 @@ pub struct App {
     // current cursor offset
     left_cursor_offset: u16,
     // stack selection index
-    top_panel_state: StatefulTopPanel<String>,
+    top_panel_state: StatefulTopPanel,
 }
 
 impl Default for App {
@@ -280,7 +294,21 @@ pub fn run_app<B: Backend>(
                     match key.code {
                         // Handle enter
                         KeyCode::Enter => {
-                            if app.input_mode == InputMode::Algebraic {
+                            if app.top_panel_state.currently_selecting() {
+                                // currently selecting, insert into text
+                                let selected_item = app.top_panel_state.selected_item().split_once(": ").unwrap().1.to_string();
+
+                                let mut index = current_char_index(
+                                    app.left_cursor_offset as usize,
+                                    app.input.len(),
+                                );
+                                for char in selected_item.chars() {
+                                    app.input.insert(index, char);
+                                    index += 1;
+                                }
+
+                                app.top_panel_state.deselect();
+                            } else if app.input_mode == InputMode::Algebraic {
                                 algebraic_eval(&mut app, socket);
                             } else {
                                 rpn_enter(&mut app, socket);
@@ -325,8 +353,13 @@ pub fn run_app<B: Backend>(
                         }
                         // Handle escape
                         KeyCode::Esc => {
-                            // Return to normal mode
+                            // currently selecting; deselect
+                            if app.top_panel_state.currently_selecting() {
+                                app.top_panel_state.deselect();
+                            } else {
+                                // Return to normal mode
                             app.input_mode = InputMode::None;
+                            }
                         }
                         // left keypress
                         KeyCode::Left => {
@@ -393,6 +426,16 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             )],
             Style::default(),
         ),
+        _ if app.top_panel_state.currently_selecting() => (
+            vec![
+                Span::raw("Press "),
+                Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
+                Span::raw(" to exit, "),
+                Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
+                Span::raw(" to insert the selected option, "),
+            ],
+            Style::default(),
+        ),
         // Display help for options screen
         InputMode::None => (
             vec![
@@ -447,6 +490,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 
     // Reverse display since we're rendering from the bottom
     display.reverse();
+    app.top_panel_state.items.clear();
 
     let top_panel_content: Vec<ListItem> = display
         .iter()
@@ -470,6 +514,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 
     // Change title based on input mode
     let list_title = match app.input_mode {
+        _ if app.top_panel_state.currently_selecting() => "Select",
         InputMode::Algebraic => "History",
         InputMode::RPN => "Stack",
         InputMode::None => "Squiid",
@@ -501,6 +546,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     if app.input_mode == InputMode::Algebraic || app.input_mode == InputMode::RPN {
         let input = Paragraph::new(app.input.as_ref())
             .style(match app.input_mode {
+                _ if app.top_panel_state.currently_selecting() => Style::default(),
                 InputMode::None => Style::default(),
                 InputMode::Algebraic => Style::default().fg(Color::Yellow),
                 InputMode::RPN => Style::default().fg(Color::Red),
@@ -513,7 +559,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
             {}
 
-        InputMode::Algebraic | InputMode::RPN => {
+        InputMode::Algebraic | InputMode::RPN if !app.top_panel_state.currently_selecting() => {
             // Make the cursor visible and ask ratatui to put it at the specified coordinates after rendering
 
             let mut cursor_position_x = chunks[2].x + app.input.width() as u16 + 1;
@@ -529,5 +575,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 chunks[2].y + 1,
             )
         }
+
+        _ => ()
     }
 }

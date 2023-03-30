@@ -243,6 +243,12 @@ pub fn run_app<B: Backend>(
                         {
                             rpn_operator(&mut app, socket, key);
                         }
+                        KeyCode::PageUp => {
+                            update_stack_or_error(send_data(socket, "rollup"), &mut app)
+                        }
+                        KeyCode::PageDown => {
+                            update_stack_or_error(send_data(socket, "rolldown"), &mut app)
+                        }
                         // Handle typing characters
                         KeyCode::Char(c) => {
                             if app.input_mode == InputMode::Algebraic {

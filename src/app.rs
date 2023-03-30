@@ -121,15 +121,8 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
 
     // Combine entry and result into line to print
     let mut history_entry = entered_expression;
-    if app.stack.len() <= 2 {
-        // Everything is normal, show result
-        history_entry.push_str(" = ");
-        history_entry.push_str(result);
-    } else {
-        // Everything is weird, show stack
-        history_entry.push_str(" : ");
-        history_entry.push_str(msg_as_str.as_str());
-    }
+    history_entry.push_str(" = ");
+    history_entry.push_str(result);
 
     // Add to history
     app.history.push(history_entry);

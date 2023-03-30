@@ -548,7 +548,15 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .highlight_symbol("> ")
         .start_corner(Corner::BottomLeft);
 
-    f.render_stateful_widget(top_panel, chunks[0], &mut app.top_panel_state.state);
+    if app.top_panel_state.currently_selecting() {
+        f.render_stateful_widget(
+            top_panel.style(Style::default().fg(Color::Blue)),
+            chunks[0],
+            &mut app.top_panel_state.state,
+        );
+    } else {
+        f.render_stateful_widget(top_panel, chunks[0], &mut app.top_panel_state.state);
+    }
 
     let mut text = Text::from(Spans::from(msg));
     text.patch_style(style);

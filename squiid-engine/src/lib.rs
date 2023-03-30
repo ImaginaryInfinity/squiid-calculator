@@ -26,6 +26,9 @@ pub fn start_server(address: Option<&str>) {
 
     // listen forever
     loop {
+        // Add current stack to history
+        engine.history.push(engine.stack.clone());
+
         // recieve message from client
         responder.recv(&mut msg, 0).unwrap();
         // Convert received message to a string
@@ -67,6 +70,12 @@ pub fn start_server(address: Option<&str>) {
             "store" => engine.store(),
             "clear" => engine.clear(),
             "refresh" => {Ok(())},
+            "undo" => {
+                engine.clear();
+                _ = engine.history.pop().unwrap();
+                engine.stack = engine.history.pop().unwrap();
+                Ok(())
+            },
             "quit" => break,
             recieved => {
                 let _ = engine.add_item_to_stack(StackableString(recieved.to_string()));

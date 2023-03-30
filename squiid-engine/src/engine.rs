@@ -8,6 +8,7 @@ use crate::utils::is_string_numeric;
 pub struct Engine {
     pub stack: Vec<StackableItems>,
     pub variables: HashMap<String, StackableItems>,
+    pub history: Vec<Vec<StackableItems>>,
 }
 
 // Evaluation engine implementation
@@ -17,6 +18,7 @@ impl Engine {
         Engine {
             stack: Vec::new(),
             variables: HashMap::new(),
+            history: Vec::new(),
         }
     }
 

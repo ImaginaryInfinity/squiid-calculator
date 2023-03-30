@@ -1,4 +1,4 @@
-![Squiid Logo](branding/squiidtext.svg)
+![Squiid Logo](branding/squiidtext.png)
 
 Squiid is a modular calculator written in Rust. It is currently early in development but is intended to replace our previous calculator, ImaginaryInfinity Calculator.
 

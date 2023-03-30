@@ -75,8 +75,9 @@ pub fn start_server(address: Option<&str>) {
 
         match result {
             Ok(()) => {}
+            // TODO: handle engine unwrap
             Err(error) => engine
-                .add_item_to_stack(StackableString(format!("Error: {:?}", error))),
+                .add_item_to_stack(StackableString(format!("Error: {:?}", error))).unwrap(),
         }
 
         // format the stack as a string

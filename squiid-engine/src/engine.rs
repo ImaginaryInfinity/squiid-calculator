@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::Error;
 
 use crate::stackable_items::StackableItems::{self, StackableFloat, StackableString};
 use crate::utils::is_string_numeric;
@@ -20,7 +21,7 @@ impl Engine {
     }
 
     // add item to stack
-    pub fn add_item_to_stack(&mut self, item: StackableItems){
+    pub fn add_item_to_stack(&mut self, item: StackableItems) -> Result<(), Error> {
         // Convert item to string
         let mut item_string = item.to_string();
         let mut invert = false;
@@ -46,7 +47,8 @@ impl Engine {
             // Remove $ prefix from name
             item_string.remove(0);
             // Get variable from hashmap
-            item_string = self.variables[&item_string].to_string();
+            // TODO: actually error out when undefined variable is referenced
+            item_string = self.variables.get(&item_string).unwrap_or(&StackableString(String::from("0"))).to_string();
         }
 
         // create a StackableFloat if item_string is numeric, else StackableString
@@ -64,6 +66,8 @@ impl Engine {
         if invert {
             _ = self.invert();
         }
+
+        Ok(())
     }
 
     // Get operands from stack

@@ -180,7 +180,7 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     // Placeholder result of none in case there is nothing on the stack
     let mut result = "None";
     // Set result to last item in stack if there is one
-    if app.stack.len()>0{
+    if app.stack.len() > 0 {
         result = app.stack.last().unwrap();
     }
 

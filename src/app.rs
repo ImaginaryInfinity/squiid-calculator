@@ -392,6 +392,12 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let help_message = Paragraph::new(text);
     f.render_widget(help_message, chunks[1]);
 
+    let input_label = match app.input_mode {
+        InputMode::Algebraic => "Algebraic",
+        InputMode::RPN => "RPN",
+        _ => "If this message appears you have broken something",
+    };
+
     if app.input_mode == InputMode::Algebraic || app.input_mode == InputMode::RPN {
         let input = Paragraph::new(app.input.as_ref())
             .style(match app.input_mode {
@@ -399,7 +405,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 InputMode::Algebraic => Style::default().fg(Color::Yellow),
                 InputMode::RPN => Style::default().fg(Color::Red),
             })
-            .block(Block::default().borders(Borders::ALL).title("Input"));
+            .block(Block::default().borders(Borders::ALL).title(input_label));
         f.render_widget(input, chunks[2]);
     }
     match app.input_mode {

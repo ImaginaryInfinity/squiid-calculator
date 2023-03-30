@@ -66,6 +66,7 @@ pub fn start_server(address: Option<&str>) {
             "rollup" => engine.roll_up(),
             "store" => engine.store(),
             "clear" => engine.clear(),
+            "refresh" => {Ok(())},
             "quit" => break,
             recieved => {
                 let _ = engine.add_item_to_stack(StackableString(recieved.to_string()));

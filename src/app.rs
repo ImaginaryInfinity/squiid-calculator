@@ -177,13 +177,22 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     // Update stack
     update_stack_or_error(msg_as_str.clone(), &mut app);
 
-    // Last item in stack is result of this expression
-    let result = app.stack.last().unwrap();
+    // Placeholder result of none in case there is nothing on the stack
+    let mut result = "None";
+    // Set result to last item in stack if there is one
+    if app.stack.len() > 0 {
+        result = app.stack.last().unwrap();
+    }
 
     // Combine entry and result into line to print
     let mut history_entry = entered_expression;
-    history_entry.push_str(" = ");
-    history_entry.push_str(result);
+    if app.error.is_empty() {
+        history_entry.push_str(" = ");
+        history_entry.push_str(result);
+    } else {
+        history_entry.push_str(" : ");
+        history_entry.push_str(app.error.as_str());
+    }
 
     // Add to history
     app.history.push(history_entry);
@@ -399,6 +408,11 @@ pub fn run_app<B: Backend>(
                 }
                 _ => {}
             }
+        }
+        // Update stack if there is currently an error, since the last request will have gotten the error not the stack
+        if !app.error.is_empty() {
+            let msg = send_data(socket, "refresh");
+            app.stack = msg.split(",").map(|x| x.to_owned()).collect();
         }
     }
 }

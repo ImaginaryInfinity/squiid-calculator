@@ -177,8 +177,12 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     // Update stack
     update_stack_or_error(msg_as_str.clone(), &mut app);
 
-    // Last item in stack is result of this expression
-    let result = app.stack.last().unwrap();
+    // Placeholder result of none in case there is nothing on the stack
+    let mut result = "None";
+    // Set result to last item in stack if there is one
+    if app.stack.len()>0{
+        result = app.stack.last().unwrap();
+    }
 
     // Combine entry and result into line to print
     let mut history_entry = entered_expression;

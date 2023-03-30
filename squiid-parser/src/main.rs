@@ -1,7 +1,10 @@
 use rustyline::error::ReadlineError;
+use log::LevelFilter;
 
 fn main() {
-    env_logger::init();
+    env_logger::Builder::new()
+        .filter_module("squiid_parser", LevelFilter::Debug)
+        .init();
     let mut rl = rustyline::DefaultEditor::new().unwrap();
 
     loop {

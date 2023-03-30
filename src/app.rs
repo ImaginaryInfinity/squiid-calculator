@@ -53,6 +53,8 @@ pub struct App {
     info: Vec<String>,
     // Stack for RPN mode
     stack: Vec<String>,
+    // Most recent error message
+    error: String,
     // current cursor offset
     left_cursor_offset: u16,
 }
@@ -68,13 +70,23 @@ impl Default for App {
                 option_env!("CARGO_PKG_VERSION").unwrap()
             )],
             stack: Vec::new(),
+            error: String::new(),
             left_cursor_offset: 0,
         }
     }
 }
 
+fn update_stack_or_error(msg: String, app: &mut App){
+    if msg.starts_with("\"Error: "){
+        app.error = msg.clone();
+    } else {
+        app.stack = msg.split(",").map(|x| x.to_owned()).collect();
+        app.error = String::new();
+    }
+}
+
 // Handle algebraic expressions
-fn algebraic_eval(app: &mut App, socket: &Socket) {
+fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     // Get string from input box and empty it
     let entered_expression: String = app.input.drain(..).collect();
     // reset cursor offset
@@ -99,7 +111,7 @@ fn algebraic_eval(app: &mut App, socket: &Socket) {
         msg_as_str = send_data(socket, command);
     }
     // Update stack
-    app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
+    update_stack_or_error(msg_as_str, &mut app);
 
     // Last item in stack is result of this expression
     let result = app.stack.last().unwrap();
@@ -114,7 +126,7 @@ fn algebraic_eval(app: &mut App, socket: &Socket) {
 }
 
 // Handle typing in RPN mode
-fn rpn_input(app: &mut App, socket: &Socket, c: char) {
+fn rpn_input(mut app: &mut App, socket: &Socket, c: char) {
     // Add character to input box
     let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
     app.input.insert(index, c);
@@ -131,7 +143,7 @@ fn rpn_input(app: &mut App, socket: &Socket, c: char) {
         // Send command
         let msg_as_str = send_data(socket, app.input.as_str());
         // Update stack display
-        app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
+        update_stack_or_error(msg_as_str, &mut app);
         // Clear input
         app.input.drain(..);
         // reset cursor offset
@@ -140,7 +152,7 @@ fn rpn_input(app: &mut App, socket: &Socket, c: char) {
 }
 
 // Handle RPN enter
-fn rpn_enter(app: &mut App, socket: &Socket) {
+fn rpn_enter(mut app: &mut App, socket: &Socket) {
     // Get command from input box and empty it
     let command: String = app.input.drain(..).collect();
     // reset cursor offset
@@ -155,11 +167,11 @@ fn rpn_enter(app: &mut App, socket: &Socket) {
         msg_as_str = send_data(socket, "dup");
     }
     // Update stack display
-    app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
+    update_stack_or_error(msg_as_str, &mut app);
 }
 
 // Handle RPN operators
-fn rpn_operator(app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
+fn rpn_operator(mut app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
     // Get operand from input box and empty it
     let command: String = app.input.drain(..).collect();
     // reset cursor offset
@@ -176,7 +188,7 @@ fn rpn_operator(app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
     // Send operation
     let msg_as_str = send_data(socket, operation);
     // Update stack display
-    app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
+    update_stack_or_error(msg_as_str, &mut app);
 }
 
 pub fn run_app<B: Backend>(
@@ -290,6 +302,12 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .split(f.size());
 
     let (msg, style) = match app.input_mode {
+        _ if ! app.error.is_empty() => (
+            vec![
+                Span::styled(app.error.clone(), Style::default().add_modifier(Modifier::BOLD)),
+            ],
+            Style::default(),
+        ),
         InputMode::None => (
             vec![
                 Span::raw("Press "),

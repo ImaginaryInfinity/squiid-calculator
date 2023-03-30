@@ -25,7 +25,9 @@ path = "src/main.rs"
 required-features = ["bin"]
 
 [dependencies]
-zmq = { version = "0.10.0", optional = true }
+log = "0.4.17"
+rustyline = { version = "11.0.0", optional = true }
+env_logger = { version = "0.10.0", optional = true }
 
 [features]
-bin = ["dep:zmq"]
+bin = ["dep:rustyline", "dep:env_logger"]

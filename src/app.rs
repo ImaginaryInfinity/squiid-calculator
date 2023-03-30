@@ -32,6 +32,8 @@ pub struct App {
     input_mode: InputMode,
     /// History of recorded messages
     messages: Vec<String>,
+    // Calculator info
+    info: Vec<String>,
     // Stack for RPN mode
     stack: Vec<String>,
     // current cursor offset
@@ -44,6 +46,7 @@ impl Default for App {
             input: String::new(),
             input_mode: InputMode::None,
             messages: Vec::new(),
+            info: vec![format!("Squiid Calculator version {}", option_env!("CARGO_PKG_VERSION").unwrap())],
             stack: Vec::new(),
             left_cursor_offset: 0,
         }
@@ -336,11 +339,13 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         ),
     };
 
+    // Set what to display in the upper box
     let display = match app.input_mode {
-        InputMode::None => &app.messages,
+        InputMode::None => &app.info,
         InputMode::Algebraic => &app.messages,
         InputMode::RPN => &app.stack,
     };
+
 
     let messages: Vec<ListItem> = display
         .iter()
@@ -362,7 +367,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let list_title = match app.input_mode {
         InputMode::Algebraic => "History",
         InputMode::RPN => "Stack",
-        InputMode::None => "Messages",
+        InputMode::None => "Info",
     };
     let messages =
         List::new(messages).block(Block::default().borders(Borders::ALL).title(list_title));

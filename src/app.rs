@@ -182,8 +182,13 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
 
     // Combine entry and result into line to print
     let mut history_entry = entered_expression;
-    history_entry.push_str(" = ");
-    history_entry.push_str(result);
+    if app.error.is_empty() {
+        history_entry.push_str(" = ");
+        history_entry.push_str(result);
+    } else {
+        history_entry.push_str(" : ");
+        history_entry.push_str(app.error.as_str());
+    }
 
     // Add to history
     app.history.push(history_entry);

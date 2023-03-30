@@ -395,7 +395,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let input_label = match app.input_mode {
         InputMode::Algebraic => "Algebraic",
         InputMode::RPN => "RPN",
-        _ => "If this message appears you have broken something",
+        _ => "If this message appears, you have broken something",
     };
 
     if app.input_mode == InputMode::Algebraic || app.input_mode == InputMode::RPN {

@@ -12,7 +12,7 @@ use ratatui::{
     layout::{Constraint, Corner, Direction, Layout},
     style::{Color, Modifier, Style},
     text::{Span, Spans, Text},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
+    widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
     Frame, Terminal,
 };
 
@@ -41,6 +41,52 @@ lazy_static! {
     .collect();
 }
 
+struct StatefulTopPanel<T> {
+    state: ListState,
+    items: Vec<T>,
+}
+
+impl<T> StatefulTopPanel<T> {
+    fn with_items(items: Vec<T>) -> StatefulTopPanel<T> {
+        StatefulTopPanel {
+            state: ListState::default(),
+            items: items,
+        }
+    }
+
+    fn next(&mut self, stack: &Vec<String>) {
+        let i = match self.state.selected() {
+            Some(i) => {
+                if i >= stack.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.state.select(Some(i));
+    }
+
+    fn previous(&mut self, stack: &Vec<String>) {
+        let i = match self.state.selected() {
+            Some(i) => {
+                if i == 0 {
+                    stack.len() - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.state.select(Some(i));
+    }
+
+    fn deselect(&mut self) {
+        self.state.select(None);
+    }
+}
+
 /// App holds the state of the application
 pub struct App {
     /// Current value of the input box
@@ -57,6 +103,8 @@ pub struct App {
     error: String,
     // current cursor offset
     left_cursor_offset: u16,
+    // stack selection index
+    top_panel_state: StatefulTopPanel<String>,
 }
 
 impl Default for App {
@@ -76,6 +124,7 @@ impl Default for App {
             stack: Vec::new(),
             error: String::new(),
             left_cursor_offset: 0,
+            top_panel_state: StatefulTopPanel::with_items(vec![]),
         }
     }
 }
@@ -291,6 +340,22 @@ pub fn run_app<B: Backend>(
                                 app.left_cursor_offset -= 1;
                             }
                         }
+                        // up keypress
+                        KeyCode::Up => {
+                            if app.input_mode == InputMode::RPN {
+                                app.top_panel_state.next(&app.stack);
+                            } else if app.input_mode == InputMode::Algebraic {
+                                app.top_panel_state.next(&app.history);
+                            }
+                        }
+                        // Down keypress
+                        KeyCode::Down => {
+                            if app.input_mode == InputMode::RPN {
+                                app.top_panel_state.previous(&app.stack);
+                            } else if app.input_mode == InputMode::Algebraic {
+                                app.top_panel_state.previous(&app.history);
+                            }
+                        }
                         // Ignore all other keys
                         _ => {}
                     }
@@ -383,32 +448,44 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     // Reverse display since we're rendering from the bottom
     display.reverse();
 
-    let messages: Vec<ListItem> = display
+    let top_panel_content: Vec<ListItem> = display
         .iter()
         .enumerate()
         .map(|(i, m)| {
-            let content = Spans::from(Span::raw(format!(
+            let displayed_string = format!(
                 "{: >3}: {}",
                 match app.input_mode {
                     InputMode::Algebraic | InputMode::RPN => i.to_string(),
                     InputMode::None => "".to_string(),
                 },
                 m
-            )));
+            );
+            app.top_panel_state.items.push(displayed_string.clone());
+            let content = Spans::from(Span::raw(displayed_string));
             ListItem::new(content)
         })
         .collect();
+
+    // app.top_panel_state = StatefulTopPanel::with_items(top_panel_content);
+
     // Change title based on input mode
     let list_title = match app.input_mode {
         InputMode::Algebraic => "History",
         InputMode::RPN => "Stack",
         InputMode::None => "Squiid",
     };
-    let messages = List::new(messages)
+
+    let top_panel = List::new(top_panel_content)
         .block(Block::default().borders(Borders::ALL).title(list_title))
+        .highlight_style(
+            Style::default()
+                .add_modifier(Modifier::BOLD)
+                .fg(Color::Green),
+        )
+        .highlight_symbol("> ")
         .start_corner(Corner::BottomLeft);
 
-    f.render_widget(messages, chunks[0]);
+    f.render_stateful_widget(top_panel, chunks[0], &mut app.top_panel_state.state);
 
     let mut text = Text::from(Spans::from(msg));
     text.patch_style(style);

@@ -8,7 +8,7 @@ Squiid is a modular calculator written in Rust. It is currently early in develop
 - Plugin support will be added in the future
 
 
-### Squiid is split into three components:
+## Squiid is split into three components:
 #### The Front End (This repository)
 Contains the user interface as well as the other components as a subtree. This is all that is needed to compile a working build of Squiid.
 

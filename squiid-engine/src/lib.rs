@@ -68,7 +68,7 @@ pub fn start_server(address: Option<&str>) {
             "clear" => engine.clear(),
             "quit" => break,
             recieved => {
-                engine.add_item_to_stack(StackableString(recieved.to_string()));
+                let _ = engine.add_item_to_stack(StackableString(recieved.to_string()));
                 Ok(())
             },
         };

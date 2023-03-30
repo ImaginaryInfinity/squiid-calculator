@@ -1,4 +1,4 @@
-use std::{collections::HashMap, io};
+use std::{collections::HashMap, io, thread};
 
 use lazy_static::lazy_static;
 use unicode_width::UnicodeWidthStr;
@@ -97,9 +97,6 @@ fn algebraic_eval(app: &mut App, socket: &Socket) {
         };
         // Send command to server
         msg_as_str = send_data(socket, command);
-        // if msg_as_str == "quit" {
-        //     break 'input_loop;
-        // }
     }
     // Update stack
     app.stack = msg_as_str.split(",").map(|x| x.to_owned()).collect();
@@ -186,9 +183,14 @@ pub fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     mut app: App,
     socket: &Socket,
+    backend_join_handle: &thread::JoinHandle<()>,
 ) -> io::Result<()> {
     loop {
         terminal.draw(|f| ui(f, &mut app))?;
+
+        if backend_join_handle.is_finished() {
+            return Ok(());
+        }
 
         // Handle keypresses
         if let Event::Key(key) = event::read()? {

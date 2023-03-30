@@ -9,7 +9,7 @@
 ///   * Pressing Backspace erases a character
 ///   * Pressing Enter pushes the current input in the history of previous
 ///   messages
-use std::{error::Error, io, thread};
+use std::{error::Error, io, thread, panic};
 
 use ratatui::{backend::CrosstermBackend, Terminal};
 
@@ -33,7 +33,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut terminal = Terminal::new(backend)?;
 
     // start evaluation server
-    thread::spawn(|| {
+    let backend_join_handle = thread::spawn(|| {
         squiid_engine::start_server(Some("tcp://*:33242"));
     });
 
@@ -44,7 +44,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // create app and run it
     let app = App::default();
-    let res = run_app(&mut terminal, app, &socket);
+    let res = run_app(&mut terminal, app, &socket, &backend_join_handle);
 
     // restore terminal
     disable_raw_mode()?;

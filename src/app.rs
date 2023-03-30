@@ -65,10 +65,14 @@ impl Default for App {
             input: String::new(),
             input_mode: InputMode::None,
             messages: Vec::new(),
-            info: vec![format!(
-                "Squiid Calculator version {}",
-                option_env!("CARGO_PKG_VERSION").unwrap()
-            )],
+            info: vec![
+                format!(
+                    "Squiid Calculator version {}",
+                    option_env!("CARGO_PKG_VERSION").unwrap()
+                ),
+                "Copyright 2023 Connor Sample and Finian Wright".to_string(),
+                "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid".to_string(),
+            ],
             stack: Vec::new(),
             error: String::new(),
             left_cursor_offset: 0,
@@ -380,7 +384,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let list_title = match app.input_mode {
         InputMode::Algebraic => "History",
         InputMode::RPN => "Stack",
-        InputMode::None => "Info",
+        InputMode::None => "Squiid",
     };
     let messages =
         List::new(messages).block(Block::default().borders(Borders::ALL).title(list_title));

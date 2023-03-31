@@ -27,7 +27,11 @@ pub fn start_server(address: Option<&str>) {
     // listen forever
     loop {
         // Add current stack to history
-        engine.history.push(engine.stack.clone());
+        engine.history.push_back(engine.stack.clone());
+
+        if engine.history.len() > 20{
+            _ = engine.history.pop_front();
+        }
 
         // recieve message from client
         responder.recv(&mut msg, 0).unwrap();
@@ -70,12 +74,7 @@ pub fn start_server(address: Option<&str>) {
             "store" => engine.store(),
             "clear" => engine.clear(),
             "refresh" => {Ok(())},
-            "undo" => {
-                engine.clear();
-                _ = engine.history.pop().unwrap();
-                engine.stack = engine.history.pop().unwrap();
-                Ok(())
-            },
+            "undo" => engine.undo(),
             "quit" => break,
             recieved => {
                 let _ = engine.add_item_to_stack(StackableString(recieved.to_string()));

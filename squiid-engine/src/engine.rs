@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::fmt::Error;
 
+use std::collections::VecDeque;
+
 use crate::stackable_items::StackableItems::{self, StackableFloat, StackableString};
 use crate::utils::is_string_numeric;
 
@@ -8,7 +10,7 @@ use crate::utils::is_string_numeric;
 pub struct Engine {
     pub stack: Vec<StackableItems>,
     pub variables: HashMap<String, StackableItems>,
-    pub history: Vec<Vec<StackableItems>>,
+    pub history: VecDeque<Vec<StackableItems>>,
 }
 
 // Evaluation engine implementation
@@ -18,7 +20,7 @@ impl Engine {
         Engine {
             stack: Vec::new(),
             variables: HashMap::new(),
-            history: Vec::new(),
+            history: VecDeque::new(),
         }
     }
 
@@ -516,6 +518,16 @@ impl Engine {
     pub fn clear(&mut self) -> Result<(), &'static str> {
         self.stack = Vec::new();
         Ok(())
+    }
+
+    pub fn undo(&mut self) -> Result<(), &'static str> {
+        if self.history.len() > 1{
+            _ = self.history.pop_back().unwrap();
+            self.stack = self.history.pop_back().unwrap();
+            Ok(())
+        } else {
+            Err("Cannot undo further")
+        }
     }
 }
 

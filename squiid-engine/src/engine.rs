@@ -522,7 +522,7 @@ impl Engine {
             self.variables.insert(varname, operands[0].clone());
         } else {
             // Error if attempted to store in name not starting with @
-            panic!("Cannot store in non-variable object");
+            return Err("Cannot store in non-variable object")
         }
         Ok(())
     }

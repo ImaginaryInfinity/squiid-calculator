@@ -415,17 +415,21 @@ pub fn run_app<B: Backend>(
                         }
                         // up keypress
                         KeyCode::Up => {
-                            if app.input_mode == InputMode::RPN {
+                            if app.input_mode == InputMode::RPN && app.stack.len() > 0 {
                                 app.top_panel_state.next(&app.stack);
-                            } else if app.input_mode == InputMode::Algebraic {
+                            } else if app.input_mode == InputMode::Algebraic
+                                && app.history.len() > 0
+                            {
                                 app.top_panel_state.next(&app.history);
                             }
                         }
                         // Down keypress
                         KeyCode::Down => {
-                            if app.input_mode == InputMode::RPN {
+                            if app.input_mode == InputMode::RPN && app.stack.len() > 0 {
                                 app.top_panel_state.previous(&app.stack);
-                            } else if app.input_mode == InputMode::Algebraic {
+                            } else if app.input_mode == InputMode::Algebraic
+                                && app.history.len() > 0
+                            {
                                 app.top_panel_state.previous(&app.history);
                             }
                         }

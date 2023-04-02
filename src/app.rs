@@ -355,13 +355,30 @@ pub fn run_app<B: Backend>(
                         }
                         // Handle backspace
                         KeyCode::Backspace => {
-                            // Remove character from input box
+                            // Get current cursor position
                             let index = current_char_index(
                                 app.left_cursor_offset as usize,
                                 app.input.len(),
                             );
+                            // Make sure a character exists to delete
                             if index > 0 {
+                                // Remove character
                                 app.input.remove(index - 1);
+                            }
+                        }
+                        // Handle delete
+                        KeyCode::Delete => {
+                            // Get current cursor position
+                            let index = current_char_index(
+                                app.left_cursor_offset as usize,
+                                app.input.len(),
+                            );
+                            // Make sure a character exists to delete
+                            if app.input.len() > index {
+                                // Remove character
+                                app.input.remove(index);
+                                // Resposition cursor
+                                app.left_cursor_offset -= 1;
                             }
                         }
                         // Handle escape

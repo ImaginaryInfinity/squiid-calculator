@@ -403,6 +403,16 @@ pub fn run_app<B: Backend>(
                                 app.left_cursor_offset -= 1;
                             }
                         }
+                        // Home key
+                        KeyCode::Home => {
+                            // Move cursor to beginning of line
+                            app.left_cursor_offset = app.input.len() as u16;
+                        }
+                        // End key
+                        KeyCode::End => {
+                            // Move cursor to end of line
+                            app.left_cursor_offset = 0;
+                        }
                         // up keypress
                         KeyCode::Up => {
                             if app.input_mode == InputMode::RPN {

@@ -29,7 +29,7 @@ pub fn start_server(address: Option<&str>) {
         // Add current stack to history
         engine.history.push_back(engine.stack.clone());
 
-        if engine.history.len() > 20{
+        if engine.history.len() > 20 {
             _ = engine.history.pop_front();
         }
 
@@ -73,13 +73,13 @@ pub fn start_server(address: Option<&str>) {
             "rollup" => engine.roll_up(),
             "store" => engine.store(),
             "clear" => engine.clear(),
-            "refresh" => {Ok(())},
+            "refresh" => Ok(()),
             "undo" => engine.undo(),
             "quit" => break,
             recieved => {
                 let _ = engine.add_item_to_stack(StackableString(recieved.to_string()));
                 Ok(())
-            },
+            }
         };
 
         let mut formatted_response = String::new();
@@ -89,8 +89,12 @@ pub fn start_server(address: Option<&str>) {
                 if engine.stack.len() > 0 {
                     for item in &engine.stack {
                         match item {
-                            StackableFloat(i) => formatted_response.push_str(&format!("{},", i.to_string())),
-                            StackableString(i) => formatted_response.push_str(&format!("\"{}\",", i)),
+                            StackableFloat(i) => {
+                                formatted_response.push_str(&format!("{},", i.to_string()))
+                            }
+                            StackableString(i) => {
+                                formatted_response.push_str(&format!("\"{}\",", i))
+                            }
                         }
                     }
                     // Remove trailing comma
@@ -100,10 +104,9 @@ pub fn start_server(address: Option<&str>) {
                 }
             }
             Err(error) => {
-                formatted_response=format!("Error: {}", error.to_string());
-            },
+                formatted_response = format!("Error: {}", error.to_string());
+            }
         }
-
 
         // respond to client with the stack as a string
         responder.send(&formatted_response, 0).unwrap();

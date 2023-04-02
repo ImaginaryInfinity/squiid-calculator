@@ -52,7 +52,11 @@ impl Engine {
             item_string.remove(0);
             // Get variable from hashmap
             // TODO: actually error out when undefined variable is referenced
-            item_string = self.variables.get(&item_string).unwrap_or(&StackableString(String::from("0"))).to_string();
+            item_string = self
+                .variables
+                .get(&item_string)
+                .unwrap_or(&StackableString(String::from("0")))
+                .to_string();
         }
 
         // create a StackableFloat if item_string is numeric, else StackableString
@@ -480,16 +484,24 @@ impl Engine {
 
     // Roll down
     pub fn roll_down(&mut self) -> Result<(), &'static str> {
-        // Rotate stack right
-        self.stack.rotate_right(1);
-        Ok(())
+        if self.stack.len() > 0 {
+            // Rotate stack right
+            self.stack.rotate_right(1);
+            Ok(())
+        } else {
+            Err("Cannot roll empty stack")
+        }
     }
 
     // Roll up
     pub fn roll_up(&mut self) -> Result<(), &'static str> {
-        // Rotate stack left
-        self.stack.rotate_left(1);
-        Ok(())
+        if self.stack.len() > 0 {
+            // Rotate stack left
+            self.stack.rotate_left(1);
+            Ok(())
+        } else {
+            Err("Cannot roll empty stack")
+        }
     }
 
     // Store value in variable
@@ -521,7 +533,7 @@ impl Engine {
     }
 
     pub fn undo(&mut self) -> Result<(), &'static str> {
-        if self.history.len() > 1{
+        if self.history.len() > 1 {
             _ = self.history.pop_back().unwrap();
             self.stack = self.history.pop_back().unwrap();
             Ok(())

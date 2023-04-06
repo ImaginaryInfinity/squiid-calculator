@@ -2,6 +2,10 @@
 name = "squiid"
 version = "0.1.0"
 edition = "2021"
+description = "Squiid is a modular calculator written in Rust. It is currently very early in development but it is intended to be the successor to ImaginaryInfinity Calculator"
+repository = "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid"
+license = "GPL-3.0"
+authors = ["Connor Sample <tabulatejarl8@gmail.com>", "Finian Wright <turbowafflz@gmail.com>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

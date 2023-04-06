@@ -3,3 +3,5 @@
 /org.imaginaryinfinity.Squiid.json
 generated-sources.json
 .flatpak-builder/
+/snapcraft.yaml
+*.snap

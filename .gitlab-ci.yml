@@ -1,0 +1,30 @@
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+
+stages:
+  - test
+  - build
+  - deploy
+
+test:
+  stage: test
+  image: rust:latest
+  script:
+    - cargo build --verbose
+    - cargo test --verbose
+
+build-flatpak:
+  stage: build
+  before_script:
+    - apk update
+    - apk add flatpak rust make python3
+    - flatpak install flathub org.freedesktop.Platform//22.08 org.freedesktop.Sdk//22.08 org.freedesktop.Sdk.Extension.rust-stable/x86_64/22.08
+  script:
+    - make flatpak
+
+build-snap:
+  stage: build
+  image: "cibuilds/snapcraft:core18"
+  script:
+    - make snap

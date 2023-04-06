@@ -16,6 +16,7 @@ test:
 
 build-flatpak:
   stage: build
+  image: alpine:latest
   before_script:
     - apk update
     - apk add flatpak rust make python3
@@ -25,6 +26,7 @@ build-flatpak:
 
 build-snap:
   stage: build
+  image: alpine:latest
   image: "cibuilds/snapcraft:core18"
   script:
     - make snap

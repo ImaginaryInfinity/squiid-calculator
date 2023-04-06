@@ -1,1 +1,5 @@
 /target
+/package-build
+/org.imaginaryinfinity.Squiid.json
+generated-sources.json
+.flatpak-builder/

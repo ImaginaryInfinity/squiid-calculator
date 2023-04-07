@@ -20,13 +20,15 @@ build-flatpak:
   before_script:
     - apk update
     - apk add flatpak rust make python3
+    - flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
     - flatpak install flathub org.freedesktop.Platform//22.08 org.freedesktop.Sdk//22.08 org.freedesktop.Sdk.Extension.rust-stable/x86_64/22.08
   script:
     - make flatpak
 
 build-snap:
   stage: build
-  image: alpine:latest
   image: "cibuilds/snapcraft:core18"
   script:
+    - apt update
+    - apt install yq cargo
     - make snap

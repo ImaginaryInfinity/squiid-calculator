@@ -27,8 +27,6 @@ pub fn start_server(address: Option<&str>) {
 
     // listen forever
     loop {
-        // Add current stack to history
-        engine.history.push_back(engine.stack.clone());
 
         if engine.history.len() > 20 {
             _ = engine.history.pop_front();
@@ -38,6 +36,12 @@ pub fn start_server(address: Option<&str>) {
         responder.recv(&mut msg, 0).unwrap();
         // Convert received message to a string
         let recieved = msg.as_str().unwrap();
+
+        // Don't add to history if command is refresh as it does not affect the stack
+        if recieved != "refresh" {
+            // Add current stack to history
+            engine.history.push_back(engine.stack.clone());
+        }
 
         let result = match recieved {
             "add" => engine.add(),

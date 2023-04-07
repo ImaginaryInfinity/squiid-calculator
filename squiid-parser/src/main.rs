@@ -19,6 +19,7 @@ fn main() {
                         "-" => "subtract",
                         "*" => "multiply",
                         "/" => "divide",
+                        "%" => "mod",
                         "^" => "power",
                         _ => command_raw,
                     };
@@ -37,8 +38,8 @@ fn main() {
                 break
             }
         }
-        
+
     }
 
-    
+
 }

@@ -72,6 +72,13 @@ pub fn parse(input: &str) -> Vec<String> {
             },
         ),
         (
+            "%",
+            OperatorProperties {
+                precedence: 3,
+                associativity: Associativity::Left,
+            },
+        ),
+        (
             "+",
             OperatorProperties {
                 precedence: 2,

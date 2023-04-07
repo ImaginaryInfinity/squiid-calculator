@@ -1,0 +1,4 @@
+[system]
+# the start mode of the calculator
+# options: info, algebraic, rpn
+start_mode = "algebraic"

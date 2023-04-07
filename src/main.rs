@@ -5,6 +5,7 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 mod app;
 use app::{run_app, App};
 
+mod config_handler;
 mod utils;
 
 use crossterm::{
@@ -14,6 +15,9 @@ use crossterm::{
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let mut config = config_handler::init_config();
+    config = config_handler::update_user_config().unwrap();
+
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();

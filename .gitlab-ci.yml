@@ -3,16 +3,16 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "web"'
 
 stages:
-  # - test
+  - test
   - build
   - deploy
 
-# test:
-#   stage: test
-#   image: rust:latest
-#   script:
-#     - cargo build --verbose
-#     - cargo test --verbose
+test:
+  stage: test
+  image: rust:latest
+  script:
+    - cargo build --verbose
+    - cargo test --verbose
 
 build-flatpak:
   stage: build
@@ -27,9 +27,13 @@ build-flatpak:
 
 build-snap:
   stage: build
-  image: "cibuilds/snapcraft:core18"
+  image: ubuntudesktop/gnome-3-38-2004
   script:
-    - sudo apt update
-    - sudo apt install cargo python3-pip
-    - pip3 install jq yq
+    - apt update
+    - apt install cargo jq python3-pip gettext-base -y
+    - pip3 install yq
     - make snap
+  artifacts:
+    paths:
+      - squiid*.snap
+    expire_in: 60 minutes

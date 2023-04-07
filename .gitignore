@@ -5,3 +5,4 @@ generated-sources.json
 .flatpak-builder/
 /snapcraft.yaml
 *.snap
+.gitlab-ci-local/

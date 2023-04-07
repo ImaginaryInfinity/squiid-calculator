@@ -589,6 +589,33 @@ impl Engine {
         Ok(())
     }
 
+    // Delete variable
+    pub fn purge(&mut self) -> Result<(), &'static str> {
+        // Get 2 operands from stack
+        let operands = match self.get_operands_raw(1) {
+            Ok(content) => content,
+            Err(error) => return Err(error),
+        };
+
+        // Only try to delete if first character of second operand is @
+        if operands[0].to_string().chars().next().unwrap() == '@' {
+            // Convert name to string
+            let mut varname = operands[0].to_string();
+            // Remove @ prefix
+            varname.remove(0);
+            if self.variables.contains_key(&varname) {
+                // Remove variable from hashmap
+                self.variables.remove(&varname);
+            } else {
+                return Err("Variable does not exist")
+            }
+        } else {
+            // Error if attempted to store in name not starting with @
+            return Err("Cannot delete non-variable object");
+        }
+        Ok(())
+    }
+
     // Store value in variable, with inverted argument order
     pub fn invstore(&mut self) -> Result<(), &'static str> {
         match self.swap() {

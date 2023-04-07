@@ -30,6 +30,6 @@ build-snap:
   image: "cibuilds/snapcraft:core18"
   script:
     - sudo apt update
-    - sudo apt install cargo
-    - sudo snap install yq
+    - sudo apt install cargo python3-pip
+    - pip3 install jq yq
     - make snap

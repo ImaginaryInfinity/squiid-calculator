@@ -589,6 +589,15 @@ impl Engine {
         Ok(())
     }
 
+    // Store value in variable, with inverted argument order
+    pub fn invstore(&mut self) -> Result<(), &'static str> {
+        match self.swap() {
+            Ok(()) => {},
+            Err(error) => return Err(error),
+        }
+        self.store()
+    }
+
     pub fn clear(&mut self) -> Result<(), &'static str> {
         self.stack = Vec::new();
         Ok(())

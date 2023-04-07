@@ -73,6 +73,7 @@ pub fn start_server(address: Option<&str>) {
             "rolldown" => engine.roll_down(),
             "rollup" => engine.roll_up(),
             "store" => engine.store(),
+            "invstore" => engine.invstore(),
             "clear" => engine.clear(),
             "refresh" => Ok(()),
             "undo" => engine.undo(),

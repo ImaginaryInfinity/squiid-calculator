@@ -183,6 +183,7 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
             "*" => "multiply",
             "/" => "divide",
             "^" => "power",
+            "=" => "invstore",
             _ => command_raw,
         };
         // Send command to server
@@ -223,7 +224,7 @@ fn rpn_input(mut app: &mut App, socket: &Socket, c: char) {
         "add", "subtract", "multiply", "divide", "power", "sqrt", "mod", "sin", "cos", "tan",
         "sec", "csc", "cot", "asin", "acos", "atan", "acos", "atan", "log", "logb", "ln", "abs",
         "eq", "gt", "lt", "gte", "lte", "round", "invert", "drop", "swap", "dup", "rolldown",
-        "rollup", "store", "clear", "undo", "quit",
+        "rollup", "store", "invstore", "clear", "undo", "quit",
     ];
     // Check if input box contains a command, if so, automatically execute it
     if commands.contains(&(app.input.as_str())) {

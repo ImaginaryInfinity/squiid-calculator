@@ -160,6 +160,20 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     // Create variable to store result from engine
     let mut msg_as_str = String::new();
 
+    // Commands that cannot be used in algebraic mode
+    let non_algebraic_commands = [
+        "invert", "drop", "swap", "dup", "rolldown", "rollup", "store", "clear", "undo",
+    ];
+    // Iterate through the commands present in the expression
+    for command_raw in rpn_expression.iter() {
+        // Check if it is forbidden
+        if non_algebraic_commands.contains(&command_raw.as_str()) {
+            // Give error and stop trying to evaluate if the command is forbidden
+            app.error = format!("Error: {} is invalid in algebraic mode", command_raw);
+            return;
+        }
+    }
+
     // Iterate through expression
     for command_raw in rpn_expression.iter() {
         // Convert operator symbols to engine commands

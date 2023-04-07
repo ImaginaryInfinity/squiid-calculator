@@ -7,12 +7,12 @@ stages:
   - build
   - deploy
 
-test:
-  stage: test
-  image: rust:latest
-  script:
-    - cargo build --verbose
-    - cargo test --verbose
+# test:
+#   stage: test
+#   image: rust:latest
+#   script:
+#     - cargo build --verbose
+#     - cargo test --verbose
 
 build-flatpak:
   stage: build

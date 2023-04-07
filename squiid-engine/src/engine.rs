@@ -3,14 +3,14 @@ use std::fmt::Error;
 
 use std::collections::VecDeque;
 
-use crate::stackable_items::StackableItems::{self, StackableFloat, StackableString};
+use crate::bucket::{Bucket, BucketTypes};
 use crate::utils::is_string_numeric;
 
 // Evaluation engine struct
 pub struct Engine {
-    pub stack: Vec<StackableItems>,
-    pub variables: HashMap<String, StackableItems>,
-    pub history: VecDeque<Vec<StackableItems>>,
+    pub stack: Vec<Bucket>,
+    pub variables: HashMap<String, Bucket>,
+    pub history: VecDeque<Vec<Bucket>>,
 }
 
 // Evaluation engine implementation
@@ -25,7 +25,7 @@ impl Engine {
     }
 
     // add item to stack
-    pub fn add_item_to_stack(&mut self, item: StackableItems) -> Result<(), Error> {
+    pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<(), Error> {
         // Convert item to string
         let mut item_string = item.to_string();
         let mut invert = false;
@@ -55,16 +55,16 @@ impl Engine {
             item_string = self
                 .variables
                 .get(&item_string)
-                .unwrap_or(&StackableString(String::from("0")))
+                .unwrap_or(&Bucket::from(0.0))
                 .to_string();
         }
 
         // create a StackableFloat if item_string is numeric, else StackableString
-        let item_pushable: StackableItems;
+        let item_pushable: Bucket;
         if is_string_numeric(&item_string) {
-            item_pushable = StackableFloat(item_string.parse::<f64>().unwrap());
+            item_pushable = Bucket::from(item_string.parse::<f64>().unwrap());
         } else {
-            item_pushable = StackableString(item_string);
+            item_pushable = Bucket::from(item_string);
         }
 
         // push the new item to the stack
@@ -78,15 +78,64 @@ impl Engine {
         Ok(())
     }
 
-    // Get operands from stack
-    pub fn get_operands(&mut self, number: i32) -> Result<Vec<StackableItems>, &'static str> {
+    // Get operands from stack as float
+    pub fn get_operands_as_f(&mut self, number: i32) -> Result<Vec<f64>, &'static str> {
         // Make sure there are actually enough items on the stack
         if self.stack.len() as i32 >= number {
             // Create vector to store operands
             let mut operands = Vec::new();
+            // check that all items are of expected type
+            let requested_operands = &self.stack[self.stack.len() - number as usize..];
+            for item in requested_operands {
+                if item.bucket_type != BucketTypes::Float {
+                    return Err("The operation cannot be performed on these operands");
+                }
+            }
+
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
                 let operand = self.stack.pop().unwrap();
+
+                operands.push(operand.value.parse::<f64>().unwrap());
+            }
+            // Make the new vector's order match the stack
+            operands.reverse();
+            Ok(operands)
+        } else {
+            Err("Not enough items on stack for operation")
+        }
+    }
+
+    pub fn get_operands_as_string(&mut self, number: i32) -> Result<Vec<String>, &'static str> {
+        // Make sure there are actually enough items on the stack
+        if self.stack.len() as i32 >= number {
+            // Create vector to store operands
+            let mut operands = Vec::new();
+            // we can skip the type check since everything is already a string
+
+            // Add requested number of operands from stack to vector and converts them to strings
+            for _ in 0..number {
+                let operand = self.stack.pop().unwrap();
+
+                operands.push(operand.value);
+            }
+            // Make the new vector's order match the stack
+            operands.reverse();
+            Ok(operands)
+        } else {
+            Err("Not enough items on stack for operation")
+        }
+    }
+
+    pub fn get_operands_raw(&mut self, number: i32) -> Result<Vec<Bucket>, &'static str> {
+        if self.stack.len() as i32 >= number {
+            // Create vector to store operands
+            let mut operands = Vec::new();
+
+            // Add requested number of operands from stack to vector and converts them to strings
+            for _ in 0..number {
+                let operand = self.stack.pop().unwrap();
+
                 operands.push(operand);
             }
             // Make the new vector's order match the stack
@@ -99,351 +148,364 @@ impl Engine {
 
     // Add
     pub fn add(&mut self) -> Result<(), &'static str> {
-        let operands = match self.get_operands(2) {
+        let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].add(operands[1].clone()));
+        let result = operands[0] + operands[1];
+        let _ = self.add_item_to_stack(result.into());
         Ok(())
     }
 
     // Subtract
     pub fn subtract(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(2) {
+        let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].sub(operands[1].clone()));
+        let result = operands[0] - operands[1];
+        let _ = self.add_item_to_stack(result.into());
         Ok(())
     }
 
     // Multiply
     pub fn multiply(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(2) {
+        let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].mul(operands[1].clone()));
+        let result = operands[0] * operands[1];
+        let _ = self.add_item_to_stack(result.into());
         Ok(())
     }
 
     // Divide
     pub fn divide(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(2) {
+        let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].div(operands[1].clone()));
+        let result = operands[0] / operands[1];
+        let _ = self.add_item_to_stack(result.into());
         Ok(())
     }
 
     // Power
     pub fn power(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(2) {
+        let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].powf(operands[1].clone()));
+        let result = operands[0].powf(operands[1]);
+        let _ = self.add_item_to_stack(result.into());
         Ok(())
     }
 
     // Square root
     pub fn sqrt(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].sqrt());
+        let _ = self.add_item_to_stack(operands[0].sqrt().into());
         Ok(())
     }
 
     // Modulo
     pub fn modulo(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(2) {
+        let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].modulo(operands[1].clone()));
+        let result = operands[0] % operands[1];
+        let _ = self.add_item_to_stack(result.into());
         Ok(())
     }
 
     // Sine
     pub fn sin(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].sin());
+        let _ = self.add_item_to_stack(operands[0].sin().into());
         Ok(())
     }
 
     // Cosine
     pub fn cos(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].cos());
+        let _ = self.add_item_to_stack(operands[0].cos().into());
         Ok(())
     }
 
     // Tangent
     pub fn tan(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].tan());
+        let _ = self.add_item_to_stack(operands[0].tan().into());
         Ok(())
     }
 
     // Secant
     pub fn sec(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].sec());
+        let _ = self.add_item_to_stack((1.0 / operands[0].cos()).into());
         Ok(())
     }
 
     // Cosecant
     pub fn csc(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].csc());
+        let _ = self.add_item_to_stack((1.0 / operands[0].sin()).into());
         Ok(())
     }
 
     // Cotangent
     pub fn cot(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].cot());
+        let _ = self.add_item_to_stack((1.0 / operands[0].tan()).into());
         Ok(())
     }
 
     // Asin
     pub fn asin(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].asin());
+        let _ = self.add_item_to_stack(operands[0].asin().into());
         Ok(())
     }
 
     // Acos
     pub fn acos(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].acos());
+        let _ = self.add_item_to_stack(operands[0].acos().into());
         Ok(())
     }
 
     // Atan
     pub fn atan(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].atan());
+        let _ = self.add_item_to_stack(operands[0].atan().into());
         Ok(())
     }
 
     // Invert
     pub fn invert(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].mul(StackableFloat(-1.0)));
+        let result = operands[0] * -1.0;
+        let _ = self.add_item_to_stack(result.into());
         Ok(())
     }
 
     // Logarithm
     pub fn log(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].log(StackableFloat(10.0)));
+        let _ = self.add_item_to_stack(operands[0].log(10.0).into());
         Ok(())
     }
 
     // Logarithm with custom base
     pub fn logb(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(2) {
+        let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].log(operands[1].clone()));
+        let _ = self.add_item_to_stack(operands[0].log(operands[1]).into());
         Ok(())
     }
 
     // Natural logarihm
     pub fn ln(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].ln());
+        let _ = self.add_item_to_stack(operands[0].ln().into());
         Ok(())
     }
 
     // Absolute value
     pub fn abs(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].abs());
+        let _ = self.add_item_to_stack(operands[0].abs().into());
         Ok(())
     }
 
     // Equal to
     pub fn eq(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(2) {
+        // TODO: maybe make this work with strings
+        let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].eq(operands[1].clone()));
+        let result = (operands[0] == operands[1]) as u32;
+        let _ = self.add_item_to_stack(result.into());
         Ok(())
     }
 
     // Greater than
     pub fn gt(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(2) {
+        let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].gt(operands[1].clone()));
+        let result = (operands[0] > operands[1]) as u32;
+        let _ = self.add_item_to_stack(result.into());
         Ok(())
     }
 
     // Less than
     pub fn lt(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(2) {
+        let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].lt(operands[1].clone()));
+        let result = (operands[0] < operands[1]) as u32;
+        let _ = self.add_item_to_stack(result.into());
         Ok(())
     }
 
     // Greater than or equal to
     pub fn gte(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(2) {
+        let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].gte(operands[1].clone()));
+        let result = (operands[0] >= operands[1]) as u32;
+        let _ = self.add_item_to_stack(result.into());
         Ok(())
     }
 
     // Less than or equal to
     pub fn lte(&mut self) -> Result<(), &'static str> {
         // Get operands
-        let operands = match self.get_operands(2) {
+        let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].lte(operands[1].clone()));
+        let result = (operands[0] <= operands[1]) as u32;
+        let _ = self.add_item_to_stack(result.into());
         Ok(())
     }
 
     // round to nearest int
     pub fn round(&mut self) -> Result<(), &'static str> {
         // Get operand
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].round());
+        let _ = self.add_item_to_stack(operands[0].round().into());
         Ok(())
     }
 
@@ -457,7 +519,7 @@ impl Engine {
     // Swap last two items on stack
     pub fn swap(&mut self) -> Result<(), &'static str> {
         // Get last two values from stack
-        let operands = match self.get_operands(2) {
+        let operands = match self.get_operands_raw(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
@@ -471,7 +533,7 @@ impl Engine {
     // Duplicate the last item of the stack
     pub fn dup(&mut self) -> Result<(), &'static str> {
         // Get the last value from the stack
-        let operands = match self.get_operands(1) {
+        let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
@@ -507,7 +569,7 @@ impl Engine {
     // Store value in variable
     pub fn store(&mut self) -> Result<(), &'static str> {
         // Get 2 operands from stack
-        let operands = match self.get_operands(2) {
+        let operands = match self.get_operands_raw(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
@@ -522,7 +584,7 @@ impl Engine {
             self.variables.insert(varname, operands[0].clone());
         } else {
             // Error if attempted to store in name not starting with @
-            return Err("Cannot store in non-variable object")
+            return Err("Cannot store in non-variable object");
         }
         Ok(())
     }

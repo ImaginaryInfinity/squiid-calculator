@@ -1,9 +1,10 @@
+mod bucket;
 mod engine;
-mod stackable_items;
 mod utils;
 
 use engine::Engine;
-use stackable_items::StackableItems::{StackableFloat, StackableString};
+
+use crate::bucket::Bucket;
 
 pub fn start_server(address: Option<&str>) {
     // create zeromq socket to listen on
@@ -77,7 +78,7 @@ pub fn start_server(address: Option<&str>) {
             "undo" => engine.undo(),
             "quit" => break,
             recieved => {
-                let _ = engine.add_item_to_stack(StackableString(recieved.to_string()));
+                let _ = engine.add_item_to_stack(Bucket::from(recieved.to_string()));
                 Ok(())
             }
         };
@@ -88,14 +89,8 @@ pub fn start_server(address: Option<&str>) {
                 // format the stack as a string
                 if engine.stack.len() > 0 {
                     for item in &engine.stack {
-                        match item {
-                            StackableFloat(i) => {
-                                formatted_response.push_str(&format!("{},", i.to_string()))
-                            }
-                            StackableString(i) => {
-                                formatted_response.push_str(&format!("\"{}\",", i))
-                            }
-                        }
+                        // TODO: make this better
+                        formatted_response.push_str(&format!("{},", item.to_string()))
                     }
                     // Remove trailing comma
                     if formatted_response.chars().last().unwrap() == ',' {

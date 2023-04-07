@@ -1,4 +1,5 @@
 use crate::stackable_items::StackableItems::{StackableFloat, StackableString};
+use std::mem;
 
 // extract the value within a StackableItems type
 macro_rules! into_raw(
@@ -20,6 +21,14 @@ pub enum StackableItems {
 
 // implementation of arithmetic functions
 impl StackableItems {
+    pub fn is_type(&self, t: StackableItems) -> bool {
+        match t {
+            StackableFloat(_) => mem::discriminant(self) == mem::discriminant(&StackableFloat(f64::default())),
+            StackableString(_) => mem::discriminant(self) == mem::discriminant(&StackableString(String::default())),
+        }
+        
+    }
+
     pub fn powf(&self, n: StackableItems) -> Self {
         match self {
             StackableFloat(i) => StackableFloat(i.powf(into_raw!(n, StackableFloat))),

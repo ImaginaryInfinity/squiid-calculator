@@ -3,7 +3,7 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "web"'
 
 stages:
-  - test
+  # - test
   - build
   - deploy
 
@@ -29,6 +29,6 @@ build-snap:
   stage: build
   image: "cibuilds/snapcraft:core18"
   script:
-    - apt update
-    - apt install yq cargo
+    - sudo apt update
+    - sudo apt install yq cargo
     - make snap

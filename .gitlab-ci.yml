@@ -24,6 +24,10 @@ build-flatpak:
     - flatpak install -y flathub org.freedesktop.Platform//22.08 org.freedesktop.Sdk//22.08 org.freedesktop.Sdk.Extension.rust-stable/x86_64/22.08
   script:
     - make flatpak
+  artifacts:
+    paths:
+      - package-build/
+    expire_in: "60 minutes"
 
 build-snap:
   stage: build
@@ -36,4 +40,4 @@ build-snap:
   artifacts:
     paths:
       - squiid*.snap
-    expire_in: 60 minutes
+    expire_in: "60 minutes"

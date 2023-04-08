@@ -1,5 +1,5 @@
-mod bucket;
-mod engine;
+pub mod bucket;
+pub mod engine;
 mod utils;
 
 use std::{collections::HashMap, borrow::BorrowMut};
@@ -8,6 +8,7 @@ use engine::Engine;
 
 use crate::bucket::Bucket;
 
+#[derive(Debug, PartialEq)]
 pub enum ResponseType {
     SendStack,
     SendCommands,

@@ -6,7 +6,7 @@ pub enum BucketTypes {
     String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Bucket {
     pub value: String,
     pub bucket_type: BucketTypes,
@@ -54,6 +54,15 @@ impl From<String> for Bucket {
     fn from(value: String) -> Self {
         Self {
             value: value,
+            bucket_type: BucketTypes::String,
+        }
+    }
+}
+
+impl From<&str> for Bucket {
+    fn from(value: &str) -> Self {
+        Self {
+            value: value.to_owned(),
             bucket_type: BucketTypes::String,
         }
     }

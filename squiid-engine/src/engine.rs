@@ -593,7 +593,7 @@ impl Engine {
 
     // Delete variable
     pub fn purge(&mut self) -> Result<ResponseType, String> {
-        // Get 2 operands from stack
+        // Get operand from stack
         let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
@@ -646,5 +646,3 @@ impl Engine {
         Ok(ResponseType::SendCommands)
     }
 }
-
-// TODO: Write engine tests

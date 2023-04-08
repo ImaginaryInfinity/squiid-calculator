@@ -49,7 +49,7 @@ build-appimage:
     - apk update
     - apk add curl
     - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o /opt/appimagetool
-    - sudo chmod +x /opt/appimagetool
+    - chmod +x /opt/appimagetool
     - cd /opt/; sudo /opt/appimagetool --appimage-extract
     - mv /opt/squashfs-root /opt/appimagetool.AppDir
     - ln -s /opt/appimagetool.AppDir/AppRun /usr/local/bin/appimagetool

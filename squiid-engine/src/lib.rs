@@ -22,7 +22,7 @@ macro_rules! function_map_entry {
     };
 }
 
-type EngineFunction = dyn Fn(&mut Engine) -> Result<ResponseType, &'static str>;
+type EngineFunction = dyn Fn(&mut Engine) -> Result<ResponseType, String>;
 
 fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     let mut function_map = HashMap::new();

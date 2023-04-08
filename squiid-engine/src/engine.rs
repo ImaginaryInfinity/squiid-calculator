@@ -25,7 +25,7 @@ impl Engine {
     }
 
     // add item to stack
-    pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<ResponseType, &'static str> {
+    pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<ResponseType, String> {
         // Convert item to string
         let mut item_string = item.to_string();
         let mut invert = false;
@@ -57,7 +57,7 @@ impl Engine {
             
             match unresolved_var {
                 Some(value) => item_string = value.to_string(),
-                None => return Err("reference to undefined variable"),
+                None => return Err(format!("reference to undefined variable: {}", item_string)),
             }
         }
 
@@ -81,7 +81,7 @@ impl Engine {
     }
 
     // Get operands from stack as float
-    pub fn get_operands_as_f(&mut self, number: i32) -> Result<Vec<f64>, &'static str> {
+    pub fn get_operands_as_f(&mut self, number: i32) -> Result<Vec<f64>, String> {
         // Make sure there are actually enough items on the stack
         if self.stack.len() as i32 >= number {
             // Create vector to store operands
@@ -90,7 +90,7 @@ impl Engine {
             let requested_operands = &self.stack[self.stack.len() - number as usize..];
             for item in requested_operands {
                 if item.bucket_type != BucketTypes::Float {
-                    return Err("The operation cannot be performed on these operands");
+                    return Err(String::from("The operation cannot be performed on these operands"));
                 }
             }
 
@@ -104,11 +104,11 @@ impl Engine {
             operands.reverse();
             Ok(operands)
         } else {
-            Err("Not enough items on stack for operation")
+            Err(String::from("Not enough items on stack for operation"))
         }
     }
 
-    pub fn get_operands_as_string(&mut self, number: i32) -> Result<Vec<String>, &'static str> {
+    pub fn get_operands_as_string(&mut self, number: i32) -> Result<Vec<String>, String> {
         // Make sure there are actually enough items on the stack
         if self.stack.len() as i32 >= number {
             // Create vector to store operands
@@ -125,11 +125,11 @@ impl Engine {
             operands.reverse();
             Ok(operands)
         } else {
-            Err("Not enough items on stack for operation")
+            Err(String::from("Not enough items on stack for operation"))
         }
     }
 
-    pub fn get_operands_raw(&mut self, number: i32) -> Result<Vec<Bucket>, &'static str> {
+    pub fn get_operands_raw(&mut self, number: i32) -> Result<Vec<Bucket>, String> {
         if self.stack.len() as i32 >= number {
             // Create vector to store operands
             let mut operands = Vec::new();
@@ -144,12 +144,12 @@ impl Engine {
             operands.reverse();
             Ok(operands)
         } else {
-            Err("Not enough items on stack for operation")
+            Err(String::from("Not enough items on stack for operation"))
         }
     }
 
     // Add
-    pub fn add(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn add(&mut self) -> Result<ResponseType, String> {
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
@@ -162,7 +162,7 @@ impl Engine {
     }
 
     // Subtract
-    pub fn subtract(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn subtract(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -176,7 +176,7 @@ impl Engine {
     }
 
     // Multiply
-    pub fn multiply(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn multiply(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -190,7 +190,7 @@ impl Engine {
     }
 
     // Divide
-    pub fn divide(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn divide(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -204,7 +204,7 @@ impl Engine {
     }
 
     // Power
-    pub fn power(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn power(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -218,7 +218,7 @@ impl Engine {
     }
 
     // Square root
-    pub fn sqrt(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn sqrt(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -231,7 +231,7 @@ impl Engine {
     }
 
     // Modulo
-    pub fn modulo(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn modulo(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -245,7 +245,7 @@ impl Engine {
     }
 
     // Sine
-    pub fn sin(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn sin(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -258,7 +258,7 @@ impl Engine {
     }
 
     // Cosine
-    pub fn cos(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn cos(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -271,7 +271,7 @@ impl Engine {
     }
 
     // Tangent
-    pub fn tan(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn tan(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -284,7 +284,7 @@ impl Engine {
     }
 
     // Secant
-    pub fn sec(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn sec(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -297,7 +297,7 @@ impl Engine {
     }
 
     // Cosecant
-    pub fn csc(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn csc(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -310,7 +310,7 @@ impl Engine {
     }
 
     // Cotangent
-    pub fn cot(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn cot(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -323,7 +323,7 @@ impl Engine {
     }
 
     // Asin
-    pub fn asin(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn asin(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -336,7 +336,7 @@ impl Engine {
     }
 
     // Acos
-    pub fn acos(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn acos(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -349,7 +349,7 @@ impl Engine {
     }
 
     // Atan
-    pub fn atan(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn atan(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -362,7 +362,7 @@ impl Engine {
     }
 
     // Invert
-    pub fn invert(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn invert(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -376,7 +376,7 @@ impl Engine {
     }
 
     // Logarithm
-    pub fn log(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn log(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -389,7 +389,7 @@ impl Engine {
     }
 
     // Logarithm with custom base
-    pub fn logb(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn logb(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -402,7 +402,7 @@ impl Engine {
     }
 
     // Natural logarihm
-    pub fn ln(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn ln(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -415,7 +415,7 @@ impl Engine {
     }
 
     // Absolute value
-    pub fn abs(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn abs(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -428,7 +428,7 @@ impl Engine {
     }
 
     // Equal to
-    pub fn eq(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn eq(&mut self) -> Result<ResponseType, String> {
         // Get operands
         // TODO: maybe make this work with strings
         let operands = match self.get_operands_as_f(2) {
@@ -443,7 +443,7 @@ impl Engine {
     }
 
     // Greater than
-    pub fn gt(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn gt(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -457,7 +457,7 @@ impl Engine {
     }
 
     // Less than
-    pub fn lt(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn lt(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -471,7 +471,7 @@ impl Engine {
     }
 
     // Greater than or equal to
-    pub fn gte(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn gte(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -485,7 +485,7 @@ impl Engine {
     }
 
     // Less than or equal to
-    pub fn lte(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn lte(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -499,7 +499,7 @@ impl Engine {
     }
 
     // round to nearest int
-    pub fn round(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn round(&mut self) -> Result<ResponseType, String> {
         // Get operand
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -512,14 +512,14 @@ impl Engine {
     }
 
     // Drop last item from stack
-    pub fn drop(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn drop(&mut self) -> Result<ResponseType, String> {
         // Remove last item from stack
         self.stack.pop();
         Ok(ResponseType::SendStack)
     }
 
     // Swap last two items on stack
-    pub fn swap(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn swap(&mut self) -> Result<ResponseType, String> {
         // Get last two values from stack
         let operands = match self.get_operands_raw(2) {
             Ok(content) => content,
@@ -533,7 +533,7 @@ impl Engine {
     }
 
     // Duplicate the last item of the stack
-    pub fn dup(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn dup(&mut self) -> Result<ResponseType, String> {
         // Get the last value from the stack
         let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
@@ -547,29 +547,29 @@ impl Engine {
     }
 
     // Roll down
-    pub fn roll_down(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn roll_down(&mut self) -> Result<ResponseType, String> {
         if self.stack.len() > 0 {
             // Rotate stack right
             self.stack.rotate_right(1);
             Ok(ResponseType::SendStack)
         } else {
-            Err("Cannot roll empty stack")
+            Err(String::from("Cannot roll empty stack"))
         }
     }
 
     // Roll up
-    pub fn roll_up(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn roll_up(&mut self) -> Result<ResponseType, String> {
         if self.stack.len() > 0 {
             // Rotate stack left
             self.stack.rotate_left(1);
             Ok(ResponseType::SendStack)
         } else {
-            Err("Cannot roll empty stack")
+            Err(String::from("Cannot roll empty stack"))
         }
     }
 
     // Store value in variable
-    pub fn store(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn store(&mut self) -> Result<ResponseType, String> {
         // Get 2 operands from stack
         let operands = match self.get_operands_raw(2) {
             Ok(content) => content,
@@ -586,13 +586,13 @@ impl Engine {
             self.variables.insert(varname, operands[0].clone());
         } else {
             // Error if attempted to store in name not starting with @
-            return Err("Cannot store in non-variable object");
+            return Err(String::from("Cannot store in non-variable object"));
         }
         Ok(ResponseType::SendStack)
     }
 
     // Delete variable
-    pub fn purge(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn purge(&mut self) -> Result<ResponseType, String> {
         // Get 2 operands from stack
         let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
@@ -609,17 +609,17 @@ impl Engine {
                 // Remove variable from hashmap
                 self.variables.remove(&varname);
             } else {
-                return Err("Variable does not exist")
+                return Err(String::from("Variable does not exist"))
             }
         } else {
             // Error if attempted to store in name not starting with @
-            return Err("Cannot delete non-variable object");
+            return Err(String::from("Cannot delete non-variable object"));
         }
         Ok(ResponseType::SendStack)
     }
 
     // Store value in variable, with inverted argument order
-    pub fn invstore(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn invstore(&mut self) -> Result<ResponseType, String> {
         match self.swap() {
             Ok(_) => {},
             Err(error) => return Err(error),
@@ -627,22 +627,22 @@ impl Engine {
         self.store()
     }
 
-    pub fn clear(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn clear(&mut self) -> Result<ResponseType, String> {
         self.stack = Vec::new();
         Ok(ResponseType::SendStack)
     }
 
-    pub fn undo(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn undo(&mut self) -> Result<ResponseType, String> {
         if self.history.len() > 1 {
             _ = self.history.pop_back().unwrap();
             self.stack = self.history.pop_back().unwrap();
             Ok(ResponseType::SendStack)
         } else {
-            Err("Cannot undo further")
+            Err(String::from("Cannot undo further"))
         }
     }
 
-    pub fn list_commands(&mut self) -> Result<ResponseType, &'static str> {
+    pub fn list_commands(&mut self) -> Result<ResponseType, String> {
         Ok(ResponseType::SendCommands)
     }
 }

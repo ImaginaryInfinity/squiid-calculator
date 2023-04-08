@@ -8,6 +8,11 @@ use engine::Engine;
 
 use crate::bucket::Bucket;
 
+pub enum ResponseType {
+    SendStack,
+    SendCommands,
+}
+
 macro_rules! function_map_entry {
     ($function_map:expr,$name:expr,$func_name:ident) => {
         $function_map.insert(
@@ -17,7 +22,7 @@ macro_rules! function_map_entry {
     };
 }
 
-type EngineFunction = dyn Fn(&mut Engine) -> Result<(), &'static str>;
+type EngineFunction = dyn Fn(&mut Engine) -> Result<ResponseType, &'static str>;
 
 fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     let mut function_map = HashMap::new();
@@ -62,9 +67,10 @@ fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     function_map_entry!(function_map, "clear", clear);
     function_map_entry!(function_map, "clear", clear);
     function_map_entry!(function_map, "undo", undo);
+    function_map_entry!(function_map, "commands", list_commands);
 
     // manually insert refresh since it doesn't use an engine method
-    function_map.insert(String::from("refresh"), Box::new(|_engine: &mut Engine| Ok(())));
+    function_map.insert(String::from("refresh"), Box::new(|_engine: &mut Engine| Ok(ResponseType::SendStack)));
 
     function_map
 }
@@ -116,25 +122,36 @@ pub fn start_server(address: Option<&str>) {
                     Some(func) => func(engine.borrow_mut()),
                     None => {
                         let _ = engine.add_item_to_stack(Bucket::from(recieved.to_string()));
-                        Ok(())
+                        Ok(ResponseType::SendStack)
                     }
                 }
         };
 
         let mut formatted_response = String::new();
         match result {
-            Ok(()) => {
+            Ok(ResponseType::SendStack) => {
                 // format the stack as a string
                 if engine.stack.len() > 0 {
                     for item in &engine.stack {
                         // TODO: make this better
-                        formatted_response.push_str(&format!("{},", item.to_string()))
+                        formatted_response.push_str(&format!("{},", item.to_string()));
                     }
                     // Remove trailing comma
                     if formatted_response.chars().last().unwrap() == ',' {
                         formatted_response.remove(formatted_response.len() - 1);
                     }
                 }
+            }
+            Ok(ResponseType::SendCommands) => {
+                formatted_response.push_str("Commands: ");
+
+                for key in commands.keys() {
+                    // TODO: make this better
+                    formatted_response.push_str(&format!("{},", key));
+                }
+
+                // add quit since it is a special case not in the commands list
+                formatted_response.push_str("quit");
             }
             Err(error) => {
                 formatted_response = format!("Error: {}", error.to_string());

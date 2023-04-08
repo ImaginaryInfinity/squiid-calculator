@@ -146,7 +146,8 @@ impl Default for App {
 }
 
 fn update_stack_or_error(msg: String, app: &mut App) {
-    if msg.starts_with("Error: ") {
+    // TODO: make a seperate display for commands
+    if msg.starts_with("Error: ") || msg.starts_with("Commands: ") {
         app.error = msg.clone();
     } else {
         app.stack = msg.split(",").map(|x| x.to_owned()).collect();
@@ -224,13 +225,11 @@ fn rpn_input(mut app: &mut App, socket: &Socket, c: char) {
     let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
     app.input.insert(index, c);
 
-    // TODO: Add a way for the engine to send its command list
-    let commands = [
-        "add", "subtract", "multiply", "divide", "power", "sqrt", "mod", "sin", "cos", "tan",
-        "sec", "csc", "cot", "asin", "acos", "atan", "acos", "atan", "log", "logb", "ln", "abs",
-        "eq", "gt", "lt", "gte", "lte", "round", "invert", "drop", "swap", "dup", "rolldown",
-        "rollup", "store", "invstore", "purge", "clear", "undo", "quit",
-    ];
+    // query engine for available commands
+    let binding = send_data(socket, "commands");
+    let commands_string = binding.split_once(' ').unwrap().1;
+    let commands: Vec<&str> = commands_string.split(',').collect();
+
     // Check if input box contains a command, if so, automatically execute it
     if commands.contains(&(app.input.as_str())) {
         // Send command

@@ -45,6 +45,8 @@ build: require
 appimage: require clean build
 	# Check for appimagetool
 	@appimagetool --version > /dev/null 2>&1 || (echo "ERROR: appimagetool is required"; exit 1)
+	# Check for curl
+	@curl --version > /dev/null 2>&1 || (echo "ERROR: curl is required"; exit 1)
 
 	# Make directory structure
 	mkdir -p package-build/squiid.AppDir/usr/bin
@@ -58,5 +60,11 @@ appimage: require clean build
 	cp packages/appimage/squiid.desktop package-build/squiid.AppDir/squiid.desktop
 	# Copy icon
 	cp branding/squiidsquareblack.png package-build/squiid.AppDir/icon.png
+	# Download and add kitty terminal to appimage
+	curl -L https://github.com/kovidgoyal/kitty/releases/download/v0.27.1/kitty-0.27.1-x86_64.txz -o package-build/kitty.txz
+	# Untar kitty
+	tar -xf package-build/kitty.txz --directory package-build/squiid.AppDir/usr/
+	# Make sure kitty is executable
+	chmod +x package-build/squiid.AppDir/usr/bin/kitty
 	# Build appimage
 	appimagetool package-build/squiid.AppDir package-build/Squiid_Calculator.AppImage

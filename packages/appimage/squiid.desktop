@@ -5,3 +5,4 @@ Icon=icon
 Type=Application
 Categories=Utility;
 X-AppImage-Version=0.1.0
+Terminal=true

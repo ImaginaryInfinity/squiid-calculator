@@ -1,3 +1,9 @@
 #!/bin/sh
 
-/usr/bin/konsole -e $APPDIR/usr/bin/squiid
+# Just run directly if run from terminal
+if [ -t 0 ]; then
+  "$APPDIR/usr/bin/squiid"
+# Open terminal if run without terminal
+else
+  $APPDIR/usr/bin/kitty --title "Squiid Calculator" -e "$APPDIR/usr/bin/squiid"
+fi

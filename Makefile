@@ -82,5 +82,11 @@ appimage: require clean build
 	chmod +x package-build/squiid.AppDir/usr/bin/kitty
 	# Copy kitty config
 	cp packages/appimage/kitty.conf package-build/squiid.AppDir/kitty.conf
+	# Remove unneeded kitty components
+	rm package-build/squiid.AppDir/usr/bin/kitten
+	rm -rf package-build/squiid.AppDir/usr/share/applications
+	rm -rf package-build/squiid.AppDir/usr/share/doc
+	rm -rf package-build/squiid.AppDir/usr/share/man
+	rm -rf package-build/squiid.AppDir/usr/share/icons
 	# Build appimage
 	appimagetool package-build/squiid.AppDir package-build/Squiid_Calculator.AppImage

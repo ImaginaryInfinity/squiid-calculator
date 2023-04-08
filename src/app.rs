@@ -16,7 +16,10 @@ use ratatui::{
     Frame, Terminal,
 };
 
-use crate::utils::{current_char_index, send_data};
+use crate::{
+    config_handler,
+    utils::{current_char_index, send_data},
+};
 
 #[derive(PartialEq)]
 enum InputMode {
@@ -287,6 +290,9 @@ pub fn run_app<B: Backend>(
     socket: &Socket,
     backend_join_handle: &thread::JoinHandle<()>,
 ) -> io::Result<()> {
+    config_handler::init_config();
+    let mut config = config_handler::update_user_config().unwrap();
+
     loop {
         terminal.draw(|f| ui(f, &mut app))?;
 

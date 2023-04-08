@@ -1,8 +1,50 @@
 use std::{fs, io::Write, path::PathBuf};
 use toml::Value;
 
+// wrapper for the config
+#[derive(Debug, Clone)]
+pub struct Config {
+    config: Value,
+}
+
+impl From<Value> for Config {
+    fn from(value: Value) -> Self {
+        Self { config: value }
+    }
+}
+
+impl Config {
+    // get a section/key from the config
+    pub fn get(&self, section: &str, key: &str) -> Option<&Value> {
+        let section_value = self.config.get(section);
+        if let Some(Value::Table(section_table)) = section_value {
+            section_table.get(key)
+        } else {
+            None
+        }
+    }
+
+    // Set a specific key in a specific section of the config
+    pub fn set(&mut self, section: &str, key: &str, value: Value) {
+        if let Value::Table(config) = &mut self.config {
+            if let Some(section_value) = config.get_mut(section) {
+                if let Value::Table(section_config) = section_value {
+                    section_config.insert(key.to_string(), value);
+                }
+            }
+        }
+    }
+
+    // Create a new section in the config
+    pub fn create_section(&mut self, section: &str) {
+        if let Value::Table(config) = &mut self.config {
+            config.insert(section.to_string(), Value::Table(toml::map::Map::new()));
+        }
+    }
+}
+
 // config handler
-pub fn init_config() -> Value {
+pub fn init_config() -> Config {
     let config_path = determine_config_path();
     let config_exists = config_path.exists();
 
@@ -37,19 +79,19 @@ fn copy_default_config(config_path: PathBuf) -> bool {
 }
 
 // read the config at the given path
-fn read_config(config_path: PathBuf) -> Option<Value> {
+fn read_config(config_path: PathBuf) -> Option<Config> {
     if config_path.exists() {
         let contents = fs::read_to_string(config_path).unwrap();
         let data: Value = toml::from_str(&contents).unwrap();
-        Some(data)
+        Some(Config { config: data })
     } else {
         None
     }
 }
 
 // write config file
-fn write_config(config: Value, config_path: PathBuf) {
-    let config_string = toml::to_string_pretty(&config).unwrap();
+fn write_config(config: Config, config_path: PathBuf) {
+    let config_string = toml::to_string_pretty(&config.config).unwrap();
 
     let mut user_config_file = fs::File::create(config_path).unwrap();
     user_config_file
@@ -58,7 +100,7 @@ fn write_config(config: Value, config_path: PathBuf) {
 }
 
 // Function to update TOML config
-pub fn update_user_config() -> Option<Value> {
+pub fn update_user_config() -> Option<Config> {
     let config_path = determine_config_path();
     if !config_path.exists() {
         return None;
@@ -72,9 +114,13 @@ pub fn update_user_config() -> Option<Value> {
     // update the system config with the user's currently chosen config setup
     update_toml_values(&mut user_config, &system_config);
 
-    write_config(user_config.clone(), config_path);
+    let new_user_config = Config {
+        config: user_config,
+    };
 
-    Some(user_config)
+    write_config(new_user_config.clone(), config_path);
+
+    Some(new_user_config)
 }
 
 // Recursive function to update TOML values
@@ -105,5 +151,3 @@ fn update_toml_values(user_config: &mut Value, system_config: &Value) {
         _ => {}
     }
 }
-
-// TODO: wrapper for long .get() statements

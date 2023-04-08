@@ -15,9 +15,6 @@ use crossterm::{
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut config = config_handler::init_config();
-    config = config_handler::update_user_config().unwrap();
-
     // determine open TCP port
     let possible_port_num = utils::get_available_port(20000..30000);
 

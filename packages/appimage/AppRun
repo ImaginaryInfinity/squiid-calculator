@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/bin/konsole -e $APPDIR/usr/bin/squiid

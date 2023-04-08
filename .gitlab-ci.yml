@@ -41,3 +41,12 @@ build-snap:
     paths:
       - squiid*.snap
     expire_in: "60 minutes"
+
+build-appimage:
+  stage: build
+  image: alpine:latest
+  before_script:
+    - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o appimagetool.AppImage
+    - appimagetool.AppImage --appimage-extract
+  script:
+    - APPIMAGETOOL=squashfs-root/AppRun make appimage

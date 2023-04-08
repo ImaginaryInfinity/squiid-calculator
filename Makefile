@@ -54,9 +54,10 @@ snap: require clean
 
 	rm -f snapcraft.yaml
 
+APPIMAGETOOL ?= appimagetool
 appimage: require clean build
 	# Check for appimagetool
-	@appimagetool --version > /dev/null 2>&1 || (echo "ERROR: appimagetool is required"; exit 1)
+	@$(APPIMAGETOOL) --version > /dev/null 2>&1 || (echo "ERROR: appimagetool is required"; exit 1)
 	# Check for curl
 	@curl --version > /dev/null 2>&1 || (echo "ERROR: curl is required"; exit 1)
 
@@ -89,4 +90,4 @@ appimage: require clean build
 	rm -rf package-build/squiid.AppDir/usr/share/man
 	rm -rf package-build/squiid.AppDir/usr/share/icons
 	# Build appimage
-	appimagetool package-build/squiid.AppDir package-build/Squiid_Calculator.AppImage
+	$(APPIMAGETOOL) package-build/squiid.AppDir package-build/Squiid_Calculator.AppImage

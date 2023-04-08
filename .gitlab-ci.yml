@@ -46,6 +46,8 @@ build-appimage:
   stage: build
   image: alpine:latest
   before_script:
+    - apk update
+    - apk add curl
     - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o appimagetool.AppImage
     - appimagetool.AppImage --appimage-extract
   script:

@@ -1,5 +1,7 @@
 // items on the stack are called Buckets
 
+use rust_decimal::Decimal;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum BucketTypes {
     Float,
@@ -48,6 +50,15 @@ macro_rules! generate_int_impl {
 
 generate_float_impl! {f32, f64}
 generate_int_impl! { u8, u16, u32, u64, i8, i16, i32, i64 }
+
+impl From<Decimal> for Bucket {
+    fn from(value: Decimal) -> Self {
+        Self {
+            value: value.to_string(),
+            bucket_type: BucketTypes::Float,
+        }
+    }
+}
 
 // string implementation of from
 impl From<String> for Bucket {

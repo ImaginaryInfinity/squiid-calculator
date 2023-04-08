@@ -1,10 +1,17 @@
 use std::collections::HashMap;
-
 use std::collections::VecDeque;
+
+use rust_decimal::Decimal;
 
 use crate::bucket::{Bucket, BucketTypes};
 use crate::utils::is_string_numeric;
 use crate::ResponseType;
+
+macro_rules! float_dec {
+    ($expr:expr) => {
+        Decimal::from_f64_retain($expr).unwrap()
+    };
+}
 
 // Evaluation engine struct
 pub struct Engine {
@@ -99,8 +106,35 @@ impl Engine {
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
                 let operand = self.stack.pop().unwrap();
-
                 operands.push(operand.value.parse::<f64>().unwrap());
+            }
+            // Make the new vector's order match the stack
+            operands.reverse();
+            Ok(operands)
+        } else {
+            Err(String::from("Not enough items on stack for operation"))
+        }
+    }
+
+    pub fn get_operands_as_dec(&mut self, number: i32) -> Result<Vec<Decimal>, String> {
+        // Make sure there are actually enough items on the stack
+        if self.stack.len() as i32 >= number {
+            // Create vector to store operands
+            let mut operands = Vec::new();
+            // check that all items are of expected type
+            let requested_operands = &self.stack[self.stack.len() - number as usize..];
+            for item in requested_operands {
+                if item.bucket_type != BucketTypes::Float {
+                    return Err(String::from(
+                        "The operation cannot be performed on these operands",
+                    ));
+                }
+            }
+
+            // Add requested number of operands from stack to vector and converts them to strings
+            for _ in 0..number {
+                let operand = self.stack.pop().unwrap();
+                operands.push(Decimal::from_str_exact(&operand.value).unwrap());
             }
             // Make the new vector's order match the stack
             operands.reverse();
@@ -152,7 +186,7 @@ impl Engine {
 
     // Add
     pub fn add(&mut self) -> Result<ResponseType, String> {
-        let operands = match self.get_operands_as_f(2) {
+        let operands = match self.get_operands_as_dec(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
@@ -166,7 +200,7 @@ impl Engine {
     // Subtract
     pub fn subtract(&mut self) -> Result<ResponseType, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(2) {
+        let operands = match self.get_operands_as_dec(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
@@ -180,7 +214,7 @@ impl Engine {
     // Multiply
     pub fn multiply(&mut self) -> Result<ResponseType, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(2) {
+        let operands = match self.get_operands_as_dec(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
@@ -194,7 +228,7 @@ impl Engine {
     // Divide
     pub fn divide(&mut self) -> Result<ResponseType, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(2) {
+        let operands = match self.get_operands_as_dec(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };

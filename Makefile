@@ -1,3 +1,8 @@
+PREFIX ?= /usr/local
+BINDIR ?= $(PREFIX)/bin
+BINARY_NAME := squiid
+BINARY_PATH := target/release/$(BINARY_NAME)
+
 VERSION := $(shell tomlq -r '.package.version' Cargo.toml)
 export VERSION
 
@@ -13,6 +18,16 @@ require:
 
 test:
 	cargo test -p squiid-parser -p squiid-engine -p squiid
+
+build: require
+	cargo build --release
+
+install: $(BINARY_PATH) build
+	mkdir -p $(DESTDIR)$(BINDIR)
+	cp $(BINARY_PATH) $(DESTDIR)$(BINDIR)
+
+uninstall:
+	rm $(DESTDIR)$(BINDIR)/$(BINARY_NAME)
 
 flatpak: require clean
 	@python3 --version >/dev/null 2>&1 || (echo "ERROR: python3 is required."; exit 1)
@@ -38,9 +53,6 @@ snap: require clean
 	snapcraft
 
 	rm -f snapcraft.yaml
-
-build: require
-	cargo build --release
 
 appimage: require clean build
 	# Check for appimagetool

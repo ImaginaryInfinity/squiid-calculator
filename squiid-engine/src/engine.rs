@@ -2,16 +2,16 @@ use std::collections::HashMap;
 
 use std::collections::VecDeque;
 
-use crate::ResponseType;
 use crate::bucket::{Bucket, BucketTypes};
 use crate::utils::is_string_numeric;
+use crate::ResponseType;
 
 // Evaluation engine struct
 pub struct Engine {
     pub stack: Vec<Bucket>,
     pub variables: HashMap<String, Bucket>,
     pub history: VecDeque<Vec<Bucket>>,
-    pub variable_history: VecDeque<HashMap<String, Bucket>>
+    pub variable_history: VecDeque<HashMap<String, Bucket>>,
 }
 
 // Evaluation engine implementation
@@ -53,9 +53,7 @@ impl Engine {
             // Remove $ prefix from name
             item_string.remove(0);
             // Get variable from hashmap
-            let unresolved_var = self
-                .variables
-                .get(&item_string);
+            let unresolved_var = self.variables.get(&item_string);
 
             match unresolved_var {
                 Some(value) => item_string = value.to_string(),
@@ -92,7 +90,9 @@ impl Engine {
             let requested_operands = &self.stack[self.stack.len() - number as usize..];
             for item in requested_operands {
                 if item.bucket_type != BucketTypes::Float {
-                    return Err(String::from("The operation cannot be performed on these operands"));
+                    return Err(String::from(
+                        "The operation cannot be performed on these operands",
+                    ));
                 }
             }
 
@@ -611,7 +611,7 @@ impl Engine {
                 // Remove variable from hashmap
                 self.variables.remove(&varname);
             } else {
-                return Err(String::from("Variable does not exist"))
+                return Err(String::from("Variable does not exist"));
             }
         } else {
             // Error if attempted to store in name not starting with @
@@ -623,7 +623,7 @@ impl Engine {
     // Store value in variable, with inverted argument order
     pub fn invstore(&mut self) -> Result<ResponseType, String> {
         match self.swap() {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(error) => return Err(error),
         }
         self.store()

@@ -1,9 +1,6 @@
 use std::f64::consts::PI;
 
-use squiid_engine::{
-    engine::*,
-    bucket::Bucket
-};
+use squiid_engine::{bucket::Bucket, engine::*};
 
 #[test]
 fn test_create_engine() {
@@ -18,10 +15,7 @@ fn test_add_negative_to_stack() {
     let _ = engine.add_item_to_stack("_1".into());
     let _ = engine.add_item_to_stack("1".into());
 
-    assert_eq!(engine.stack, vec![
-        Bucket::from(-1),
-        Bucket::from(1)
-    ]);
+    assert_eq!(engine.stack, vec![Bucket::from(-1), Bucket::from(1)]);
 }
 
 #[test]
@@ -35,13 +29,16 @@ fn test_add_constants_to_stack() {
     let _ = engine.add_item_to_stack("#c".into());
     let _ = engine.add_item_to_stack("#G".into());
 
-    assert_eq!(engine.stack, vec![
-        Bucket::from(std::f64::consts::PI),
-        Bucket::from(std::f64::consts::E),
-        Bucket::from(std::f64::consts::TAU),
-        Bucket::from(299792458),
-        Bucket::from(6.67430 * 10_f64.powf(-11_f64)),
-    ]);
+    assert_eq!(
+        engine.stack,
+        vec![
+            Bucket::from(std::f64::consts::PI),
+            Bucket::from(std::f64::consts::E),
+            Bucket::from(std::f64::consts::TAU),
+            Bucket::from(299792458),
+            Bucket::from(6.67430 * 10_f64.powf(-11_f64)),
+        ]
+    );
 }
 
 #[test]
@@ -74,10 +71,7 @@ fn test_add_types_to_stack() {
     let _ = engine.add_item_to_stack("a".into());
     let _ = engine.add_item_to_stack("1.5".into());
 
-    assert_eq!(engine.stack, vec![
-        Bucket::from("a"),
-        Bucket::from(1.5),
-    ]);
+    assert_eq!(engine.stack, vec![Bucket::from("a"), Bucket::from(1.5),]);
 }
 
 #[test]
@@ -104,22 +98,13 @@ fn test_get_operands() {
     let _ = engine.get_operands_as_string(1); // clear the invalid float off the stack
     let valid_floats = engine.get_operands_as_f(2);
 
-    assert_eq!(raw, Ok(vec![
-        Bucket::from("test"),
-        Bucket::from(1.5),
-    ]));
+    assert_eq!(raw, Ok(vec![Bucket::from("test"), Bucket::from(1.5),]));
 
-    assert_eq!(strings, Ok(vec![
-        String::from("abc"),
-        String::from("1.5"),
-    ]));
+    assert_eq!(strings, Ok(vec![String::from("abc"), String::from("1.5"),]));
 
     assert!(matches!(invalid_float, Err(_)));
 
-    assert_eq!(valid_floats, Ok(vec![
-        1.0,
-        1.5,
-    ]));
+    assert_eq!(valid_floats, Ok(vec![1.0, 1.5,]));
 }
 
 #[test]
@@ -431,7 +416,7 @@ fn test_asin() {
     // 1 = pi/2
     let _ = engine.asin();
     assert_eq!(
-        format!("{:.7}", engine.get_operands_as_f(1).unwrap()[0]), 
+        format!("{:.7}", engine.get_operands_as_f(1).unwrap()[0]),
         format!("{:.7}", PI / 2.0)
     );
 
@@ -583,7 +568,6 @@ fn test_eq() {
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 }
 
-
 #[test]
 fn test_gt() {
     let mut engine = Engine::new();
@@ -596,8 +580,6 @@ fn test_gt() {
 
     let _ = engine.add_item_to_stack("2".into());
     let _ = engine.add_item_to_stack("2".into());
-
-
 
     // evaluate from last stack entries to first
     let _ = engine.gt();
@@ -623,8 +605,6 @@ fn test_lt() {
     let _ = engine.add_item_to_stack("2".into());
     let _ = engine.add_item_to_stack("2".into());
 
-
-
     // evaluate from last stack entries to first
     let _ = engine.lt();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
@@ -649,8 +629,6 @@ fn test_gte() {
     let _ = engine.add_item_to_stack("2".into());
     let _ = engine.add_item_to_stack("2".into());
 
-
-
     // evaluate from last stack entries to first
     let _ = engine.gte();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
@@ -674,8 +652,6 @@ fn test_lte() {
 
     let _ = engine.add_item_to_stack("2".into());
     let _ = engine.add_item_to_stack("2".into());
-
-
 
     // evaluate from last stack entries to first
     let _ = engine.lte();
@@ -719,9 +695,7 @@ fn test_drop() {
     let _ = engine.add_item_to_stack("0.1".into());
 
     let _ = engine.drop();
-    assert_eq!(engine.stack, vec![
-        Bucket::from(-1.2),
-    ]);
+    assert_eq!(engine.stack, vec![Bucket::from(-1.2),]);
 
     let _ = engine.drop();
     assert_eq!(engine.stack, vec![]);
@@ -739,11 +713,10 @@ fn test_swap() {
     let _ = engine.add_item_to_stack("3".into());
 
     let _ = engine.swap();
-    assert_eq!(engine.stack, vec![
-        Bucket::from(-1.2),
-        Bucket::from(3),
-        Bucket::from(0.1),
-    ]);
+    assert_eq!(
+        engine.stack,
+        vec![Bucket::from(-1.2), Bucket::from(3), Bucket::from(0.1),]
+    );
 }
 
 #[test]
@@ -754,11 +727,10 @@ fn test_dup() {
     let _ = engine.add_item_to_stack("0.1".into());
 
     let _ = engine.dup();
-    assert_eq!(engine.stack, vec![
-        Bucket::from(-1.2),
-        Bucket::from(0.1),
-        Bucket::from(0.1),
-    ]);
+    assert_eq!(
+        engine.stack,
+        vec![Bucket::from(-1.2), Bucket::from(0.1), Bucket::from(0.1),]
+    );
 }
 
 #[test]
@@ -770,11 +742,10 @@ fn test_roll_down() {
     let _ = engine.add_item_to_stack("3".into());
 
     let _ = engine.roll_down();
-    assert_eq!(engine.stack, vec![
-        Bucket::from(3),
-        Bucket::from(-1.2),
-        Bucket::from(0.1),
-    ]);
+    assert_eq!(
+        engine.stack,
+        vec![Bucket::from(3), Bucket::from(-1.2), Bucket::from(0.1),]
+    );
 
     let _ = engine.clear();
     let result = engine.roll_down();
@@ -791,11 +762,10 @@ fn test_roll_up() {
     let _ = engine.add_item_to_stack("3".into());
 
     let _ = engine.roll_up();
-    assert_eq!(engine.stack, vec![
-        Bucket::from(0.1),
-        Bucket::from(3),
-        Bucket::from(-1.2),
-    ]);
+    assert_eq!(
+        engine.stack,
+        vec![Bucket::from(0.1), Bucket::from(3), Bucket::from(-1.2),]
+    );
 
     let _ = engine.clear();
     let result = engine.roll_up();
@@ -827,7 +797,9 @@ fn test_store() {
 fn test_purge() {
     let mut engine = Engine::new();
 
-    engine.variables.insert(String::from("a"), Bucket::from(-1.2));
+    engine
+        .variables
+        .insert(String::from("a"), Bucket::from(-1.2));
 
     let _ = engine.add_item_to_stack("@a".into());
     let _ = engine.add_item_to_stack("@a".into());
@@ -873,69 +845,72 @@ fn test_clear() {
 
 #[test]
 fn test_undo() {
+    macro_rules! push_to_history {
+        ($engine:ident) => {
+            $engine.history.push_back($engine.stack.clone());
+            $engine
+                .variable_history
+                .push_back($engine.variables.clone());
+        };
+    }
+
     let mut engine = Engine::new();
 
     // after each command, we must push a copy of the stack to the engine history
 
     let _ = engine.add_item_to_stack("1".into());
-    engine.history.push_back(engine.stack.clone());
+    push_to_history!(engine);
     let _ = engine.add_item_to_stack("2".into());
-    engine.history.push_back(engine.stack.clone());
+    push_to_history!(engine);
     let _ = engine.add_item_to_stack("test".into());
-    engine.history.push_back(engine.stack.clone());
+    push_to_history!(engine);
 
     // test undo of adding something to the stack
     let _ = engine.undo();
-    engine.history.push_back(engine.stack.clone());
-    assert_eq!(engine.stack, vec![
-        Bucket::from(1),
-        Bucket::from(2),
-    ]);
+    push_to_history!(engine);
+    assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     // test undo of operation
     let _ = engine.add();
-    engine.history.push_back(engine.stack.clone());
-    assert_eq!(engine.stack, vec![
-        Bucket::from(3),
-    ]);
+    push_to_history!(engine);
+    assert_eq!(engine.stack, vec![Bucket::from(3),]);
 
     let _ = engine.undo();
-    engine.history.push_back(engine.stack.clone());
-    assert_eq!(engine.stack, vec![
-        Bucket::from(1),
-        Bucket::from(2),
-    ]);
-
-    // test undo of operation
-    let _ = engine.add();
-    engine.history.push_back(engine.stack.clone());
-    assert_eq!(engine.stack, vec![
-        Bucket::from(3),
-    ]);
-
-    let _ = engine.undo();
-    engine.history.push_back(engine.stack.clone());
-    assert_eq!(engine.stack, vec![
-        Bucket::from(1),
-        Bucket::from(2),
-    ]);
+    push_to_history!(engine);
+    assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     // test undo of clear
     let _ = engine.clear();
-    engine.history.push_back(engine.stack.clone());
+    push_to_history!(engine);
     assert_eq!(engine.stack, vec![]);
 
     let _ = engine.undo();
-    engine.history.push_back(engine.stack.clone());
-    assert_eq!(engine.stack, vec![
-        Bucket::from(1),
-        Bucket::from(2),
-    ]);
+    push_to_history!(engine);
+    assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
+
+    // test undo of variable assignment
+    let _ = engine.add_item_to_stack("@a".into());
+    push_to_history!(engine);
+    let _ = engine.store();
+    push_to_history!(engine);
+    assert_eq!(engine.stack, vec![Bucket::from(1),]);
+    assert_eq!(*engine.variables.get("a").unwrap(), Bucket::from(2));
+
+    let _ = engine.undo();
+    push_to_history!(engine);
+    assert_eq!(
+        engine.stack,
+        vec![Bucket::from(1), Bucket::from(2), Bucket::from("@a"),]
+    );
+    assert_eq!(engine.variables.get("a"), None);
 }
 
 #[test]
 fn test_list_commands() {
     let mut engine = Engine::new();
 
-    assert!(matches!(engine.list_commands().unwrap(), squiid_engine::ResponseType::SendCommands));
+    assert!(matches!(
+        engine.list_commands().unwrap(),
+        squiid_engine::ResponseType::SendCommands
+    ));
 }

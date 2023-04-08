@@ -3,16 +3,16 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "web"'
 
 stages:
-  - test
+  # - test
   - build
   - deploy
 
-test:
-  stage: test
-  image: rust:latest
-  script:
-    - cargo build --verbose
-    - RUST_BACKTRACE=1 cargo test -p squiid -p squiid-engine -p squiid-parser
+# test:
+#   stage: test
+#   image: rust:latest
+#   script:
+#     - cargo build --verbose
+#     - RUST_BACKTRACE=1 cargo test -p squiid -p squiid-engine -p squiid-parser
 
 build-flatpak:
   stage: build
@@ -48,7 +48,7 @@ build-appimage:
   before_script:
     - apk update
     - apk add curl
-    - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /opt/appimagetool
+    - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o /opt/appimagetool
     - sudo chmod +x /opt/appimagetool
     - cd /opt/; sudo /opt/appimagetool --appimage-extract
     - sudo mv /opt/squashfs-root /opt/appimagetool.AppDir

@@ -291,7 +291,20 @@ pub fn run_app<B: Backend>(
     backend_join_handle: &thread::JoinHandle<()>,
 ) -> io::Result<()> {
     config_handler::init_config();
-    let mut config = config_handler::update_user_config().unwrap();
+    let config = config_handler::update_user_config().unwrap();
+
+    // set default start mode
+    let start_mode = config
+        .get("system", "start_mode")
+        .unwrap()
+        .as_str()
+        .unwrap();
+
+    app.input_mode = match start_mode {
+        "algebraic" => InputMode::Algebraic,
+        "rpn" => InputMode::RPN,
+        _ => InputMode::None,
+    };
 
     loop {
         terminal.draw(|f| ui(f, &mut app))?;

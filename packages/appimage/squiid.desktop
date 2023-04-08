@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Squiid Calculator
 Exec=AppRun
-Icon=icon
+Icon=squiid
 Type=Application
 Categories=Utility;
 X-AppImage-Version=0.1.0

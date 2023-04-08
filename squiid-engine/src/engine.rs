@@ -7,12 +7,6 @@ use crate::bucket::{Bucket, BucketTypes};
 use crate::utils::is_string_numeric;
 use crate::ResponseType;
 
-macro_rules! float_dec {
-    ($expr:expr) => {
-        Decimal::from_f64_retain($expr).unwrap()
-    };
-}
-
 // Evaluation engine struct
 pub struct Engine {
     pub stack: Vec<Bucket>,

@@ -11,6 +11,7 @@ pub struct Engine {
     pub stack: Vec<Bucket>,
     pub variables: HashMap<String, Bucket>,
     pub history: VecDeque<Vec<Bucket>>,
+    pub variable_history: VecDeque<HashMap<String, Bucket>>
 }
 
 // Evaluation engine implementation
@@ -21,6 +22,7 @@ impl Engine {
             stack: Vec::new(),
             variables: HashMap::new(),
             history: VecDeque::new(),
+            variable_history: VecDeque::new(),
         }
     }
 
@@ -54,7 +56,7 @@ impl Engine {
             let unresolved_var = self
                 .variables
                 .get(&item_string);
-            
+
             match unresolved_var {
                 Some(value) => item_string = value.to_string(),
                 None => return Err(format!("reference to undefined variable: {}", item_string)),
@@ -634,8 +636,14 @@ impl Engine {
 
     pub fn undo(&mut self) -> Result<ResponseType, String> {
         if self.history.len() > 1 {
-            _ = self.history.pop_back().unwrap();
+            // Throw away current stack
+            _ = self.history.pop_back();
+            // Restore previous stack
             self.stack = self.history.pop_back().unwrap();
+            // Throw away current state of variables
+            _ = self.variable_history.pop_back();
+            // Restore previous state of variables
+            self.variables = self.variable_history.pop_back().unwrap();
             Ok(ResponseType::SendStack)
         } else {
             Err(String::from("Cannot undo further"))

@@ -100,6 +100,7 @@ pub fn start_server(address: Option<&str>) {
 
         if engine.history.len() > 20 {
             _ = engine.history.pop_front();
+            _ = engine.variable_history.pop_front();
         }
 
         // recieve message from client
@@ -111,6 +112,8 @@ pub fn start_server(address: Option<&str>) {
         if !["refresh", "commands"].contains(&recieved) {
             // Add current stack to history
             engine.history.push_back(engine.stack.clone());
+            // Add current variable state to history
+            engine.variable_history.push_back(engine.variables.clone());
         }
 
         // create hashmap of available commands
@@ -118,7 +121,7 @@ pub fn start_server(address: Option<&str>) {
 
         let result = match recieved {
             "quit" => break,
-            recieved => 
+            recieved =>
                 match commands.get(recieved) {
                     Some(func) => func(engine.borrow_mut()),
                     None => {

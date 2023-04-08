@@ -78,5 +78,7 @@ appimage: require clean build
 	tar -xf package-build/kitty.txz --directory package-build/squiid.AppDir/usr/
 	# Make sure kitty is executable
 	chmod +x package-build/squiid.AppDir/usr/bin/kitty
+	# Copy kitty config
+	cp packages/appimage/kitty.conf package-build/squiid.AppDir/kitty.conf
 	# Build appimage
 	appimagetool package-build/squiid.AppDir package-build/Squiid_Calculator.AppImage

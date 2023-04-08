@@ -5,5 +5,5 @@ if [ -t 0 ]; then
   "$APPDIR/usr/bin/squiid"
 # Open terminal if run without terminal
 else
-  $APPDIR/usr/bin/kitty --title "Squiid Calculator" -e "$APPDIR/usr/bin/squiid"
+  $APPDIR/usr/bin/kitty --title "Squiid Calculator" -e "$APPDIR/usr/bin/squiid" -c "$APPDIR/kitty.conf"
 fi

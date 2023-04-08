@@ -1,6 +1,8 @@
 use std::collections::HashMap;
-
 use std::collections::VecDeque;
+
+use rust_decimal::Decimal;
+use rust_decimal::prelude::ToPrimitive;
 
 use crate::bucket::{Bucket, BucketTypes};
 use crate::utils::is_string_numeric;
@@ -81,7 +83,7 @@ impl Engine {
     }
 
     // Get operands from stack as float
-    pub fn get_operands_as_f(&mut self, number: i32) -> Result<Vec<f64>, String> {
+    pub fn get_operands_as_f(&mut self, number: i32) -> Result<Vec<Decimal>, String> {
         // Make sure there are actually enough items on the stack
         if self.stack.len() as i32 >= number {
             // Create vector to store operands
@@ -95,12 +97,12 @@ impl Engine {
                     ));
                 }
             }
-
+            
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
                 let operand = self.stack.pop().unwrap();
 
-                operands.push(operand.value.parse::<f64>().unwrap());
+                operands.push(Decimal::from_f64_retain(operand.value.parse::<f64>().unwrap()).unwrap());
             }
             // Make the new vector's order match the stack
             operands.reverse();
@@ -214,7 +216,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let result = operands[0].powf(operands[1]);
+        let result = operands[0].to_f64().unwrap().powf(operands[1].to_f64().unwrap());
         let _ = self.add_item_to_stack(result.into());
         Ok(ResponseType::SendStack)
     }
@@ -228,7 +230,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].sqrt().into());
+        let _ = self.add_item_to_stack(operands[0].to_f64().unwrap().powf(0.5).into());
         Ok(ResponseType::SendStack)
     }
 
@@ -255,7 +257,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].sin().into());
+        let _ = self.add_item_to_stack(operands[0].to_f64().unwrap().sin().into());
         Ok(ResponseType::SendStack)
     }
 
@@ -268,7 +270,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].cos().into());
+        let _ = self.add_item_to_stack(operands[0].to_f64().unwrap().cos().into());
         Ok(ResponseType::SendStack)
     }
 
@@ -281,7 +283,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].tan().into());
+        let _ = self.add_item_to_stack(operands[0].to_f64().unwrap().tan().into());
         Ok(ResponseType::SendStack)
     }
 
@@ -294,7 +296,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack((1.0 / operands[0].cos()).into());
+        let _ = self.add_item_to_stack((Decimal::from_f64_retain(1.0).unwrap() / Decimal::from_f64_retain(operands[0].to_f64().unwrap().cos()).unwrap()).into());
         Ok(ResponseType::SendStack)
     }
 
@@ -307,7 +309,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack((1.0 / operands[0].sin()).into());
+        let _ = self.add_item_to_stack((Decimal::from_f64_retain(1.0).unwrap() / Decimal::from_f64_retain(operands[0].to_f64().unwrap().sin()).unwrap()).into());
         Ok(ResponseType::SendStack)
     }
 
@@ -320,7 +322,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack((1.0 / operands[0].tan()).into());
+        let _ = self.add_item_to_stack((Decimal::from_f64_retain(1.0).unwrap() / Decimal::from_f64_retain(operands[0].to_f64().unwrap().tan()).unwrap()).into());
         Ok(ResponseType::SendStack)
     }
 
@@ -333,7 +335,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].asin().into());
+        let _ = self.add_item_to_stack(operands[0].to_f64().unwrap().asin().into());
         Ok(ResponseType::SendStack)
     }
 
@@ -346,7 +348,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].acos().into());
+        let _ = self.add_item_to_stack(operands[0].to_f64().unwrap().acos().into());
         Ok(ResponseType::SendStack)
     }
 
@@ -359,7 +361,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].atan().into());
+        let _ = self.add_item_to_stack(operands[0].to_f64().unwrap().atan().into());
         Ok(ResponseType::SendStack)
     }
 
@@ -372,7 +374,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let result = operands[0] * -1.0;
+        let result = operands[0] * Decimal::from_f64_retain(-1.0).unwrap();
         let _ = self.add_item_to_stack(result.into());
         Ok(ResponseType::SendStack)
     }
@@ -386,7 +388,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].log(10.0).into());
+        let _ = self.add_item_to_stack(operands[0].to_f64().unwrap().log(10.0).into());
         Ok(ResponseType::SendStack)
     }
 
@@ -399,7 +401,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].log(operands[1]).into());
+        let _ = self.add_item_to_stack(operands[0].to_f64().unwrap().log(operands[1].to_f64().unwrap()).into());
         Ok(ResponseType::SendStack)
     }
 
@@ -412,7 +414,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].ln().into());
+        let _ = self.add_item_to_stack(operands[0].to_f64().unwrap().ln().into());
         Ok(ResponseType::SendStack)
     }
 

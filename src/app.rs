@@ -158,6 +158,16 @@ fn update_stack_or_error(msg: String, app: &mut App) {
 fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     // Get string from input box and empty it
     let entered_expression: String = app.input.drain(..).collect();
+
+    // Special frontend commands
+    match entered_expression.as_str() {
+        "clear" => {
+            app.history = Vec::new();
+            return;
+        }
+        _ => {}
+    }
+
     // reset cursor offset
     app.left_cursor_offset = 0;
     // Parse algebraic expression into postfix expression

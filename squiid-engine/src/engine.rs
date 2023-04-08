@@ -102,7 +102,7 @@ impl Engine {
                     ));
                 }
             }
-            
+
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
                 let operand = self.stack.pop().unwrap();
@@ -130,7 +130,7 @@ impl Engine {
                     ));
                 }
             }
-            
+
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
                 let operand = self.stack.pop().unwrap();

@@ -49,6 +49,9 @@ build-appimage:
     - apk update
     - apk add curl
     - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o appimagetool.AppImage
-    - appimagetool.AppImage --appimage-extract
+    - ./appimagetool.AppImage --appimage-extract
   script:
-    - APPIMAGETOOL=squashfs-root/AppRun make appimage
+    - APPIMAGETOOL=./squashfs-root/AppRun make appimage
+  artifacts:
+    paths:
+      - package-build/Squiid_Calculator.AppImage

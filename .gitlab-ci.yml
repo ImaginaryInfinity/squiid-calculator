@@ -51,8 +51,8 @@ build-appimage:
     - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o /opt/appimagetool
     - sudo chmod +x /opt/appimagetool
     - cd /opt/; sudo /opt/appimagetool --appimage-extract
-    - sudo mv /opt/squashfs-root /opt/appimagetool.AppDir
-    - sudo ln -s /opt/appimagetool.AppDir/AppRun /usr/local/bin/appimagetool
+    - mv /opt/squashfs-root /opt/appimagetool.AppDir
+    - ln -s /opt/appimagetool.AppDir/AppRun /usr/local/bin/appimagetool
 
   script:
     - make appimage

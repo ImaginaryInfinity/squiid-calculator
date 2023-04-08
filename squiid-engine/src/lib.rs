@@ -1,8 +1,8 @@
 pub mod bucket;
 pub mod engine;
-mod utils;
+pub mod utils;
 
-use std::{collections::HashMap, borrow::BorrowMut};
+use std::{borrow::BorrowMut, collections::HashMap};
 
 use engine::Engine;
 
@@ -18,7 +18,7 @@ macro_rules! function_map_entry {
     ($function_map:expr,$name:expr,$func_name:ident) => {
         $function_map.insert(
             String::from($name),
-            Box::new(|engine: &mut Engine| engine.borrow_mut().$func_name()) as Box<EngineFunction>
+            Box::new(|engine: &mut Engine| engine.borrow_mut().$func_name()) as Box<EngineFunction>,
         )
     };
 }
@@ -71,7 +71,10 @@ fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     function_map_entry!(function_map, "commands", list_commands);
 
     // manually insert refresh since it doesn't use an engine method
-    function_map.insert(String::from("refresh"), Box::new(|_engine: &mut Engine| Ok(ResponseType::SendStack)));
+    function_map.insert(
+        String::from("refresh"),
+        Box::new(|_engine: &mut Engine| Ok(ResponseType::SendStack)),
+    );
 
     function_map
 }
@@ -97,7 +100,6 @@ pub fn start_server(address: Option<&str>) {
 
     // listen forever
     loop {
-
         if engine.history.len() > 20 {
             _ = engine.history.pop_front();
             _ = engine.variable_history.pop_front();
@@ -121,14 +123,13 @@ pub fn start_server(address: Option<&str>) {
 
         let result = match recieved {
             "quit" => break,
-            recieved =>
-                match commands.get(recieved) {
-                    Some(func) => func(engine.borrow_mut()),
-                    None => {
-                        // return result value of adding item to stack
-                        engine.add_item_to_stack(Bucket::from(recieved.to_string()))
-                    }
+            recieved => match commands.get(recieved) {
+                Some(func) => func(engine.borrow_mut()),
+                None => {
+                    // return result value of adding item to stack
+                    engine.add_item_to_stack(Bucket::from(recieved.to_string()))
                 }
+            },
         };
 
         let mut formatted_response = String::new();

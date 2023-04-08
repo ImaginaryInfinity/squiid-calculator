@@ -12,7 +12,7 @@ test:
   image: rust:latest
   script:
     - cargo build --verbose
-    - cargo test --verbose
+    - RUST_BACKTRACE=1 cargo test -p squiid -p squiid-engine -p squiid-parser
 
 build-flatpak:
   stage: build

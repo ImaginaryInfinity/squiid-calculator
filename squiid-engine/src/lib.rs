@@ -106,8 +106,8 @@ pub fn start_server(address: Option<&str>) {
         // Convert received message to a string
         let recieved = msg.as_str().unwrap();
 
-        // Don't add to history if command is refresh as it does not affect the stack
-        if recieved != "refresh" {
+        // Don't add to history if command is refresh or commands as it does not affect the stack
+        if !["refresh", "commands"].contains(&recieved) {
             // Add current stack to history
             engine.history.push_back(engine.stack.clone());
         }

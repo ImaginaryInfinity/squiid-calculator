@@ -25,14 +25,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // start evaluation server
     let backend_join_handle = thread::spawn(move || {
-        squiid_engine::start_server(Some(&format!("tcp://*:{}", port_num)));
+        squiid_engine::start_server(Some(&format!("tcp://127.0.0.1:{}", port_num)));
     });
 
     // initiate zmq connection
     let context = zmq::Context::new();
     let socket = context.socket(zmq::REQ).unwrap();
     assert!(socket
-        .connect(&format!("tcp://localhost:{}", port_num))
+        .connect(&format!("tcp://127.0.0.1:{}", port_num))
         .is_ok());
 
     // setup terminal

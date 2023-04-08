@@ -121,8 +121,8 @@ pub fn start_server(address: Option<&str>) {
                 match commands.get(recieved) {
                     Some(func) => func(engine.borrow_mut()),
                     None => {
-                        let _ = engine.add_item_to_stack(Bucket::from(recieved.to_string()));
-                        Ok(ResponseType::SendStack)
+                        // return result value of adding item to stack
+                        engine.add_item_to_stack(Bucket::from(recieved.to_string()))
                     }
                 }
         };

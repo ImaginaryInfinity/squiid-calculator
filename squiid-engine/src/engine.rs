@@ -26,7 +26,7 @@ impl Engine {
     }
 
     // add item to stack
-    pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<ResponseType, Error> {
+    pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<ResponseType, &'static str> {
         // Convert item to string
         let mut item_string = item.to_string();
         let mut invert = false;
@@ -52,12 +52,14 @@ impl Engine {
             // Remove $ prefix from name
             item_string.remove(0);
             // Get variable from hashmap
-            // TODO: actually error out when undefined variable is referenced
-            item_string = self
+            let unresolved_var = self
                 .variables
-                .get(&item_string)
-                .unwrap_or(&Bucket::from(0.0))
-                .to_string();
+                .get(&item_string);
+            
+            match unresolved_var {
+                Some(value) => item_string = value.to_string(),
+                None => return Err("reference to undefined variable"),
+            }
         }
 
         // create a StackableFloat if item_string is numeric, else StackableString

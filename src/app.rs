@@ -135,7 +135,7 @@ impl Default for App {
                     option_env!("CARGO_PKG_VERSION").unwrap()
                 ),
                 "Copyright 2023 Connor Sample and Finian Wright".to_string(),
-                "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid".to_string(),
+                option_env!("CARGO_PKG_REPOSITORY").unwrap().to_string(),
             ],
             stack: Vec::new(),
             error: String::new(),

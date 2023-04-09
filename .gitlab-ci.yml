@@ -46,7 +46,7 @@ build-appimage:
   stage: build
   image: archlinux:latest
   before_script:
-    - pacman --noconfirm -Syu curl
+    - pacman --noconfirm -Syu curl make
     - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o /usr/local/bin/appimagetool
     - chmod a+rx /usr/local/bin/appimagetool
     - cd /opt; appimagetool --appimage-extract

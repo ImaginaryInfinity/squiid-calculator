@@ -64,6 +64,8 @@ appimage: require clean build
 	@$(APPIMAGETOOL) --version > /dev/null 2>&1 || (echo "ERROR: appimagetool is required"; exit 1)
 	# Check for curl
 	@curl --version > /dev/null 2>&1 || (echo "ERROR: curl is required"; exit 1)
+	# check for envsubst
+	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 
 	# Make directory structure
 	mkdir -p package-build/squiid.AppDir/usr/bin
@@ -74,8 +76,8 @@ appimage: require clean build
 	cp packages/appimage/AppRun package-build/squiid.AppDir/AppRun
 	# Make AppRun executable
 	chmod +x package-build/squiid.AppDir/AppRun
-	# Copy desktop file
-	cp packages/appimage/squiid.desktop package-build/squiid.AppDir/squiid.desktop
+	# Copy and format desktop file
+	@envsubst '$${VERSION}' < packages/appimage/squiid.desktop > package-build/squiid.AppDir/squiid.desktop
 	# Copy icon
 	cp branding/squiidsquare.png package-build/squiid.AppDir/squiid.png
 	cp branding/squiidsquare.png package-build/squiid.AppDir/usr/share/icons/squiid.png
@@ -103,6 +105,7 @@ windows-build: require clean
 windows-installer: windows-build
 	# Check for docker
 	@docker --version > /dev/null 2>&1 || (echo "ERROR: docker is required"; exit 1)
+	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 
 	# bundle assets
 	mkdir package-build

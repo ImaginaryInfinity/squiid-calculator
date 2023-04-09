@@ -4,4 +4,4 @@ Exec=AppRun
 Icon=squiid
 Type=Application
 Categories=Utility;
-X-AppImage-Version=0.1.0
+X-AppImage-Version=${VERSION}

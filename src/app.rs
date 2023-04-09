@@ -217,10 +217,10 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
 
     // Combine entry and result into line to print
     let mut history_entry = entered_expression;
-    if app.error.is_empty() {
+    if app.error.is_empty() && result.len() > 0 {
         history_entry.push_str(" = ");
         history_entry.push_str(result);
-    } else {
+    } else if ! app.error.is_empty() {
         history_entry.push_str(" : ");
         history_entry.push_str(app.error.as_str());
     }

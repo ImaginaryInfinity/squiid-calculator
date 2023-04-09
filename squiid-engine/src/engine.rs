@@ -31,12 +31,12 @@ impl Engine {
     pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<ResponseType, String> {
         // Convert item to string
         let mut item_string = item.to_string();
-        let mut invert = false;
+        let mut chs = false;
 
-        // Set to invert at end if beginning with _
+        // Set to change sign at end if beginning with _
         if item_string.chars().next().unwrap() == '_' {
             item_string.remove(0);
-            invert = true;
+            chs = true;
         }
 
         // Replace with value if item is a constant
@@ -73,9 +73,9 @@ impl Engine {
         // push the new item to the stack
         self.stack.push(item_pushable);
 
-        // Invert if originally began with _
-        if invert {
-            _ = self.invert();
+        // Change sign if originally began with _
+        if chs {
+            _ = self.chs();
         }
 
         Ok(ResponseType::SendStack)
@@ -391,8 +391,8 @@ impl Engine {
         Ok(ResponseType::SendStack)
     }
 
-    // Invert
-    pub fn invert(&mut self) -> Result<ResponseType, String> {
+    // Change sign
+    pub fn chs(&mut self) -> Result<ResponseType, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,

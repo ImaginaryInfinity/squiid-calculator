@@ -59,7 +59,7 @@ fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     function_map_entry!(function_map, "gte", gte);
     function_map_entry!(function_map, "lte", lte);
     function_map_entry!(function_map, "round", round);
-    function_map_entry!(function_map, "invert", invert);
+    function_map_entry!(function_map, "chs", chs);
     function_map_entry!(function_map, "drop", drop);
     function_map_entry!(function_map, "swap", swap);
     function_map_entry!(function_map, "dup", dup);

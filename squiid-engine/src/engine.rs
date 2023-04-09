@@ -541,6 +541,19 @@ impl Engine {
         Ok(ResponseType::SendStack)
     }
 
+    // Calculate 1/x
+    pub fn invert(&mut self) -> Result<ResponseType, String> {
+        // Get operand
+        let operands = match self.get_operands_as_f(1) {
+            Ok(content) => content,
+            Err(error) => return Err(error),
+        };
+
+        // Put result on stack
+        let _ = self.add_item_to_stack((1_f64/operands[0]).into());
+        Ok(ResponseType::SendStack)
+    }
+
     // Drop last item from stack
     pub fn drop(&mut self) -> Result<ResponseType, String> {
         // Remove last item from stack

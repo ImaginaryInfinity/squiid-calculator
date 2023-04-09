@@ -473,17 +473,17 @@ fn test_atan() {
 }
 
 #[test]
-fn test_invert() {
+fn test_chs() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("-9".into());
     let _ = engine.add_item_to_stack("4".into());
 
     // evaluate from last stack entries to first
-    let _ = engine.invert();
+    let _ = engine.chs();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -4.0);
 
-    let _ = engine.invert();
+    let _ = engine.chs();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 9.0);
 }
 
@@ -685,6 +685,29 @@ fn test_round() {
 
     let _ = engine.round();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -1.0);
+}
+
+#[test]
+fn test_invert() {
+    let mut engine = Engine::new();
+
+    let _ = engine.add_item_to_stack("-3".into());
+    let _ = engine.add_item_to_stack("3".into());
+    let _ = engine.add_item_to_stack("-4".into());
+    let _ = engine.add_item_to_stack("4".into());
+
+    // evaluate from last stack entries to first
+    let _ = engine.invert();
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.25);
+
+    let _ = engine.invert();
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -0.25);
+
+    let _ = engine.invert();
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0/3.0);
+
+    let _ = engine.invert();
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -1.0/3.0);
 }
 
 #[test]

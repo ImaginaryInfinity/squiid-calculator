@@ -220,7 +220,7 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     if app.error.is_empty() && result.len() > 0 {
         history_entry.push_str(" = ");
         history_entry.push_str(result);
-    } else if ! app.error.is_empty() {
+    } else if !app.error.is_empty() {
         history_entry.push_str(" : ");
         history_entry.push_str(app.error.as_str());
     }

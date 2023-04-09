@@ -6,3 +6,4 @@ generated-sources.json
 /snapcraft.yaml
 *.snap
 .gitlab-ci-local/
+squiid-installer.exe

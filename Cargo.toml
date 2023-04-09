@@ -6,6 +6,7 @@ description = "Squiid is a modular calculator written in Rust. It is currently v
 repository = "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid"
 license = "GPL-3.0"
 authors = ["Connor Sample <tabulatejarl8@gmail.com>", "Finian Wright <turbowafflz@gmail.com>"]
+build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -20,6 +21,9 @@ squiid-engine = { path="./squiid-engine" }
 squiid-parser = { path="./squiid-parser" }
 toml = "0.7.3"
 unicode-width = "0.1.10"
+
+[build-dependencies]
+winresource = "0.1.15"
 
 [profile.release]
 strip = true

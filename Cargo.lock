@@ -607,6 +607,7 @@ dependencies = [
  "squiid-parser",
  "toml 0.7.3",
  "unicode-width",
+ "winresource",
 ]
 
 [[package]]
@@ -834,4 +835,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ae8970b36c66498d8ff1d66685dc86b91b29db0c7739899012f63a63814b4b28"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "winresource"
+version = "0.1.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5cd38cf1ae6704c0bd03ee663068b8303b9c4bb069f83143c21ef25b19d1bc30"
+dependencies = [
+ "toml 0.7.3",
+ "version_check",
 ]

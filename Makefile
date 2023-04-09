@@ -91,3 +91,22 @@ appimage: require clean build
 	rm -rf package-build/squiid.AppDir/usr/share/icons
 	# Build appimage
 	$(APPIMAGETOOL) package-build/squiid.AppDir package-build/Squiid_Calculator.AppImage
+
+windows-build: require clean
+	# cross compile windows version
+	cargo build --release --target=x86_64-pc-windows-gnu
+
+windows-installer: windows-build
+	# Check for docker
+	@docker --version > /dev/null 2>&1 || (echo "ERROR: docker is required"; exit 1)
+
+	# bundle assets
+	mkdir package-build
+	cp packages/windows/squiid.iss package-build/
+	cp branding/squiidsquare.ico package-build/
+	cp LICENSE package-build/LICENSE.txt
+	cp target/x86_64-pc-windows-gnu/release/squiid.exe package-build
+
+	docker run --rm -i -v "$$PWD/package-build:/work" amake/innosetup squiid.iss
+
+	mv package-build/Output/squiid-installer.exe ./

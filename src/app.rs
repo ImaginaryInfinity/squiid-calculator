@@ -3,7 +3,7 @@ use std::{collections::HashMap, io, thread};
 use lazy_static::lazy_static;
 use unicode_width::UnicodeWidthStr;
 
-use zmq::Socket;
+use nng::Socket;
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 

@@ -5,8 +5,11 @@ pub mod utils;
 use std::{borrow::BorrowMut, collections::HashMap};
 
 use engine::Engine;
+use nng::{Message, Protocol, Socket};
 
 use crate::bucket::Bucket;
+
+const DEFAULT_ADDRESS: &'static str = "tcp://*:33242";
 
 #[derive(Debug, PartialEq)]
 pub enum ResponseType {
@@ -81,21 +84,19 @@ fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
 
 pub fn start_server(address: Option<&str>) {
     // create zeromq socket to listen on
-    let context = zmq::Context::new();
-    let responder = context.socket(zmq::REP).unwrap();
+    let responder = Socket::new(Protocol::Rep0).unwrap();
 
     // Use default address unless one was specified from the command line
     let address_to_bind = match address {
         Some(adr) => adr,
-        None => "tcp://*:33242",
+        None => DEFAULT_ADDRESS,
     };
 
     // Print and bind to selected port
-    // println!("{} {}", "Bound to: ", address_to_bind);
-    assert!(responder.bind(address_to_bind).is_ok());
+    assert!(responder.listen(address_to_bind).is_ok());
 
     // create message variable and engine
-    let mut msg = zmq::Message::new();
+    let mut msg: Message;
     let mut engine = Engine::new();
 
     // listen forever
@@ -106,9 +107,9 @@ pub fn start_server(address: Option<&str>) {
         }
 
         // recieve message from client
-        responder.recv(&mut msg, 0).unwrap();
+        msg = responder.recv().unwrap();
         // Convert received message to a string
-        let recieved = msg.as_str().unwrap();
+        let recieved = std::str::from_utf8(&msg).unwrap();
 
         // Don't add to history if command is refresh or commands as it does not affect the stack
         if !["refresh", "commands"].contains(&recieved) {
@@ -164,9 +165,9 @@ pub fn start_server(address: Option<&str>) {
         }
 
         // respond to client with the stack as a string
-        responder.send(&formatted_response, 0).unwrap();
+        responder.send(formatted_response.as_bytes()).unwrap();
     }
 
     // send quit message to client
-    responder.send("quit", 0).unwrap();
+    responder.send("quit".as_bytes()).unwrap();
 }

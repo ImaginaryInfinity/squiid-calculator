@@ -1,13 +1,12 @@
 use std::{net::TcpListener, ops::Range};
 
-use zmq::Socket;
+use nng::Socket;
 
 // Send data to backend
 pub fn send_data(socket: &Socket, command: &str) -> String {
-    let mut msg = zmq::Message::new();
-    let _ = socket.send(command, 0);
-    let _ = socket.recv(&mut msg, 0);
-    msg.as_str().unwrap().to_string()
+    let _ = socket.send(command.as_bytes());
+    let msg = socket.recv().unwrap();
+    String::from_utf8(msg.to_vec()).unwrap()
 }
 
 // get current character index based on cursor position and text length

@@ -1,5 +1,6 @@
 use std::{error::Error, io, thread};
 
+use nng::{Protocol, Socket};
 use ratatui::{backend::CrosstermBackend, Terminal};
 
 mod app;
@@ -28,12 +29,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         squiid_engine::start_server(Some(&format!("tcp://127.0.0.1:{}", port_num)));
     });
 
-    // initiate zmq connection
-    let context = zmq::Context::new();
-    let socket = context.socket(zmq::REQ).unwrap();
-    assert!(socket
-        .connect(&format!("tcp://127.0.0.1:{}", port_num))
-        .is_ok());
+    // initiate nng connection
+    let socket = Socket::new(Protocol::Req0).unwrap();
+    let _ = socket.dial(&format!("tcp://127.0.0.1:{}", port_num));
 
     // setup terminal
     enable_raw_mode()?;

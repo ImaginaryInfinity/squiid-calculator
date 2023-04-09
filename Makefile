@@ -73,8 +73,8 @@ appimage: require clean build
 	# Copy desktop file
 	cp packages/appimage/squiid.desktop package-build/squiid.AppDir/squiid.desktop
 	# Copy icon
-	cp branding/squiidsquareblack.png package-build/squiid.AppDir/squiid.png
-	cp branding/squiidsquareblack.png package-build/squiid.AppDir/usr/share/icons/squiid.png
+	cp branding/squiidsquare.png package-build/squiid.AppDir/squiid.png
+	cp branding/squiidsquare.png package-build/squiid.AppDir/usr/share/icons/squiid.png
 	# Download and add kitty terminal to appimage
 	curl -L https://github.com/kovidgoyal/kitty/releases/download/v0.27.1/kitty-0.27.1-x86_64.txz -o package-build/kitty.txz
 	# Untar kitty

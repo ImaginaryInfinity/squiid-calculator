@@ -49,7 +49,9 @@ build-appimage:
     - pacman --noconfirm -Syu curl make
     - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o /usr/local/bin/appimagetool
     - chmod a+rx /usr/local/bin/appimagetool
+    - previous_dir=`pwd`
     - cd /opt; appimagetool --appimage-extract
+    - cd $previous_dir
     - mv /opt/squashfs-root /opt/appimagetool.AppDir
     - rm /usr/local/bin/appimagetool
     - ln -s /opt/appimagetool.AppDir/AppRun /usr/local/bin/appimagetool

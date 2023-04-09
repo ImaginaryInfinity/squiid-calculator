@@ -48,11 +48,11 @@ build-appimage:
   before_script:
     - apk update
     - apk add curl
-    - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o /opt/appimagetool
-    - chmod a+rx /opt/appimagetool
-    - ls /opt
-    - /opt/appimagetool --appimage-extract
+    - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o /usr/local/bin/appimagetool
+    - chmod a+rx /usr/local/bin/appimagetool
+    - cd /opt; appimagetool --appimage-extract
     - mv /opt/squashfs-root /opt/appimagetool.AppDir
+    - rm /usr/local/bin/appimagetool
     - ln -s /opt/appimagetool.AppDir/AppRun /usr/local/bin/appimagetool
 
   script:

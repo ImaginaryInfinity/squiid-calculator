@@ -34,7 +34,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // initiate nng connection
     let socket = Socket::new(Protocol::Req0).unwrap();
-    let _ = socket.dial(&format!("tcp://127.0.0.1:{}", port_num));
+    assert!(socket
+        .dial(&format!("tcp://127.0.0.1:{}", port_num))
+        .is_ok());
 
     // setup terminal
     enable_raw_mode()?;

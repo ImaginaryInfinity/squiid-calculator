@@ -177,7 +177,7 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
 
     // Commands that cannot be used in algebraic mode
     let non_algebraic_commands = [
-        "invert", "drop", "swap", "dup", "rolldown", "rollup", "clear", "undo", "chs"
+        "invert", "drop", "swap", "dup", "rolldown", "rollup", "clear", "undo", "chs",
     ];
     // Iterate through the commands present in the expression
     for command_raw in rpn_expression.iter() {

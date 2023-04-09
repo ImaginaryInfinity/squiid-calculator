@@ -1,4 +1,4 @@
-use std::{error::Error, io, thread};
+use std::{error::Error, io, thread, time::Duration};
 
 use nng::{Protocol, Socket};
 use ratatui::{backend::CrosstermBackend, Terminal};
@@ -28,6 +28,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let backend_join_handle = thread::spawn(move || {
         squiid_engine::start_server(Some(&format!("tcp://127.0.0.1:{}", port_num)));
     });
+
+    // Wait for server to start
+    thread::sleep(Duration::from_millis(10));
 
     // initiate nng connection
     let socket = Socket::new(Protocol::Req0).unwrap();

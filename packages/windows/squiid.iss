@@ -2,7 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Squiid"
-#define MyAppVersion "1.0"
+; version number is made to be formatted with envsubst
+#define MyAppVersion "${VERSION}"
 #define MyAppPublisher "ImaginaryInfinity"
 #define MyAppURL "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid"
 #define MyAppExeName "squiid.exe"
@@ -58,4 +59,3 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 [Run]
 ; Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 Filename: "{cmd}"; Parameters: "/k ""{#MyAppName}"" /c start """" CALL ""{app}\{#MyAppExeName}"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
-

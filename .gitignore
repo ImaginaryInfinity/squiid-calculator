@@ -7,3 +7,4 @@ generated-sources.json
 *.snap
 .gitlab-ci-local/
 squiid-installer.exe
+flatpak-cargo-generator.py

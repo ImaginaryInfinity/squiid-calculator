@@ -10,7 +10,8 @@ clean:
 	rm -rf package-build \
 		org.imaginaryinfinity.Squiid.json \
 		generated-sources.json \
-		.flatpak-builder
+		.flatpak-builder \
+		flatpak-cargo-generator.py
 
 require:
 	@echo "Checking the programs required for the build are installed..."
@@ -32,16 +33,19 @@ uninstall:
 flatpak: require clean
 	@python3 --version >/dev/null 2>&1 || (echo "ERROR: python3 is required."; exit 1)
 	@flatpak-builder --version >/dev/null 2>&1 || (echo "ERROR: flatpak-builder is required."; exit 1)
+	@curl --version >/dev/null 2>&1 || (echo "ERROR: curl is required."; exit 1)
 
 	mkdir -p package-build
 
-	python3 ./packages/flatpak/flatpak-cargo-generator.py ./Cargo.lock -o generated-sources.json
+	curl https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py -Lo flatpak-cargo-generator.py
+
+	python3 flatpak-cargo-generator.py ./Cargo.lock -o generated-sources.json
 
 	cp packages/flatpak/org.imaginaryinfinity.Squiid.json ./
 
 	flatpak-builder package-build org.imaginaryinfinity.Squiid.json
 
-	rm -f org.imaginaryinfinity.Squiid.json generated-sources.json
+	rm -f org.imaginaryinfinity.Squiid.json generated-sources.json flatpak-cargo-generator.py
 
 snap: require clean
 	@snapcraft --version >/dev/null 2>&1 || (echo "ERROR: snapcraft is required."; exit 1)

@@ -16,10 +16,9 @@ test:
 
 build-flatpak:
   stage: build
-  image: alpine:latest
+  image: fedora:latest
   before_script:
-    - apk update
-    - apk add flatpak rust make python3 yq cargo flatpak-builder py3-aiohttp py3-toml
+    - dnf -y install rust cargo make flatpak flatpak-builder python3-aiohttp python3-toml
     - flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
     - flatpak install -y flathub org.freedesktop.Platform//22.08 org.freedesktop.Sdk//22.08 org.freedesktop.Sdk.Extension.rust-stable/x86_64/22.08
   script:
@@ -34,8 +33,7 @@ build-snap:
   image: ubuntudesktop/gnome-3-38-2004
   script:
     - apt update
-    - apt install cargo jq python3-pip gettext-base -y
-    - pip3 install yq
+    - apt install cargo gettext-base -y
     - make snap
   artifacts:
     paths:

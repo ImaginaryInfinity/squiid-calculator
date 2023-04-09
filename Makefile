@@ -3,7 +3,7 @@ BINDIR ?= $(PREFIX)/bin
 BINARY_NAME := squiid
 BINARY_PATH := target/release/$(BINARY_NAME)
 
-VERSION := $(shell tomlq -r '.package.version' Cargo.toml)
+VERSION := $(shell awk 'sub(/^[[:space:]]*version[[:space:]]*=[[:space:]]*/, "") {sub(/^"/, ""); sub(/".*$$/, ""); print}' Cargo.toml)
 export VERSION
 
 clean:

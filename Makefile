@@ -103,7 +103,7 @@ windows-installer: windows-build
 	# bundle assets
 	mkdir package-build
 	cp packages/windows/squiid.iss package-build/
-	cp branding/squiid.ico package-build/
+	cp branding/squiidsquare.ico package-build/
 	cp LICENSE package-build/LICENSE.txt
 	cp target/x86_64-pc-windows-gnu/release/squiid.exe package-build
 

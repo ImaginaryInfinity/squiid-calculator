@@ -1,9 +1,8 @@
-import zmq
+import pynng
 
-context = zmq.Context()
-socket = context.socket(zmq.REQ)
-socket.connect("tcp://localhost:33242")
+socket = pynng.Req0()
+socket.dial("tcp://127.0.0.1:33242")
 
 while True:
-    socket.send_string(input())
+    socket.send(bytes(input('> '), encoding='UTF-8'))
     print(socket.recv())

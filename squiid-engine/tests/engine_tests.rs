@@ -704,10 +704,10 @@ fn test_invert() {
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -0.25);
 
     let _ = engine.invert();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0/3.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0 / 3.0);
 
     let _ = engine.invert();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -1.0/3.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -1.0 / 3.0);
 }
 
 #[test]

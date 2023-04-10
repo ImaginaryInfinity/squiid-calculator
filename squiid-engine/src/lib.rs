@@ -1,21 +1,22 @@
 pub mod bucket;
 pub mod engine;
+pub mod protocol;
 pub mod utils;
 
 use std::{borrow::BorrowMut, collections::HashMap};
 
+use bucket::Bucket;
 use engine::Engine;
+use protocol::ResponseAction;
+
 use nng::{Message, Protocol, Socket};
 
-use crate::bucket::Bucket;
+use crate::{
+    protocol::{ResponsePayload, ResponseType},
+    utils::send_response,
+};
 
 const DEFAULT_ADDRESS: &'static str = "tcp://*:33242";
-
-#[derive(Debug, PartialEq)]
-pub enum ResponseType {
-    SendStack,
-    SendCommands,
-}
 
 macro_rules! function_map_entry {
     ($function_map:expr,$name:expr,$func_name:ident) => {
@@ -26,7 +27,7 @@ macro_rules! function_map_entry {
     };
 }
 
-type EngineFunction = dyn Fn(&mut Engine) -> Result<ResponseType, String>;
+type EngineFunction = dyn Fn(&mut Engine) -> Result<ResponseAction, String>;
 
 fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     let mut function_map = HashMap::new();
@@ -77,7 +78,7 @@ fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     // manually insert refresh since it doesn't use an engine method
     function_map.insert(
         String::from("refresh"),
-        Box::new(|_engine: &mut Engine| Ok(ResponseType::SendStack)),
+        Box::new(|_engine: &mut Engine| Ok(ResponseAction::SendStack)),
     );
 
     function_map
@@ -134,41 +135,42 @@ pub fn start_server(address: Option<&str>) {
             },
         };
 
-        let mut formatted_response = String::new();
         match result {
-            Ok(ResponseType::SendStack) => {
+            Ok(ResponseAction::SendStack) => {
                 // format the stack as a string
-                if engine.stack.len() > 0 {
-                    for item in &engine.stack {
-                        // TODO: make this better
-                        formatted_response.push_str(&format!("{},", item.to_string()));
-                    }
-                    // Remove trailing comma
-                    if formatted_response.chars().last().unwrap() == ',' {
-                        formatted_response.remove(formatted_response.len() - 1);
-                    }
-                }
+                let _ = send_response(
+                    &responder,
+                    ResponseType::Stack,
+                    ResponsePayload::Stack(engine.stack.clone()),
+                );
             }
-            Ok(ResponseType::SendCommands) => {
-                formatted_response.push_str("Commands: ");
-
-                for key in commands.keys() {
-                    // TODO: make this better
-                    formatted_response.push_str(&format!("{},", key));
-                }
+            Ok(ResponseAction::SendCommands) => {
+                let mut avaiable_commands: Vec<String> =
+                    commands.keys().map(|k| k.to_owned()).collect();
 
                 // add quit since it is a special case not in the commands list
-                formatted_response.push_str("quit");
+                avaiable_commands.push(String::from("quit"));
+
+                let _ = send_response(
+                    &responder,
+                    ResponseType::Commands,
+                    ResponsePayload::Commands(avaiable_commands),
+                );
             }
             Err(error) => {
-                formatted_response = format!("Error: {}", error.to_string());
+                let _ = send_response(
+                    &responder,
+                    ResponseType::Error,
+                    ResponsePayload::Error(error.to_string()),
+                );
             }
         }
-
-        // respond to client with the stack as a string
-        responder.send(formatted_response.as_bytes()).unwrap();
     }
 
     // send quit message to client
-    responder.send("quit".as_bytes()).unwrap();
+    let _ = send_response(
+        &responder,
+        ResponseType::QuitSig,
+        ResponsePayload::QuitSig(None),
+    );
 }

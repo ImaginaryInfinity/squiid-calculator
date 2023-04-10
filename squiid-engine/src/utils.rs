@@ -1,3 +1,7 @@
+use nng::Socket;
+
+use crate::protocol::{ResponsePayload, ResponseType, ServerResponse};
+
 // function to check if a string is numeric (includes floats)
 pub fn is_string_numeric(str: &str) -> bool {
     for c in str.chars() {
@@ -11,4 +15,17 @@ pub fn is_string_numeric(str: &str) -> bool {
         }
     }
     return true;
+}
+
+pub fn send_response(
+    socket: &Socket,
+    response_type: ResponseType,
+    response_payload: ResponsePayload,
+) -> Result<(), serde_json::Error> {
+    let response = ServerResponse::new(response_type, response_payload);
+
+    let json = serde_json::to_string(&response)?;
+
+    socket.send(json.as_bytes()).unwrap();
+    Ok(())
 }

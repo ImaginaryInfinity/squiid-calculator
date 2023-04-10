@@ -1,6 +1,7 @@
 // items on the stack are called Buckets
 
 use rust_decimal::Decimal;
+use serde::Serialize;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BucketTypes {
@@ -76,5 +77,15 @@ impl From<&str> for Bucket {
             value: value.to_owned(),
             bucket_type: BucketTypes::String,
         }
+    }
+}
+
+// serialize for serde
+impl Serialize for Bucket {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
     }
 }

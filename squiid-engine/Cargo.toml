@@ -23,5 +23,5 @@ path = "src/lib.rs"
 
 # example binary stuff
 [[bin]]
-name = "engine_example"
+name = "squiid_engine_bin"
 path = "src/main.rs"

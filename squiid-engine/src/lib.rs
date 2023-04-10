@@ -137,7 +137,6 @@ pub fn start_server(address: Option<&str>) {
 
         match result {
             Ok(ResponseAction::SendStack) => {
-                // format the stack as a string
                 let _ = send_response(
                     &responder,
                     ResponseType::Stack,

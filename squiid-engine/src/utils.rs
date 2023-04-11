@@ -1,11 +1,11 @@
-use std::{
-    collections::HashMap,
-    borrow::BorrowMut
-};
+use std::{borrow::BorrowMut, collections::HashMap};
 
 use nng::Socket;
 
-use crate::{protocol::{ResponsePayload, ResponseType, ServerResponse, ResponseAction}, engine::Engine};
+use crate::{
+    engine::Engine,
+    protocol::{ResponseAction, ResponsePayload, ResponseType, ServerResponse},
+};
 
 // function to check if a string is numeric (includes floats)
 pub fn is_string_numeric(str: &str) -> bool {

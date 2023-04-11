@@ -388,8 +388,7 @@ pub fn run_app<B: Backend>(
                         }
                         // Handle single character operators
                         _ if RPN_SYMBOL_MAP.contains_key(&key.code)
-                            && app.input_mode == InputMode::RPN
-                            && app.input.chars().last().unwrap() != 'e' =>
+                            && app.input_mode == InputMode::RPN =>
                         {
                             rpn_operator(&mut app, socket, key);
                         }

@@ -1,6 +1,6 @@
 // contains JSON structs of transmission protocol objects
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::bucket::Bucket;
 
@@ -12,10 +12,10 @@ pub enum ResponseAction {
 }
 
 // response struct
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ServerResponse {
-    response_type: ResponseType,
-    payload: ResponsePayload,
+    pub response_type: ResponseType,
+    pub payload: ResponsePayload,
 }
 
 impl ServerResponse {
@@ -27,7 +27,7 @@ impl ServerResponse {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub enum ResponseType {
     #[serde(rename = "stack")]
     Stack,
@@ -39,7 +39,7 @@ pub enum ResponseType {
     QuitSig,
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub enum ResponsePayload {
     #[serde(rename = "stack")]
     Stack(Vec<Bucket>),
@@ -49,4 +49,15 @@ pub enum ResponsePayload {
     Error(String),
     #[serde(rename = "quitsig")]
     QuitSig(Option<u8>), // this should always be set to none
+}
+
+// macro for getting data out of response payload
+#[macro_export]
+macro_rules! extract_data {
+    ($payload:expr, $variant:path) => {
+        match $payload {
+            $variant(data) => data,
+            _ => panic!("Invalid data type provided for payload: {:?}", $payload),
+        }
+    };
 }

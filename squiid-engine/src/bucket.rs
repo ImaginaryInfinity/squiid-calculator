@@ -1,7 +1,7 @@
 // items on the stack are called Buckets
 
 use rust_decimal::Decimal;
-use serde::Serialize;
+use serde::{de::Visitor, Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BucketTypes {
@@ -80,12 +80,54 @@ impl From<&str> for Bucket {
     }
 }
 
-// serialize for serde
+// serialize and deserialize for serde
 impl Serialize for Bucket {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
         serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for Bucket {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let deserialized_string = deserializer.deserialize_string(BucketVisitor)?;
+        Ok(Self::from(deserialized_string))
+    }
+
+    fn deserialize_in_place<D>(deserializer: D, place: &mut Self) -> Result<(), D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        // Default implementation just delegates to `deserialize` impl.
+        *place = Deserialize::deserialize(deserializer)?;
+        Ok(())
+    }
+}
+
+struct BucketVisitor;
+impl<'de> Visitor<'de> for BucketVisitor {
+    type Value = String;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("a String")
+    }
+
+    fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Ok(v)
+    }
+
+    fn visit_borrowed_str<E>(self, v: &'de str) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Ok(v.to_string())
     }
 }

@@ -1,6 +1,10 @@
 use std::{collections::HashMap, io, thread};
 
 use lazy_static::lazy_static;
+use squiid_engine::{
+    extract_data,
+    protocol::{ResponsePayload, ResponseType, ServerResponse},
+};
 use unicode_width::UnicodeWidthStr;
 
 use nng::Socket;
@@ -145,12 +149,23 @@ impl Default for App {
     }
 }
 
-fn update_stack_or_error(msg: String, app: &mut App) {
+fn update_stack_or_error(msg: ServerResponse, app: &mut App) {
     // TODO: make a seperate display for commands
-    if msg.starts_with("Error: ") || msg.starts_with("Commands: ") {
-        app.error = msg.clone();
-    } else {
-        app.stack = msg.split(",").map(|x| x.to_owned()).collect();
+    match msg.response_type {
+        ResponseType::Stack => {
+            app.stack = extract_data!(msg.payload, ResponsePayload::Stack)
+                .iter()
+                .map(|item| item.to_string())
+                .collect();
+        }
+        ResponseType::Error => {
+            app.error = format!(
+                "Error: {}",
+                extract_data!(msg.payload, ResponsePayload::Error)
+            );
+        }
+        ResponseType::Commands => todo!(),
+        ResponseType::QuitSig => todo!(),
     }
 }
 
@@ -172,8 +187,6 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     app.left_cursor_offset = 0;
     // Parse algebraic expression into postfix expression
     let rpn_expression = squiid_parser::parse(entered_expression.trim());
-    // Create variable to store result from engine
-    let mut msg_as_str = String::new();
 
     // Commands that cannot be used in algebraic mode
     let non_algebraic_commands = [
@@ -203,10 +216,10 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
             _ => command_raw,
         };
         // Send command to server
-        msg_as_str = send_data(socket, command);
+        let msg_as_str = send_data(socket, command);
+        // Update stack
+        update_stack_or_error(msg_as_str, &mut app);
     }
-    // Update stack
-    update_stack_or_error(msg_as_str.clone(), &mut app);
 
     // Placeholder result of none in case there is nothing on the stack
     let mut result = "None";
@@ -237,11 +250,10 @@ fn rpn_input(mut app: &mut App, socket: &Socket, c: char) {
 
     // query engine for available commands
     let binding = send_data(socket, "commands");
-    let commands_string = binding.split_once(' ').unwrap().1;
-    let commands: Vec<&str> = commands_string.split(',').collect();
+    let commands = extract_data!(binding.payload, ResponsePayload::Commands);
 
     // Check if input box contains a command, if so, automatically execute it
-    if commands.contains(&(app.input.as_str())) {
+    if commands.contains(&app.input) {
         // Send command
         let msg_as_str = send_data(socket, app.input.as_str());
         // Update stack display
@@ -488,7 +500,10 @@ pub fn run_app<B: Backend>(
         // Update stack if there is currently an error, since the last request will have gotten the error not the stack
         if !app.error.is_empty() {
             let msg = send_data(socket, "refresh");
-            app.stack = msg.split(",").map(|x| x.to_owned()).collect();
+            app.stack = extract_data!(msg.payload, ResponsePayload::Stack)
+                .iter()
+                .map(|item| item.to_string())
+                .collect();
         }
     }
 }

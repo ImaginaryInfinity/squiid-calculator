@@ -603,6 +603,7 @@ dependencies = [
  "nng",
  "ratatui",
  "serde",
+ "serde_json",
  "squiid-engine",
  "squiid-parser",
  "toml 0.7.3",
@@ -616,6 +617,8 @@ version = "0.1.0"
 dependencies = [
  "nng",
  "rust_decimal",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

@@ -1,12 +1,21 @@
 use std::{net::TcpListener, ops::Range};
 
-use nng::Socket;
+use nng::{Message, Socket};
+use squiid_engine::protocol::ServerResponse;
 
 // Send data to backend
-pub fn send_data(socket: &Socket, command: &str) -> String {
+pub fn send_data(socket: &Socket, command: &str) -> ServerResponse {
     let _ = socket.send(command.as_bytes());
     let msg = socket.recv().unwrap();
-    String::from_utf8(msg.to_vec()).unwrap()
+
+    deserialize_message(msg)
+}
+
+fn deserialize_message(msg: Message) -> ServerResponse {
+    let msg_string = String::from_utf8(msg.to_vec()).unwrap();
+    let data: ServerResponse = serde_json::from_str(&msg_string).unwrap();
+
+    data
 }
 
 // get current character index based on cursor position and text length

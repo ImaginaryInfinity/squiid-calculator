@@ -165,7 +165,9 @@ fn update_stack_or_error(msg: ServerResponse, app: &mut App) {
             );
         }
         ResponseType::Commands => todo!(),
-        ResponseType::QuitSig => todo!(),
+        // quit doesn't need any special behavior. the frontend quits when
+        // the backend server thread finishes
+        ResponseType::QuitSig => (),
     }
 }
 

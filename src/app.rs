@@ -216,9 +216,9 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
             _ => command_raw,
         };
         // Send command to server
-        let msg_as_str = send_data(socket, command);
+        let msg = send_data(socket, command);
         // Update stack
-        update_stack_or_error(msg_as_str, &mut app);
+        update_stack_or_error(msg, &mut app);
     }
 
     // Placeholder result of none in case there is nothing on the stack
@@ -255,9 +255,9 @@ fn rpn_input(mut app: &mut App, socket: &Socket, c: char) {
     // Check if input box contains a command, if so, automatically execute it
     if commands.contains(&app.input) {
         // Send command
-        let msg_as_str = send_data(socket, app.input.as_str());
+        let msg = send_data(socket, app.input.as_str());
         // Update stack display
-        update_stack_or_error(msg_as_str, &mut app);
+        update_stack_or_error(msg, &mut app);
         // Clear input
         app.input.drain(..);
         // reset cursor offset
@@ -271,17 +271,17 @@ fn rpn_enter(mut app: &mut App, socket: &Socket) {
     let command: String = app.input.drain(..).collect();
     // reset cursor offset
     app.left_cursor_offset = 0;
-    let msg_as_str;
+    let msg;
     // Send command if there is one, otherwise duplicate last item in stack
     if command.len() > 0 {
         // Send to backend and get response
-        msg_as_str = send_data(socket, command.as_str());
+        msg = send_data(socket, command.as_str());
     } else {
         // Empty input, duplicate
-        msg_as_str = send_data(socket, "dup");
+        msg = send_data(socket, "dup");
     }
     // Update stack display
-    update_stack_or_error(msg_as_str, &mut app);
+    update_stack_or_error(msg, &mut app);
 }
 
 // Handle RPN operators
@@ -300,9 +300,9 @@ fn rpn_operator(mut app: &mut App, socket: &Socket, key: crate::event::KeyEvent)
         _ => "there is no way for this to occur",
     };
     // Send operation
-    let msg_as_str = send_data(socket, operation);
+    let msg = send_data(socket, operation);
     // Update stack display
-    update_stack_or_error(msg_as_str, &mut app);
+    update_stack_or_error(msg, &mut app);
 }
 
 pub fn run_app<B: Backend>(

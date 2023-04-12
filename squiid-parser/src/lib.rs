@@ -1,43 +1,13 @@
-use std::collections::HashMap;
 use log::debug;
+use std::collections::HashMap;
+use utils::{
+    is_string_alphabetic,
+    is_string_numeric,
+    Associativity,
+    OperatorProperties
+};
 
-// Left/Right Associativity enum for distinguising between right associative operations such as power
-#[derive(PartialEq)]
-enum Associativity {
-    Left,
-    Right,
-}
-
-// operator properites class that contains the operator precendence and the associativity
-struct OperatorProperties {
-    precedence: u8,
-    associativity: Associativity,
-}
-
-// function to check if a string is numeric. _ indicates negative numbers
-fn is_string_numeric(str: &str) -> bool {
-    for c in str.chars() {
-        // return false if the current character is not numeric or is not a valid numerical character, such as . for decimals and _ for indicative negatives
-        if !c.is_numeric()
-            && !(['.', '-', 'e'].contains(&c)
-                && str.chars().count() > 1
-                && !['-', 'e'].contains(&(str.chars().last().unwrap())))
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-// function to check if a string is alphabetic
-fn is_string_alphabetic(str: &str) -> bool {
-    for c in str.chars() {
-        if !c.is_alphabetic() {
-            return false;
-        }
-    }
-    return true;
-}
+pub mod utils;
 
 // main shunting-yard parsing function
 pub fn parse(input: &str) -> Vec<String> {
@@ -187,52 +157,4 @@ pub fn parse(input: &str) -> Vec<String> {
     }
 
     output_stack
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_classifier_functions() {
-        // test numeric function
-        assert_eq!(is_string_numeric("abc"), false);
-        assert_eq!(is_string_numeric("1a"), false);
-        assert_eq!(is_string_numeric("12e.a"), false);
-        assert_eq!(is_string_numeric("123"), true);
-        assert_eq!(is_string_numeric("1.2"), true);
-        assert_eq!(is_string_numeric("1.2e7"), true);
-
-        // test alphabetic function
-        assert_eq!(is_string_alphabetic("abc"), true);
-        assert_eq!(is_string_alphabetic("1a"), false);
-        assert_eq!(is_string_alphabetic("12e.a"), false);
-        assert_eq!(is_string_alphabetic("123"), false);
-        assert_eq!(is_string_alphabetic("1.2"), false);
-        assert_eq!(is_string_alphabetic("1.2e7"), false);
-    }
-
-    #[test]
-    fn test_parsing() {
-        assert_eq!(
-            parse("sqrt(5*(((((1+0.2*(350/661.5)^2)^3.5-1)*(1-(6.875*10^_6)*25500)^_5.2656)+1)^0.286-1))"),
-            vec!["5", "1", "0.2", "350", "661.5", "/", "2", "^", "*", "+", "3.5", "^", "1", "-", "1", "6.875", "10", "_6", "^", "*", "25500", "*", "-", "_5.2656", "^", "*", "1", "+", "0.286", "^", "1", "-", "*", "sqrt"]
-        );
-
-        assert_eq!(parse("$A * $B + $C"), vec!["$A", "$B", "*", "$C", "+"]);
-
-        assert_eq!(parse("$A + $B * $C"), vec!["$A", "$B", "$C", "*", "+"]);
-
-        assert_eq!(parse("$A * ($B + $C)"), vec!["$A", "$B", "$C", "+", "*"]);
-
-        assert_eq!(
-            parse("34 * 5.3 ^ 2 + 0.9"),
-            vec!["34", "5.3", "2", "^", "*", "0.9", "+"]
-        );
-
-        assert_eq!(
-            parse("8e3 * ($B + 4.532 * _0.2) + $A"),
-            vec!["8e3", "$B", "4.532", "_0.2", "*", "+", "*", "$A", "+"]
-        );
-    }
 }

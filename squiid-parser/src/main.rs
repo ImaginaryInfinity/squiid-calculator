@@ -1,5 +1,5 @@
-use rustyline::error::ReadlineError;
 use log::LevelFilter;
+use rustyline::error::ReadlineError;
 
 fn main() {
     env_logger::Builder::new()
@@ -24,22 +24,19 @@ fn main() {
                         _ => command_raw,
                     };
                 }
-            },
+            }
             Err(ReadlineError::Interrupted) => {
                 println!("Ctrl+C. Exiting...");
-                break
-            },
+                break;
+            }
             Err(ReadlineError::Eof) => {
                 println!("Ctrl+D. Exiting...");
-                break
-            },
+                break;
+            }
             Err(err) => {
                 println!("Error: {:?}", err);
-                break
+                break;
             }
         }
-
     }
-
-
 }

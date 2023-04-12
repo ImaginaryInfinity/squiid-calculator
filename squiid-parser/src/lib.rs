@@ -2,6 +2,7 @@ use log::debug;
 use std::collections::HashMap;
 use utils::{is_string_alphabetic, is_string_numeric, Associativity, OperatorProperties};
 
+pub mod exposed;
 pub mod utils;
 
 // main shunting-yard parsing function

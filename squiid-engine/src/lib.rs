@@ -1,8 +1,8 @@
 pub mod bucket;
 pub mod engine;
+pub mod exposed;
 pub mod protocol;
 pub mod utils;
-pub mod exposed;
 
 use std::borrow::BorrowMut;
 

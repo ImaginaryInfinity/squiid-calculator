@@ -8,7 +8,7 @@ rust_lib.parse_exposed.restype = ctypes.POINTER(ctypes.c_char_p)
 rust_lib.parse_exposed.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
 
 # Define the argument types of free_string_array function
-# rust_lib.free_string_array.argtypes = [ctypes.POINTER(ctypes.c_char_p), ctypes.c_int]
+rust_lib.free_string_array.argtypes = [ctypes.POINTER(ctypes.c_char_p), ctypes.c_int]
 
 if __name__ == '__main__':
 	# Call get_strings function and get the returned string array and length

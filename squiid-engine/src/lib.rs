@@ -8,12 +8,12 @@ use std::borrow::BorrowMut;
 
 use bucket::Bucket;
 use engine::Engine;
-use protocol::ResponseAction;
+use protocol::MessageAction;
 
 use nng::{Message, Protocol, Socket};
 
 use crate::{
-    protocol::{ResponsePayload, ResponseType},
+    protocol::{MessagePayload, MessageType},
     utils::send_response,
 };
 
@@ -75,14 +75,14 @@ pub fn start_server(address: Option<&str>) {
         };
 
         match result {
-            Ok(ResponseAction::SendStack) => {
+            Ok(MessageAction::SendStack) => {
                 let _ = send_response(
                     &responder,
-                    ResponseType::Stack,
-                    ResponsePayload::Stack(engine.stack.clone()),
+                    MessageType::Stack,
+                    MessagePayload::Stack(engine.stack.clone()),
                 );
             }
-            Ok(ResponseAction::SendCommands) => {
+            Ok(MessageAction::SendCommands) => {
                 let mut avaiable_commands: Vec<String> =
                     commands.keys().map(|k| k.to_owned()).collect();
 
@@ -91,15 +91,15 @@ pub fn start_server(address: Option<&str>) {
 
                 let _ = send_response(
                     &responder,
-                    ResponseType::Commands,
-                    ResponsePayload::Commands(avaiable_commands),
+                    MessageType::Commands,
+                    MessagePayload::Commands(avaiable_commands),
                 );
             }
             Err(error) => {
                 let _ = send_response(
                     &responder,
-                    ResponseType::Error,
-                    ResponsePayload::Error(error.to_string()),
+                    MessageType::Error,
+                    MessagePayload::Error(error.to_string()),
                 );
             }
         }
@@ -108,7 +108,7 @@ pub fn start_server(address: Option<&str>) {
     // send quit message to client
     let _ = send_response(
         &responder,
-        ResponseType::QuitSig,
-        ResponsePayload::QuitSig(None),
+        MessageType::QuitSig,
+        MessagePayload::QuitSig(None),
     );
 }

@@ -5,7 +5,7 @@ use rust_decimal::Decimal;
 
 use crate::bucket::{Bucket, BucketTypes};
 use crate::utils::is_string_numeric;
-use crate::ResponseAction;
+use crate::MessageAction;
 
 // Evaluation engine struct
 pub struct Engine {
@@ -28,7 +28,7 @@ impl Engine {
     }
 
     // add item to stack
-    pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<ResponseAction, String> {
+    pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<MessageAction, String> {
         // Convert item to string
         let mut item_string = item.to_string();
         let mut chs = false;
@@ -78,7 +78,7 @@ impl Engine {
             _ = self.chs();
         }
 
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Get operands from stack as float
@@ -179,7 +179,7 @@ impl Engine {
     }
 
     // Add
-    pub fn add(&mut self) -> Result<ResponseAction, String> {
+    pub fn add(&mut self) -> Result<MessageAction, String> {
         let operands = match self.get_operands_as_dec(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
@@ -188,11 +188,11 @@ impl Engine {
         // Put result on stack
         let result = operands[0] + operands[1];
         let _ = self.add_item_to_stack(result.into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Subtract
-    pub fn subtract(&mut self) -> Result<ResponseAction, String> {
+    pub fn subtract(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_dec(2) {
             Ok(content) => content,
@@ -202,11 +202,11 @@ impl Engine {
         // Put result on stack
         let result = operands[0] - operands[1];
         let _ = self.add_item_to_stack(result.into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Multiply
-    pub fn multiply(&mut self) -> Result<ResponseAction, String> {
+    pub fn multiply(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_dec(2) {
             Ok(content) => content,
@@ -216,11 +216,11 @@ impl Engine {
         // Put result on stack
         let result = operands[0] * operands[1];
         let _ = self.add_item_to_stack(result.into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Divide
-    pub fn divide(&mut self) -> Result<ResponseAction, String> {
+    pub fn divide(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_dec(2) {
             Ok(content) => content,
@@ -230,11 +230,11 @@ impl Engine {
         // Put result on stack
         let result = operands[0] / operands[1];
         let _ = self.add_item_to_stack(result.into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Power
-    pub fn power(&mut self) -> Result<ResponseAction, String> {
+    pub fn power(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -244,11 +244,11 @@ impl Engine {
         // Put result on stack
         let result = operands[0].powf(operands[1]);
         let _ = self.add_item_to_stack(result.into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Square root
-    pub fn sqrt(&mut self) -> Result<ResponseAction, String> {
+    pub fn sqrt(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -257,11 +257,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].sqrt().into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Modulo
-    pub fn modulo(&mut self) -> Result<ResponseAction, String> {
+    pub fn modulo(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -271,11 +271,11 @@ impl Engine {
         // Put result on stack
         let result = operands[0] % operands[1];
         let _ = self.add_item_to_stack(result.into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Sine
-    pub fn sin(&mut self) -> Result<ResponseAction, String> {
+    pub fn sin(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -284,11 +284,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].sin().into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Cosine
-    pub fn cos(&mut self) -> Result<ResponseAction, String> {
+    pub fn cos(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -297,11 +297,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].cos().into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Tangent
-    pub fn tan(&mut self) -> Result<ResponseAction, String> {
+    pub fn tan(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -310,11 +310,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].tan().into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Secant
-    pub fn sec(&mut self) -> Result<ResponseAction, String> {
+    pub fn sec(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -323,11 +323,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack((1.0 / operands[0].cos()).into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Cosecant
-    pub fn csc(&mut self) -> Result<ResponseAction, String> {
+    pub fn csc(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -336,11 +336,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack((1.0 / operands[0].sin()).into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Cotangent
-    pub fn cot(&mut self) -> Result<ResponseAction, String> {
+    pub fn cot(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -349,11 +349,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack((1.0 / operands[0].tan()).into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Asin
-    pub fn asin(&mut self) -> Result<ResponseAction, String> {
+    pub fn asin(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -362,11 +362,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].asin().into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Acos
-    pub fn acos(&mut self) -> Result<ResponseAction, String> {
+    pub fn acos(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -375,11 +375,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].acos().into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Atan
-    pub fn atan(&mut self) -> Result<ResponseAction, String> {
+    pub fn atan(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -388,11 +388,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].atan().into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Change sign
-    pub fn chs(&mut self) -> Result<ResponseAction, String> {
+    pub fn chs(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -402,11 +402,11 @@ impl Engine {
         // Put result on stack
         let result = operands[0] * -1.0;
         let _ = self.add_item_to_stack(result.into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Logarithm
-    pub fn log(&mut self) -> Result<ResponseAction, String> {
+    pub fn log(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -415,11 +415,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].log(10.0).into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Logarithm with custom base
-    pub fn logb(&mut self) -> Result<ResponseAction, String> {
+    pub fn logb(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -428,11 +428,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].log(operands[1]).into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Natural logarihm
-    pub fn ln(&mut self) -> Result<ResponseAction, String> {
+    pub fn ln(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -441,11 +441,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].ln().into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Absolute value
-    pub fn abs(&mut self) -> Result<ResponseAction, String> {
+    pub fn abs(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -454,11 +454,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].abs().into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Equal to
-    pub fn eq(&mut self) -> Result<ResponseAction, String> {
+    pub fn eq(&mut self) -> Result<MessageAction, String> {
         // Get operands
         // TODO: maybe make this work with strings
         let operands = match self.get_operands_as_f(2) {
@@ -469,11 +469,11 @@ impl Engine {
         // Put result on stack
         let result = (operands[0] == operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Greater than
-    pub fn gt(&mut self) -> Result<ResponseAction, String> {
+    pub fn gt(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -483,11 +483,11 @@ impl Engine {
         // Put result on stack
         let result = (operands[0] > operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Less than
-    pub fn lt(&mut self) -> Result<ResponseAction, String> {
+    pub fn lt(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -497,11 +497,11 @@ impl Engine {
         // Put result on stack
         let result = (operands[0] < operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Greater than or equal to
-    pub fn gte(&mut self) -> Result<ResponseAction, String> {
+    pub fn gte(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -511,11 +511,11 @@ impl Engine {
         // Put result on stack
         let result = (operands[0] >= operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Less than or equal to
-    pub fn lte(&mut self) -> Result<ResponseAction, String> {
+    pub fn lte(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -525,11 +525,11 @@ impl Engine {
         // Put result on stack
         let result = (operands[0] <= operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // round to nearest int
-    pub fn round(&mut self) -> Result<ResponseAction, String> {
+    pub fn round(&mut self) -> Result<MessageAction, String> {
         // Get operand
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -538,11 +538,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].round().into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Calculate 1/x
-    pub fn invert(&mut self) -> Result<ResponseAction, String> {
+    pub fn invert(&mut self) -> Result<MessageAction, String> {
         // Get operand
         let operands = match self.get_operands_as_f(1) {
             Ok(content) => content,
@@ -551,18 +551,18 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack((1_f64 / operands[0]).into());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Drop last item from stack
-    pub fn drop(&mut self) -> Result<ResponseAction, String> {
+    pub fn drop(&mut self) -> Result<MessageAction, String> {
         // Remove last item from stack
         self.stack.pop();
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Swap last two items on stack
-    pub fn swap(&mut self) -> Result<ResponseAction, String> {
+    pub fn swap(&mut self) -> Result<MessageAction, String> {
         // Get last two values from stack
         let operands = match self.get_operands_raw(2) {
             Ok(content) => content,
@@ -572,11 +572,11 @@ impl Engine {
         // Insert in reverse order
         let _ = self.add_item_to_stack(operands[1].clone());
         let _ = self.add_item_to_stack(operands[0].clone());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Duplicate the last item of the stack
-    pub fn dup(&mut self) -> Result<ResponseAction, String> {
+    pub fn dup(&mut self) -> Result<MessageAction, String> {
         // Get the last value from the stack
         let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
@@ -586,33 +586,33 @@ impl Engine {
         // Insert twice
         let _ = self.add_item_to_stack(operands[0].clone());
         let _ = self.add_item_to_stack(operands[0].clone());
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Roll down
-    pub fn roll_down(&mut self) -> Result<ResponseAction, String> {
+    pub fn roll_down(&mut self) -> Result<MessageAction, String> {
         if self.stack.len() > 0 {
             // Rotate stack right
             self.stack.rotate_right(1);
-            Ok(ResponseAction::SendStack)
+            Ok(MessageAction::SendStack)
         } else {
             Err(String::from("Cannot roll empty stack"))
         }
     }
 
     // Roll up
-    pub fn roll_up(&mut self) -> Result<ResponseAction, String> {
+    pub fn roll_up(&mut self) -> Result<MessageAction, String> {
         if self.stack.len() > 0 {
             // Rotate stack left
             self.stack.rotate_left(1);
-            Ok(ResponseAction::SendStack)
+            Ok(MessageAction::SendStack)
         } else {
             Err(String::from("Cannot roll empty stack"))
         }
     }
 
     // Store value in variable
-    pub fn store(&mut self) -> Result<ResponseAction, String> {
+    pub fn store(&mut self) -> Result<MessageAction, String> {
         // Get 2 operands from stack
         let operands = match self.get_operands_raw(2) {
             Ok(content) => content,
@@ -631,11 +631,11 @@ impl Engine {
             // Error if attempted to store in name not starting with @
             return Err(String::from("Cannot store in non-variable object"));
         }
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Delete variable
-    pub fn purge(&mut self) -> Result<ResponseAction, String> {
+    pub fn purge(&mut self) -> Result<MessageAction, String> {
         // Get operand from stack
         let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
@@ -658,11 +658,11 @@ impl Engine {
             // Error if attempted to store in name not starting with @
             return Err(String::from("Cannot delete non-variable object"));
         }
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
     // Store value in variable, with inverted argument order
-    pub fn invstore(&mut self) -> Result<ResponseAction, String> {
+    pub fn invstore(&mut self) -> Result<MessageAction, String> {
         match self.swap() {
             Ok(_) => {}
             Err(error) => return Err(error),
@@ -670,12 +670,12 @@ impl Engine {
         self.store()
     }
 
-    pub fn clear(&mut self) -> Result<ResponseAction, String> {
+    pub fn clear(&mut self) -> Result<MessageAction, String> {
         self.stack = Vec::new();
-        Ok(ResponseAction::SendStack)
+        Ok(MessageAction::SendStack)
     }
 
-    pub fn undo(&mut self) -> Result<ResponseAction, String> {
+    pub fn undo(&mut self) -> Result<MessageAction, String> {
         if self.history.len() > 1 {
             // Throw away current stack
             _ = self.history.pop_back();
@@ -685,13 +685,13 @@ impl Engine {
             _ = self.variable_history.pop_back();
             // Restore previous state of variables
             self.variables = self.variable_history.pop_back().unwrap();
-            Ok(ResponseAction::SendStack)
+            Ok(MessageAction::SendStack)
         } else {
             Err(String::from("Cannot undo further"))
         }
     }
 
-    pub fn list_commands(&mut self) -> Result<ResponseAction, String> {
-        Ok(ResponseAction::SendCommands)
+    pub fn list_commands(&mut self) -> Result<MessageAction, String> {
+        Ok(MessageAction::SendCommands)
     }
 }

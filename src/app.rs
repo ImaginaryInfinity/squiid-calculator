@@ -3,7 +3,7 @@ use std::{collections::HashMap, io, thread};
 use lazy_static::lazy_static;
 use squiid_engine::{
     extract_data,
-    protocol::{ResponsePayload, ResponseType, ServerResponse},
+    protocol::{MessagePayload, MessageType, ServerMessage},
 };
 use unicode_width::UnicodeWidthStr;
 
@@ -149,25 +149,25 @@ impl Default for App {
     }
 }
 
-fn update_stack_or_error(msg: ServerResponse, app: &mut App) {
+fn update_stack_or_error(msg: ServerMessage, app: &mut App) {
     // TODO: make a seperate display for commands
-    match msg.response_type {
-        ResponseType::Stack => {
-            app.stack = extract_data!(msg.payload, ResponsePayload::Stack)
+    match msg.message_type {
+        MessageType::Stack => {
+            app.stack = extract_data!(msg.payload, MessagePayload::Stack)
                 .iter()
                 .map(|item| item.to_string())
                 .collect();
         }
-        ResponseType::Error => {
+        MessageType::Error => {
             app.error = format!(
                 "Error: {}",
-                extract_data!(msg.payload, ResponsePayload::Error)
+                extract_data!(msg.payload, MessagePayload::Error)
             );
         }
-        ResponseType::Commands => todo!(),
+        MessageType::Commands => todo!(),
         // quit doesn't need any special behavior. the frontend quits when
         // the backend server thread finishes
-        ResponseType::QuitSig => (),
+        MessageType::QuitSig => (),
     }
 }
 
@@ -252,7 +252,7 @@ fn rpn_input(mut app: &mut App, socket: &Socket, c: char) {
 
     // query engine for available commands
     let binding = send_data(socket, "commands");
-    let commands = extract_data!(binding.payload, ResponsePayload::Commands);
+    let commands = extract_data!(binding.payload, MessagePayload::Commands);
 
     // Check if input box contains a command, if so, automatically execute it
     if commands.contains(&app.input) {
@@ -502,7 +502,7 @@ pub fn run_app<B: Backend>(
         // Update stack if there is currently an error, since the last request will have gotten the error not the stack
         if !app.error.is_empty() {
             let msg = send_data(socket, "refresh");
-            app.stack = extract_data!(msg.payload, ResponsePayload::Stack)
+            app.stack = extract_data!(msg.payload, MessagePayload::Stack)
                 .iter()
                 .map(|item| item.to_string())
                 .collect();

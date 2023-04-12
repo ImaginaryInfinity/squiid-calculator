@@ -4,7 +4,7 @@ use nng::Socket;
 
 use crate::{
     engine::Engine,
-    protocol::{ResponseAction, ResponsePayload, ResponseType, ServerResponse},
+    protocol::{MessageAction, MessagePayload, MessageType, ServerMessage},
 };
 
 // function to check if a string is numeric (includes floats)
@@ -24,10 +24,10 @@ pub fn is_string_numeric(str: &str) -> bool {
 
 pub fn send_response(
     socket: &Socket,
-    response_type: ResponseType,
-    response_payload: ResponsePayload,
+    response_type: MessageType,
+    response_payload: MessagePayload,
 ) -> Result<(), serde_json::Error> {
-    let response = ServerResponse::new(response_type, response_payload);
+    let response = ServerMessage::new(response_type, response_payload);
 
     let json = serde_json::to_string(&response)?;
 
@@ -45,7 +45,7 @@ macro_rules! function_map_entry {
     };
 }
 
-type EngineFunction = dyn Fn(&mut Engine) -> Result<ResponseAction, String>;
+type EngineFunction = dyn Fn(&mut Engine) -> Result<MessageAction, String>;
 
 pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     let mut function_map = HashMap::new();
@@ -96,7 +96,7 @@ pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     // manually insert refresh since it doesn't use an engine method
     function_map.insert(
         String::from("refresh"),
-        Box::new(|_engine: &mut Engine| Ok(ResponseAction::SendStack)),
+        Box::new(|_engine: &mut Engine| Ok(MessageAction::SendStack)),
     );
 
     function_map

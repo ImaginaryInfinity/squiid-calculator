@@ -6,29 +6,29 @@ use crate::bucket::Bucket;
 
 // server response type for internal handling
 #[derive(Debug, PartialEq)]
-pub enum ResponseAction {
+pub enum MessageAction {
     SendStack,
     SendCommands,
 }
 
 // response struct
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct ServerResponse {
-    pub response_type: ResponseType,
-    pub payload: ResponsePayload,
+pub struct ServerMessage {
+    pub message_type: MessageType,
+    pub payload: MessagePayload,
 }
 
-impl ServerResponse {
-    pub fn new(response_type: ResponseType, response_payload: ResponsePayload) -> Self {
+impl ServerMessage {
+    pub fn new(message_type: MessageType, message_payload: MessagePayload) -> Self {
         Self {
-            response_type: response_type,
-            payload: response_payload,
+            message_type: message_type,
+            payload: message_payload,
         }
     }
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub enum ResponseType {
+pub enum MessageType {
     #[serde(rename = "stack")]
     Stack,
     #[serde(rename = "error")]
@@ -40,7 +40,7 @@ pub enum ResponseType {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub enum ResponsePayload {
+pub enum MessagePayload {
     #[serde(rename = "stack")]
     Stack(Vec<Bucket>),
     #[serde(rename = "commands")]
@@ -51,7 +51,7 @@ pub enum ResponsePayload {
     QuitSig(Option<u8>), // this should always be set to none
 }
 
-// macro for getting data out of response payload
+// macro for getting data out of message payload
 #[macro_export]
 macro_rules! extract_data {
     ($payload:expr, $variant:path) => {

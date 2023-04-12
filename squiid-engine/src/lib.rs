@@ -3,7 +3,7 @@ pub mod engine;
 pub mod protocol;
 pub mod utils;
 
-use std::borrow::BorrowMut;
+use std::{borrow::BorrowMut, ffi::CStr, os::raw::c_char};
 
 use bucket::Bucket;
 use engine::Engine;
@@ -18,18 +18,35 @@ use crate::{
 
 const DEFAULT_ADDRESS: &'static str = "tcp://*:33242";
 
-pub fn start_server(address: Option<&str>) {
-    // create zeromq socket to listen on
-    let responder = Socket::new(Protocol::Rep0).unwrap();
+#[no_mangle]
+pub extern "C" fn start_server_exposed(address: *const c_char) {
+    let address_to_bind = if address.is_null() {
+        DEFAULT_ADDRESS
+    } else {
+        unsafe { CStr::from_ptr(address) }
+            .to_str()
+            .expect("Input is not valid UTF-8")
+    };
 
+    start_server(Some(address_to_bind));
+}
+
+pub fn start_server(address: Option<&str>) {
     // Use default address unless one was specified from the command line
     let address_to_bind = match address {
         Some(adr) => adr,
         None => DEFAULT_ADDRESS,
     };
 
+    // create zeromq socket to listen on
+    let responder = Socket::new(Protocol::Rep0).unwrap();
+
     // Print and bind to selected port
-    assert!(responder.listen(address_to_bind).is_ok());
+    assert!(
+        responder.listen(address_to_bind).is_ok(),
+        "could not bind to address {:?}. if you're using this as a shared object file, are you encoding the input to utf-8 bytes?",
+        address_to_bind
+    );
 
     // create message variable and engine
     let mut msg: Message;

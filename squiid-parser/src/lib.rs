@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use log::debug;
 
+pub mod exposed;
+
 // Left/Right Associativity enum for distinguising between right associative operations such as power
 #[derive(PartialEq)]
 enum Associativity {

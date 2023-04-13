@@ -21,7 +21,7 @@ pub struct ServerMessage {
 impl ServerMessage {
     pub fn new(message_type: MessageType, message_payload: MessagePayload) -> Self {
         Self {
-            message_type: message_type,
+            message_type,
             payload: message_payload,
         }
     }

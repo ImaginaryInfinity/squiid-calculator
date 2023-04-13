@@ -4,7 +4,7 @@ use nng::Socket;
 
 use crate::{
     engine::Engine,
-    protocol::{MessageAction, MessagePayload, MessageType, ServerMessage},
+    protocol::{ClientMessage, MessageAction, MessagePayload, MessageType, ServerMessage},
 };
 
 // function to check if a string is numeric (includes floats)
@@ -27,12 +27,22 @@ pub fn send_response(
     response_type: MessageType,
     response_payload: MessagePayload,
 ) -> Result<(), serde_json::Error> {
-    let response = ServerMessage::new(response_type, response_payload);
+    let server_response = ServerMessage::new(response_type, response_payload);
 
-    let json = serde_json::to_string(&response)?;
+    let json = serde_json::to_string(&server_response)?;
 
     socket.send(json.as_bytes()).unwrap();
     Ok(())
+}
+
+pub fn recv_data(socket: &Socket) -> Result<ClientMessage, serde_json::Error> {
+    // recieve data from client
+    let msg = socket.recv().unwrap();
+    // Convert received message to a string
+    let recieved = std::str::from_utf8(&msg).unwrap();
+
+    let client_response: ClientMessage = serde_json::from_str(recieved)?;
+    Ok(client_response)
 }
 
 // function map stuff for creating a hashmap of available functions

@@ -10,11 +10,11 @@ use bucket::Bucket;
 use engine::Engine;
 use protocol::MessageAction;
 
-use nng::{Message, Protocol, Socket};
+use nng::{Protocol, Socket};
 
 use crate::{
     protocol::{MessagePayload, MessageType},
-    utils::send_response,
+    utils::{recv_data, send_response},
 };
 
 const DEFAULT_ADDRESS: &'static str = "tcp://*:33242";
@@ -37,7 +37,6 @@ pub fn start_server(address: Option<&str>) {
     );
 
     // create message variable and engine
-    let mut msg: Message;
     let mut engine = Engine::new();
 
     // listen forever
@@ -48,9 +47,20 @@ pub fn start_server(address: Option<&str>) {
         }
 
         // recieve message from client
-        msg = responder.recv().unwrap();
-        // Convert received message to a string
-        let recieved = std::str::from_utf8(&msg).unwrap();
+        let data = recv_data(&responder);
+        // check if error was encountered when parsing JSON
+        let recieved = match data {
+            Ok(ref value) => &*value.payload,
+            Err(_) => {
+                // send error back to client and continue loop
+                let _ = send_response(
+                    &responder,
+                    MessageType::Error,
+                    MessagePayload::Error("invalid JSON data was sent to the server".to_string()),
+                );
+                continue;
+            }
+        };
 
         // Don't add to history if command is refresh or commands as it does not affect the stack
         if !["refresh", "commands"].contains(&recieved) {

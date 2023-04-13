@@ -66,7 +66,6 @@ The transmission protocol for sending and receiving data to and from the engine 
 
 ```json
 {
-    "transmission_type": "eval",
     "payload": "add"
 }
 ```
@@ -83,11 +82,6 @@ Something that you might get back from the server could look like this:
     ]
 }
 ```
-
-| Transmission Type | Payload                               |
-| ----------------- | ------------------------------------- |
-| eval              | String of RPN calculation to evaluate |
-| command           | Command to execute                    |
 
 | Response Type | Payload                                                            |
 | ------------- | ------------------------------------------------------------------ |

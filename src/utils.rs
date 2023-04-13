@@ -3,9 +3,14 @@ use std::{net::TcpListener, ops::Range};
 use nng::{Message, Socket};
 use squiid_engine::protocol::ServerMessage;
 
+use crate::protocol::ClientMessage;
+
 // Send data to backend
 pub fn send_data(socket: &Socket, command: &str) -> ServerMessage {
-    let _ = socket.send(command.as_bytes());
+    let serialized_data: String =
+        serde_json::to_string(&ClientMessage::new(command.to_owned())).unwrap();
+
+    let _ = socket.send(serialized_data.as_bytes());
     let msg = socket.recv().unwrap();
 
     deserialize_message(msg)

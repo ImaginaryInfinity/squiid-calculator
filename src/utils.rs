@@ -1,9 +1,7 @@
 use std::{net::TcpListener, ops::Range};
 
 use nng::{Message, Socket};
-use squiid_engine::protocol::ServerMessage;
-
-use crate::protocol::ClientMessage;
+use squiid_engine::protocol::{ClientMessage, ServerMessage};
 
 // Send data to backend
 pub fn send_data(socket: &Socket, command: &str) -> ServerMessage {

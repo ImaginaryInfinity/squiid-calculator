@@ -11,6 +11,20 @@ pub enum MessageAction {
     SendCommands,
 }
 
+// client message datatype
+#[derive(Deserialize, Serialize, Debug)]
+pub struct ClientMessage {
+    pub payload: String,
+}
+
+impl ClientMessage {
+    pub fn new(message_payload: String) -> Self {
+        Self {
+            payload: message_payload,
+        }
+    }
+}
+
 // response struct
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ServerMessage {

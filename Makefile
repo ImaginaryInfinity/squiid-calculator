@@ -115,6 +115,5 @@ windows-installer: windows-build
 	cp LICENSE package-build/LICENSE.txt
 	cp target/x86_64-pc-windows-gnu/release/squiid.exe package-build
 
-	docker run --rm -i -v "$$PWD/package-build:/work" amake/innosetup squiid.iss
-
-	mv package-build/Output/squiid-installer.exe ./
+	# build the windows installer with an output directory of the current directory
+	docker run --rm -i -v "$$PWD/package-build:/work" amake/innosetup squiid.iss /O.\\

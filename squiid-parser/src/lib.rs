@@ -5,29 +5,33 @@ use logos::Logos;
 #[logos(subpattern identifier=r"[_a-zA-Z][_0-9a-zA-Z]*")]
 #[logos(subpattern float=r"[0-9]+\.[0-9]+")]
 pub enum Token {
-
     // identifier followed by optional spaces followed by an opening parenthesis
     // will match everything until the closing parenthesis
     #[regex(r"(?&identifier)\s*\([^()]*\)")]
     Function,
+    #[token(",")]
+    Comma,
 
     // identifier
     #[regex(r"(?&identifier)")]
     VariableAssign,
-    // $ followed by identifier 
+    // $ followed by identifier
     #[regex(r"\$(?&identifier)")]
     VariableRecal,
+    // # followed by identifier
+    #[regex(r"#(?&identifier)")]
+    Constant,
 
     // optional negative sign
     // optional float
     // an e followed by an option + or -
     // 1 or more digits (the number following the e)
     // an optional decimal point followed by 1 or more digits (3.1) or (.1)
-    #[regex(r"((?&float)?([eE][-+]?\d+(\.\d+)?))", priority=3)]
+    #[regex(r"((?&float)?([eE][-+]?\d+(\.\d+)?))", priority = 3)]
     ScientificNotation,
-    #[regex("(?&float)+", priority=2)]
+    #[regex("(?&float)+", priority = 2)]
     Float,
-    #[regex(r"[0-9]+", priority=1)]
+    #[regex(r"[0-9]+", priority = 1)]
     Int,
 
     #[token("@")]
@@ -45,6 +49,8 @@ pub enum Token {
     Multiply,
     #[token("/")]
     Divide,
+    #[token("%")]
+    Modulo,
     #[token("+")]
     Add,
     // this can be the unary operator (-3) or the binary operator (3-4)
@@ -53,15 +59,22 @@ pub enum Token {
 }
 
 // main shunting-yard parsing function
-pub fn parse(input: &str) -> () {
+pub fn parse(input: &str) -> Result<(), String> {
     let lex = Token::lexer(input);
-    
+
     for (token, range) in lex.spanned() {
         match token {
             Ok(item) => {
                 println!("{:?}", item);
-            },
-            Err(_) => println!("Unexpected token: {:?}", &input[range.start..range.end]),
+            }
+            Err(_) => {
+                return Err(format!(
+                    "Unexpected token: {:?}",
+                    &input[range.start..range.end]
+                ))
+            }
         }
     }
+
+    Ok(())
 }

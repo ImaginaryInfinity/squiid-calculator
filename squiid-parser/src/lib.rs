@@ -48,12 +48,20 @@ pub enum Token {
     #[token("+")]
     Add,
     // this can be the unary operator (-3) or the binary operator (3-4)
-    #[regex(r"-")]
+    #[token("-")]
     Subtract,
 }
 
 // main shunting-yard parsing function
-pub fn parse(input: &str) -> Vec<Token> {
-    let mut lex = Token::lexer(input);
-    lex.map(|t| t.unwrap()).collect()
+pub fn parse(input: &str) -> () {
+    let lex = Token::lexer(input);
+    
+    for (token, range) in lex.spanned() {
+        match token {
+            Ok(item) => {
+                println!("{:?}", item);
+            },
+            Err(_) => println!("Unexpected token: {:?}", &input[range.start..range.end]),
+        }
+    }
 }

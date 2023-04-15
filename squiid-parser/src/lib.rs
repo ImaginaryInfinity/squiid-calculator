@@ -1,26 +1,25 @@
 use logos::Logos;
 
-#[derive(Logos, Debug, PartialEq)]
+#[derive(Logos, Debug)]
 #[logos(skip r"[ \t\n\f]+")]
 #[logos(subpattern identifier=r"[_a-zA-Z][_0-9a-zA-Z]*")]
 #[logos(subpattern float=r"[0-9]+\.[0-9]+")]
-pub enum Token {
+pub enum Token<'a> {
     // identifier followed by optional spaces followed by an opening parenthesis
-    // will match everything until the closing parenthesis
-    #[regex(r"(?&identifier)\s*\([^()]*\)")]
-    Function,
+    #[regex(r"(?&identifier)\s*\(")]
+    Function(&'a str),
     #[token(",")]
-    Comma,
+    Comma(&'a str),
 
     // identifier
     #[regex(r"(?&identifier)")]
-    VariableAssign,
+    VariableAssign(&'a str),
     // $ followed by identifier
     #[regex(r"\$(?&identifier)")]
-    VariableRecal,
+    VariableRecal(&'a str),
     // # followed by identifier
     #[regex(r"#(?&identifier)")]
-    Constant,
+    Constant(&'a str),
 
     // optional negative sign
     // optional float
@@ -28,53 +27,100 @@ pub enum Token {
     // 1 or more digits (the number following the e)
     // an optional decimal point followed by 1 or more digits (3.1) or (.1)
     #[regex(r"((?&float)?([eE][-+]?\d+(\.\d+)?))", priority = 3)]
-    ScientificNotation,
+    ScientificNotation(&'a str),
     #[regex("(?&float)+", priority = 2)]
-    Float,
+    Float(&'a str),
     #[regex(r"[0-9]+", priority = 1)]
-    Int,
+    Int(&'a str),
 
     #[token("@")]
-    PrevAns,
+    PrevAns(&'a str),
 
     #[token("(")]
-    LParen,
+    LParen(&'a str),
     #[token(")")]
-    RParen,
+    RParen(&'a str),
     #[token("=")]
-    Equal,
+    Equal(&'a str),
     #[token("^")]
-    Power,
+    Power(&'a str),
     #[token("*")]
-    Multiply,
+    Multiply(&'a str),
     #[token("/")]
-    Divide,
+    Divide(&'a str),
     #[token("%")]
-    Modulo,
+    Modulo(&'a str),
     #[token("+")]
-    Add,
+    Add(&'a str),
     // this can be the unary operator (-3) or the binary operator (3-4)
     #[token("-")]
-    Subtract,
+    Subtract(&'a str),
+
+    Negative(&'a str),
+}
+
+// PartialEq implementation that ignores the content of the enum
+impl<'a> PartialEq for Token<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        std::mem::discriminant(self) == std::mem::discriminant(other)
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        std::mem::discriminant(self) != std::mem::discriminant(other)
+    }
 }
 
 // main shunting-yard parsing function
-pub fn parse(input: &str) -> Result<(), String> {
-    let lex = Token::lexer(input);
+pub fn parse(input: &str) -> Result<Vec<Token>, String> {
+    let lex = Token::lexer(input).spanned().peekable();
+    let mut tokens = Vec::new();
 
-    for (token, range) in lex.spanned() {
-        match token {
-            Ok(item) => {
-                println!("{:?}", item);
+    for (index, (token, range)) in lex.enumerate() {
+        if token.is_err() {
+            return Err(format!(
+                "Unexpected token: {:?}",
+                &input[range.start..range.end]
+            ));
+        }
+
+        let cur_token = token.unwrap();
+
+        match cur_token {
+            Token::Subtract(_) => {
+                // parse whether this is a negative sign or a minus operator
+                // it is a negative sign if:
+                //
+                // at the beginning of an expression
+                // at the beginning of an opening parenthesis (-3+6)
+                // after another operator (3+-5, 3*-5, 3^-5)
+                // as an argument in a function, so after a comma (function(3, -3))
+
+                // at the beginning of an expression
+                if index == 0 {
+                    tokens.push(Token::Negative("-"));
+                } else {
+                    match *tokens.last().unwrap() {
+                        // at the beginning of an opening parenthesis (-3+6)
+                        Token::RParen("(") |
+                        // after another operator (3+-5, 3*-5, 3^-5)
+                        Token::Add("+") | Token::Subtract("-") | Token::Modulo("%") | Token::Multiply("*") | Token::Divide("/") | Token::Power("^") | Token::Equal("=") |
+                        // as an argument in a function, so after a comma (function(3, -3))
+                        Token::Comma(",") => {
+                            tokens.push(Token::Negative("-"));
+                        },
+                        _ => tokens.push(Token::Subtract("-")),
+                    }
+                }
+                // // at the beginning of an opening parenthesis (-3+6)
+                // } else if *tokens.last().unwrap() == Token::LParen("(") {
+                //     tokens.push(Token::Negative("-"));
+
+                // // after another operator (3+-5, 3*-5, 3^-5)
+                // } else if *tokens.last().unwrap() ==
             }
-            Err(_) => {
-                return Err(format!(
-                    "Unexpected token: {:?}",
-                    &input[range.start..range.end]
-                ))
-            }
+            item => tokens.push(item),
         }
     }
 
-    Ok(())
+    Ok(tokens)
 }

@@ -70,8 +70,8 @@ impl<'a> PartialEq for Token<'a> {
     }
 }
 
-// main shunting-yard parsing function
-pub fn parse(input: &str) -> Result<Vec<Token>, String> {
+// lex a given input string
+fn lex(input: &str) -> Result<Vec<Token>, String> {
     let lex = Token::lexer(input).spanned().peekable();
     let mut tokens = Vec::new();
 
@@ -111,16 +111,14 @@ pub fn parse(input: &str) -> Result<Vec<Token>, String> {
                         _ => tokens.push(Token::Subtract("-")),
                     }
                 }
-                // // at the beginning of an opening parenthesis (-3+6)
-                // } else if *tokens.last().unwrap() == Token::LParen("(") {
-                //     tokens.push(Token::Negative("-"));
-
-                // // after another operator (3+-5, 3*-5, 3^-5)
-                // } else if *tokens.last().unwrap() ==
             }
             item => tokens.push(item),
         }
     }
 
     Ok(tokens)
+}
+
+pub fn parse(input: &str) -> Vec<Token> {
+    lex(input).unwrap()
 }

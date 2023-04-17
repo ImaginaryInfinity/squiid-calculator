@@ -21,12 +21,11 @@ pub enum Token<'a> {
     #[regex(r"#(?&identifier)")]
     Constant(&'a str),
 
-    // optional negative sign
-    // optional float
+    // optional int/float
     // an e followed by an option + or -
     // 1 or more digits (the number following the e)
     // an optional decimal point followed by 1 or more digits (3.1) or (.1)
-    #[regex(r"((?&float)?([eE][-+]?\d+(\.\d+)?))", priority = 3)]
+    #[regex(r"[0-9]*\.?[0-9]+([eE][-+]?\d+(\.\d+)?)", priority = 3)]
     ScientificNotation(&'a str),
     #[regex("(?&float)+", priority = 2)]
     Float(&'a str),

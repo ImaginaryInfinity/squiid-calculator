@@ -39,6 +39,9 @@ pub fn start_server(address: Option<&str>) {
     // create message variable and engine
     let mut engine = Engine::new();
 
+    // create hashmap of available commands
+    let commands = utils::create_function_map();
+
     // listen forever
     loop {
         if engine.history.len() > 20 {
@@ -69,9 +72,6 @@ pub fn start_server(address: Option<&str>) {
             // Add current variable state to history
             engine.variable_history.push_back(engine.variables.clone());
         }
-
-        // create hashmap of available commands
-        let commands = utils::create_function_map();
 
         let result = match recieved {
             "quit" => break,

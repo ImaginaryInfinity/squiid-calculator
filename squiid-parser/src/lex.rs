@@ -43,7 +43,7 @@ fn parse_subtract_sign(tokens: &mut Vec<Token>) {
                 // get the token before the current negative sign
                 match tokens[index - 1] {
                     // at the beginning of an opening parenthesis (-3+6)
-                    Token::RParen("(") |
+                    Token::LParen("(") |
                     // after another operator (3+-5, 3*-5, 3^-5)
                     Token::Add("+") | Token::Subtract("-") | Token::Modulo("%") | Token::Multiply("*") | Token::Divide("/") | Token::Power("^") | Token::Equal("=") |
                     // as an argument in a function, so after a comma (function(3, -3))

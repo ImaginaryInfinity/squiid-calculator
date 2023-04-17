@@ -26,16 +26,6 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
         ("(", 1),
     ]);
 
-    let operator_mappings = HashMap::from([
-        ("+", "add"),
-        ("-", "subtract"),
-        ("/", "divide"),
-        ("*", "multiply"),
-        ("%", "mod"),
-        ("^", "power"),
-        ("=", "invstore"),
-    ]);
-
     let mut peekable_tokens = tokens.iter().peekable();
 
     while let Some(token) = peekable_tokens.next() {
@@ -76,7 +66,7 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
                         operator_stack.push(operator);
                         break;
                     } else {
-                        output_queue.push(operator_mappings.get(operator).unwrap_or(&operator));
+                        output_queue.push(operator);
                     }
                 }
             }
@@ -90,7 +80,7 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
                     if operator == "(" {
                         break;
                     } else {
-                        output_queue.push(operator_mappings.get(operator).unwrap_or(&operator));
+                        output_queue.push(operator);
                     }
                 }
 
@@ -127,7 +117,7 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
                         operator_stack.push(operator);
                         break;
                     } else {
-                        output_queue.push(operator_mappings.get(operator).unwrap_or(&operator));
+                        output_queue.push(operator);
                     }
                 }
                 operator_stack.push(token_name);
@@ -156,7 +146,7 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
     }
 
     while let Some(operator) = operator_stack.pop() {
-        output_queue.push(operator_mappings.get(operator).unwrap_or(&operator));
+        output_queue.push(operator);
     }
 
     Ok(output_queue)

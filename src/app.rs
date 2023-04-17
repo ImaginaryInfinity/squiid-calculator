@@ -197,7 +197,7 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     // Iterate through the commands present in the expression
     for command_raw in rpn_expression.iter() {
         // Check if it is forbidden
-        if non_algebraic_commands.contains(&command_raw.as_str()) {
+        if non_algebraic_commands.contains(command_raw) {
             // Give error and stop trying to evaluate if the command is forbidden
             app.error = format!("Error: {} is invalid in algebraic mode", command_raw);
             return;
@@ -207,7 +207,7 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     // Iterate through expression
     for command_raw in rpn_expression.iter() {
         // Convert operator symbols to engine commands
-        let command = match command_raw.as_str() {
+        let command = match *command_raw {
             "+" => "add",
             "-" => "subtract",
             "*" => "multiply",

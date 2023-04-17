@@ -12,7 +12,7 @@ const LEFT_SIDE_IMPLICIT: [Token; 7] = [
     RParen("_"),
 ];
 
-const RIGHT_SIDE_IMPLICIT: [Token; 9] = [
+const RIGHT_SIDE_IMPLICIT: [Token; 8] = [
     Function("_"),
     VariableRecal("_"),
     Constant("_"),
@@ -21,7 +21,6 @@ const RIGHT_SIDE_IMPLICIT: [Token; 9] = [
     Int("_"),
     PrevAns("_"),
     LParen("_"),
-    Negative("_"),
 ];
 
 fn parse_subtract_sign(tokens: &mut Vec<Token>) {
@@ -58,8 +57,11 @@ fn parse_subtract_sign(tokens: &mut Vec<Token>) {
     }
 
     // do replacements
-    for index in negative_replacements {
-        tokens[index] = Negative("-");
+    for (index, insertion_index) in negative_replacements.iter().enumerate() {
+        tokens[*insertion_index] = Int("-1");
+        // there is no need to check if this will be longer than the length of
+        // tokens, as there should never be a negative sign at the end of an expression
+        tokens.insert(insertion_index + 1 + index, Multiply("*"));
     }
 }
 
@@ -68,7 +70,7 @@ fn parse_implicit_multiplication(tokens: &mut Vec<Token>) {
     // Function, VariableRecal, Constant, ScientificNotation, Float, Int, PrevAns, RParen
     //
     // Right Side (peek token):
-    // Function, VariableRecal, Constant, ScientificNotation, Float, Int, PrevAns, LParen, Negative
+    // Function, VariableRecal, Constant, ScientificNotation, Float, Int, PrevAns, LParen
     //
     // Implicit multiplication happens if something on the left side list is followed by something on the right side list
 

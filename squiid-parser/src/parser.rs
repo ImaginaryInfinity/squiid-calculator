@@ -66,9 +66,6 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Vec<&'a str> {
                 }
                 operator_stack.push(token_name);
             }
-            Token::Negative(_) => {
-                output_queue.push("chs");
-            }
         }
     }
 

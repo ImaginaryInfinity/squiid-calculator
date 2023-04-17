@@ -96,29 +96,6 @@ fn parse_implicit_multiplication(tokens: &mut Vec<Token>) {
     }
 }
 
-fn parse_function_calls(tokens: &mut Vec<Token>) {
-    // split function tokens into the identifier and the opening parenthesis
-
-    let mut lparen_insertions = Vec::new();
-
-    for (index, token) in tokens.iter_mut().enumerate() {
-        match *token {
-            Function(name) => {
-                // mark need for LParen insertion
-                lparen_insertions.push(index + 1);
-                // trim off the trailing LParen
-                *token = Function(name.trim_end_matches('('));
-            }
-            _ => (),
-        }
-    }
-
-    // do insertions
-    for (index, insertion_index) in lparen_insertions.iter().enumerate() {
-        tokens.insert(*insertion_index + index, LParen("("));
-    }
-}
-
 // lex a given input string
 pub fn lex(input: &str) -> Result<Vec<Token>, String> {
     let mut lex = Token::lexer(input).spanned();
@@ -137,7 +114,6 @@ pub fn lex(input: &str) -> Result<Vec<Token>, String> {
 
     parse_subtract_sign(&mut tokens);
     parse_implicit_multiplication(&mut tokens);
-    parse_function_calls(&mut tokens);
 
     Ok(tokens)
 }

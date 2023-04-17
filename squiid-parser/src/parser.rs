@@ -6,7 +6,7 @@ use crate::tokens::Token;
 
 pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, String> {
     debug!("{:?}", tokens);
-    
+
     let mut output_queue: Vec<&'a str> = Vec::new();
     let mut operator_stack: Vec<&'a str> = Vec::new();
     let precedence_map = HashMap::from([
@@ -32,7 +32,11 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
     for token in tokens {
         debug!("output: {:?}, operator: {:?}", output_queue, operator_stack);
         match token {
-            Token::Function(token_name) | Token::LParen(token_name) => {
+            Token::Function(token_name) => {
+                operator_stack.push(token_name.trim_end_matches('('));
+                operator_stack.push("(");
+            }
+            Token::LParen(token_name) => {
                 operator_stack.push(token_name);
             }
             Token::VariableAssign(token_name)

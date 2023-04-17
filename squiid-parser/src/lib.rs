@@ -6,7 +6,6 @@ mod parser;
 mod tokens;
 
 pub fn parse(input: &str) -> Result<Vec<&str>, String> {
-
     // check for unmatched parenthesis
     if input.matches('(').count() != input.matches(')').count() {
         return Err("Mismatched parentheses: Unmatched closing parenthesis".to_string());

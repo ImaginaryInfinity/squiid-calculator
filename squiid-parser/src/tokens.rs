@@ -55,6 +55,8 @@ pub enum Token<'a> {
     // this can be the unary operator (-3) or the binary operator (3-4)
     #[token("-")]
     Subtract(&'a str),
+
+    Negative(&'a str),
 }
 
 // PartialEq implementation that ignores the content of the enum

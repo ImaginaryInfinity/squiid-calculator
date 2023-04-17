@@ -57,11 +57,8 @@ fn parse_subtract_sign(tokens: &mut Vec<Token>) {
     }
 
     // do replacements
-    for (index, insertion_index) in negative_replacements.iter().enumerate() {
-        tokens[*insertion_index] = Int("-1");
-        // there is no need to check if this will be longer than the length of
-        // tokens, as there should never be a negative sign at the end of an expression
-        tokens.insert(insertion_index + 1 + index, Multiply("*"));
+    for index in negative_replacements {
+        tokens[index] = Negative("-");
     }
 }
 

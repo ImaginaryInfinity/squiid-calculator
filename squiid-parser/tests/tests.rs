@@ -1,26 +1,4 @@
-use squiid_parser::{
-    parse,
-    utils::{is_string_alphabetic, is_string_numeric},
-};
-
-#[test]
-fn test_classifier_functions() {
-    // test numeric function
-    assert_eq!(is_string_numeric("abc"), false);
-    assert_eq!(is_string_numeric("1a"), false);
-    assert_eq!(is_string_numeric("12e.a"), false);
-    assert_eq!(is_string_numeric("123"), true);
-    assert_eq!(is_string_numeric("1.2"), true);
-    assert_eq!(is_string_numeric("1.2e7"), true);
-
-    // test alphabetic function
-    assert_eq!(is_string_alphabetic("abc"), true);
-    assert_eq!(is_string_alphabetic("1a"), false);
-    assert_eq!(is_string_alphabetic("12e.a"), false);
-    assert_eq!(is_string_alphabetic("123"), false);
-    assert_eq!(is_string_alphabetic("1.2"), false);
-    assert_eq!(is_string_alphabetic("1.2e7"), false);
-}
+use squiid_parser::parse;
 
 #[test]
 fn test_parsing() {

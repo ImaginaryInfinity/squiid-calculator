@@ -39,7 +39,10 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
     let mut peekable_tokens = tokens.iter().peekable();
 
     while let Some(token) = peekable_tokens.next() {
-        debug!("output: {:?}, operator: {:?}, chs_function: {:?}", output_queue, operator_stack, chs_parenthesis);
+        debug!(
+            "output: {:?}, operator: {:?}, chs_function: {:?}",
+            output_queue, operator_stack, chs_parenthesis
+        );
         match token {
             Token::Function(token_name) => {
                 operator_stack.push(token_name.trim_end_matches('('));
@@ -95,14 +98,13 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
                 // function or parenthesis and we need to apply the chs function
                 for i in 0..chs_parenthesis.len() {
                     if chs_parenthesis[i] == 0 {
-
                         // insert the chs function second from top on the operator stack
                         let insertion_index = if operator_stack.len() < 2 {
                             0
                         } else {
                             operator_stack.len() - 2
                         };
-                    
+
                         operator_stack.insert(insertion_index, "chs");
 
                         // remove the element in the list which is 0

@@ -4,7 +4,7 @@ use log::debug;
 
 use crate::tokens::Token;
 
-pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Vec<&'a str> {
+pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, String> {
     let mut output_queue: Vec<&'a str> = Vec::new();
     let mut operator_stack: Vec<&'a str> = Vec::new();
     let precedence_map = HashMap::from([
@@ -87,5 +87,5 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Vec<&'a str> {
         output_queue.push(operator_mappings.get(operator).unwrap_or(&operator));
     }
 
-    output_queue
+    Ok(output_queue)
 }

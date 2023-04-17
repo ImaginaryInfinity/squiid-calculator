@@ -724,7 +724,10 @@ fn test_drop() {
     assert_eq!(engine.stack, vec![]);
 
     let result = engine.drop();
-    assert_eq!(result, Ok(squiid_engine::protocol::MessageAction::SendStack));
+    assert_eq!(
+        result,
+        Ok(squiid_engine::protocol::MessageAction::SendStack)
+    );
 }
 
 #[test]

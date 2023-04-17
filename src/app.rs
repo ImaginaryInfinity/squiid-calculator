@@ -188,7 +188,13 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     // reset cursor offset
     app.left_cursor_offset = 0;
     // Parse algebraic expression into postfix expression
-    let rpn_expression = squiid_parser::parse(entered_expression.trim());
+    let rpn_expression = match squiid_parser::parse(entered_expression.trim()) {
+        Ok(expr) => expr,
+        Err(e) => {
+            app.error = format!("Error: {}", e);
+            return;
+        }
+    };
 
     // Commands that cannot be used in algebraic mode
     let non_algebraic_commands = [

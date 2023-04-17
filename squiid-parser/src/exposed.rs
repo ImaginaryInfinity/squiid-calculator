@@ -9,7 +9,7 @@ extern "C" fn parse_exposed(input: *const c_char, outlen: *mut c_int) -> *mut *m
     let c_str = unsafe { CStr::from_ptr(input) };
     let input_string = c_str.to_str().expect("Invalid UTF-8 string");
 
-    let parsed_input = parse(input_string);
+    let parsed_input = parse(input_string).unwrap();
 
     // Convert parsed input to Vec<CString>
     let c_strings: Vec<CString> = parsed_input

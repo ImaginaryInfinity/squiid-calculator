@@ -4,6 +4,7 @@ use parser::shunting_yard_parser;
 mod lex;
 mod parser;
 mod tokens;
+mod exposed;
 
 pub fn parse(input: &str) -> Result<Vec<&str>, String> {
     // check for unmatched parenthesis

@@ -1,6 +1,11 @@
 // exposed function to the C API
 
-use std::{os::raw::{c_char, c_int}, ffi::{CStr, CString}, ptr, mem};
+use std::{
+    ffi::{CStr, CString},
+    mem,
+    os::raw::{c_char, c_int},
+    ptr,
+};
 
 use crate::parse;
 

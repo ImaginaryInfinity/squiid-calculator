@@ -1,10 +1,10 @@
 use crate::lex::lex;
 use parser::shunting_yard_parser;
 
-mod lex;
-mod parser;
-mod tokens;
 mod exposed;
+pub mod lex;
+pub mod parser;
+pub mod tokens;
 
 pub fn parse(input: &str) -> Result<Vec<&str>, String> {
     // check for unmatched parenthesis

@@ -5,6 +5,7 @@ use rust_decimal::Decimal;
 
 use crate::bucket::{Bucket, BucketTypes};
 use crate::utils::is_string_numeric;
+use crate::utils::ID_REGEX;
 use crate::MessageAction;
 
 // Evaluation engine struct
@@ -619,17 +620,14 @@ impl Engine {
             Err(error) => return Err(error),
         };
 
-        // Only store if first character of second operand is @
-        if operands[1].to_string().chars().next().unwrap() == '@' {
-            // Convert name to string
-            let mut varname = operands[1].to_string();
-            // Remove @ prefix
-            varname.remove(0);
+        // Only store if matches the identifier pattern
+        let varname = operands[1].to_string();
+        if ID_REGEX.is_match(&varname) {
             // Add variable to hashmap
             self.variables.insert(varname, operands[0].clone());
         } else {
-            // Error if attempted to store in name not starting with @
-            return Err(String::from("Cannot store in non-variable object"));
+            // Error if attempted to store in name which is not a valid ID
+            return Err(format!("Cannot store in non-variable object `{}`", varname));
         }
         Ok(MessageAction::SendStack)
     }
@@ -642,21 +640,17 @@ impl Engine {
             Err(error) => return Err(error),
         };
 
-        // Only try to delete if first character of second operand is @
-        if operands[0].to_string().chars().next().unwrap() == '@' {
-            // Convert name to string
-            let mut varname = operands[0].to_string();
-            // Remove @ prefix
-            varname.remove(0);
+        let varname = operands[0].to_string();
+        if ID_REGEX.is_match(&varname) {
             if self.variables.contains_key(&varname) {
                 // Remove variable from hashmap
                 self.variables.remove(&varname);
             } else {
-                return Err(String::from("Variable does not exist"));
+                return Err(format!("Variable `{}` does not exist", varname));
             }
         } else {
-            // Error if attempted to store in name not starting with @
-            return Err(String::from("Cannot delete non-variable object"));
+            // Error if attempted to purge name which is not a valid ID
+            return Err(format!("Cannot delete non-variable object `{}`", varname));
         }
         Ok(MessageAction::SendStack)
     }

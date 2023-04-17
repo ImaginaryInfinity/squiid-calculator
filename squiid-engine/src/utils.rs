@@ -1,11 +1,17 @@
 use std::{borrow::BorrowMut, collections::HashMap};
 
+use lazy_static::lazy_static;
 use nng::Socket;
+use regex::Regex;
 
 use crate::{
     engine::Engine,
     protocol::{ClientMessage, MessageAction, MessagePayload, MessageType, ServerMessage},
 };
+
+lazy_static! {
+    pub static ref ID_REGEX: regex::Regex = Regex::new(r"[_a-zA-Z][_0-9a-zA-Z]*").unwrap();
+}
 
 // function to check if a string is numeric (includes floats)
 pub fn is_string_numeric(str: &str) -> bool {

@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use log::debug;
+
 use crate::tokens::Token;
 
 pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Vec<&'a str> {
@@ -15,7 +17,7 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Vec<&'a str> {
         ("(", 1),
     ]);
 
-    let function_mappings = HashMap::from([
+    let operator_mappings = HashMap::from([
         ("+", "add"),
         ("-", "subtract"),
         ("/", "divide"),
@@ -26,6 +28,7 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Vec<&'a str> {
     ]);
 
     for token in tokens {
+        debug!("output: {:?}, operator: {:?}", output_queue, operator_stack);
         match token {
             Token::Function(token_name) | Token::LParen(token_name) => {
                 operator_stack.push(token_name);
@@ -39,7 +42,7 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Vec<&'a str> {
                         operator_stack.push(operator);
                         break;
                     } else {
-                        output_queue.push(operator);
+                        output_queue.push(operator_mappings.get(operator).unwrap_or(&operator));
                     }
                 }
             }
@@ -58,7 +61,7 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Vec<&'a str> {
                         operator_stack.push(operator);
                         break;
                     } else {
-                        output_queue.push(operator);
+                        output_queue.push(operator_mappings.get(operator).unwrap_or(&operator));
                     }
                 }
                 operator_stack.push(token_name);
@@ -70,7 +73,7 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Vec<&'a str> {
     }
 
     while let Some(operator) = operator_stack.pop() {
-        output_queue.push(operator);
+        output_queue.push(operator_mappings.get(operator).unwrap_or(&operator));
     }
 
     output_queue

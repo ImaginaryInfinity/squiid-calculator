@@ -804,10 +804,10 @@ fn test_store() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("-1.2".into());
-    let _ = engine.add_item_to_stack("a".into());
+    let _ = engine.add_item_to_stack("0".into());
 
     let _ = engine.add_item_to_stack("-1.2".into());
-    let _ = engine.add_item_to_stack("@a".into());
+    let _ = engine.add_item_to_stack("a".into());
 
     // test valid variable assignment
     let _ = engine.store();
@@ -815,7 +815,6 @@ fn test_store() {
 
     // test invalid variable assignment
     let result = engine.store();
-
     assert!(matches!(result, Err(_)));
 }
 
@@ -827,8 +826,8 @@ fn test_purge() {
         .variables
         .insert(String::from("a"), Bucket::from(-1.2));
 
-    let _ = engine.add_item_to_stack("@a".into());
-    let _ = engine.add_item_to_stack("@a".into());
+    let _ = engine.add_item_to_stack("a".into());
+    let _ = engine.add_item_to_stack("a".into());
 
     // test for variable presence
     assert_eq!(*engine.variables.get("a").unwrap(), Bucket::from(-1.2));
@@ -847,7 +846,7 @@ fn test_purge() {
 fn test_invstore() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("@a".into());
+    let _ = engine.add_item_to_stack("a".into());
     let _ = engine.add_item_to_stack("-1.2".into());
 
     let _ = engine.invstore();
@@ -915,7 +914,7 @@ fn test_undo() {
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     // test undo of variable assignment
-    let _ = engine.add_item_to_stack("@a".into());
+    let _ = engine.add_item_to_stack("a".into());
     push_to_history!(engine);
     let _ = engine.store();
     push_to_history!(engine);
@@ -926,7 +925,7 @@ fn test_undo() {
     push_to_history!(engine);
     assert_eq!(
         engine.stack,
-        vec![Bucket::from(1), Bucket::from(2), Bucket::from("@a"),]
+        vec![Bucket::from(1), Bucket::from(2), Bucket::from("a"),]
     );
     assert_eq!(engine.variables.get("a"), None);
 }

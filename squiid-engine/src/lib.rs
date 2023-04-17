@@ -1,4 +1,5 @@
 pub mod bucket;
+pub mod command_mappings;
 pub mod engine;
 pub mod exposed;
 pub mod protocol;
@@ -40,7 +41,7 @@ pub fn start_server(address: Option<&str>) {
     let mut engine = Engine::new();
 
     // create hashmap of available commands
-    let commands = utils::create_function_map();
+    let commands = command_mappings::create_function_map();
 
     // listen forever
     loop {

@@ -1,10 +1,10 @@
-use crate::lex::lex;
-use parser::shunting_yard_parser;
-
 mod exposed;
 pub mod lex;
 pub mod parser;
 pub mod tokens;
+
+use crate::lex::lex;
+use parser::{parse_implicit_multiplication, parse_subtract_sign, shunting_yard_parser};
 
 pub fn parse(input: &str) -> Result<Vec<&str>, String> {
     // check for unmatched parenthesis
@@ -12,6 +12,8 @@ pub fn parse(input: &str) -> Result<Vec<&str>, String> {
         return Err("Mismatched parentheses: Unmatched closing parenthesis".to_string());
     }
 
-    let tokens = lex(input)?;
+    let mut tokens = lex(input)?;
+    parse_subtract_sign(&mut tokens);
+    parse_implicit_multiplication(&mut tokens);
     shunting_yard_parser(tokens)
 }

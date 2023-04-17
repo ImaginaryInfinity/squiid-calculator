@@ -33,7 +33,13 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Vec<&'a str> {
             Token::Function(token_name) | Token::LParen(token_name) => {
                 operator_stack.push(token_name);
             }
-            Token::VariableAssign(token_name) | Token::VariableRecal(token_name) | Token::Constant(token_name) | Token::ScientificNotation(token_name) | Token::Float(token_name) | Token::Int(token_name) | Token::PrevAns(token_name) => {
+            Token::VariableAssign(token_name)
+            | Token::VariableRecal(token_name)
+            | Token::Constant(token_name)
+            | Token::ScientificNotation(token_name)
+            | Token::Float(token_name)
+            | Token::Int(token_name)
+            | Token::PrevAns(token_name) => {
                 output_queue.push(token_name);
             }
             Token::Comma(_) => {
@@ -55,9 +61,17 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Vec<&'a str> {
                     }
                 }
             }
-            Token::Equal(token_name) | Token::Power(token_name) | Token::Multiply(token_name) | Token::Divide(token_name) | Token::Modulo(token_name) | Token::Add(token_name) | Token::Subtract(token_name) => {
+            Token::Equal(token_name)
+            | Token::Power(token_name)
+            | Token::Multiply(token_name)
+            | Token::Divide(token_name)
+            | Token::Modulo(token_name)
+            | Token::Add(token_name)
+            | Token::Subtract(token_name) => {
                 while let Some(operator) = operator_stack.pop() {
-                    if operator == "(" || precedence_map.get(operator) < precedence_map.get(token_name) {
+                    if operator == "("
+                        || precedence_map.get(operator) < precedence_map.get(token_name)
+                    {
                         operator_stack.push(operator);
                         break;
                     } else {

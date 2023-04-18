@@ -1,15 +1,9 @@
-use logos::Logos;
+use squiid_parser::lexer::lex;
 use squiid_parser::tokens::Token;
 
 fn tokenize_and_compare(input: &str, expected_tokens: Vec<Token>) {
-    let mut lexer = Token::lexer(input);
-
-    for expected_token in expected_tokens {
-        let token = lexer.next();
-        assert_eq!(token, Some(Ok(expected_token)));
-    }
-
-    assert_eq!(lexer.next(), None);
+    let tokens = lex(input).unwrap();
+    assert_eq!(tokens, expected_tokens);
 }
 
 #[test]

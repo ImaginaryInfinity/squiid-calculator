@@ -1,9 +1,9 @@
 mod exposed;
-pub mod lex;
+pub mod lexer;
 pub mod parser;
 pub mod tokens;
 
-use crate::lex::lex;
+use crate::lexer::lex;
 use parser::{parse_implicit_multiplication, parse_subtract_sign, shunting_yard_parser};
 
 pub fn parse(input: &str) -> Result<Vec<&str>, String> {

@@ -203,7 +203,8 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
             | Token::Subtract(token_name) => {
                 while let Some(operator) = operator_stack.pop() {
                     if operator == "("
-                        || precedence_map.get(operator) < precedence_map.get(token_name)
+                        // functions should have the highest precedence  
+                        || precedence_map.get(operator).unwrap_or(&100) < precedence_map.get(token_name).unwrap_or(&0)
                     {
                         operator_stack.push(operator);
                         break;

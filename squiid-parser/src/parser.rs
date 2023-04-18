@@ -31,6 +31,7 @@ pub fn parse_subtract_sign(tokens: &mut Vec<Token>) {
     //
     // at the beginning of an expression
     // at the beginning of an opening parenthesis (-3+6)
+    // at the beginning of a function (func(-5))
     // after another operator (3+-5, 3*-5, 3^-5)
     // as an argument in a function, so after a comma (function(3, -3))
 
@@ -46,6 +47,8 @@ pub fn parse_subtract_sign(tokens: &mut Vec<Token>) {
                 match tokens[index - 1] {
                     // at the beginning of an opening parenthesis (-3+6)
                     Token::LParen("(") |
+                    // at the beginning of a function (func(-5))
+                    Token::Function(_) |
                     // after another operator (3+-5, 3*-5, 3^-5)
                     Token::Add("+") | Token::Subtract("-") | Token::Modulo("%") | Token::Multiply("*") | Token::Divide("/") | Token::Power("^") | Token::Equal("=") |
                     // as an argument in a function, so after a comma (function(3, -3))

@@ -235,20 +235,16 @@ impl Engine {
     }
 
     // Power
+    // TODO: decimal in pow
     pub fn power(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(2) {
+        let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let result = operands[0].checked_powd(operands[1]);
-        let result_string = match result {
-            Some(value) => value,
-            None => return Err("Overflow".to_string())
-        };
-        let _ = self.add_item_to_stack(result_string.into());
+        let _ = self.add_item_to_stack(operands[0].powf(operands[1]).into());
         Ok(MessageAction::SendStack)
     }
 
@@ -425,7 +421,7 @@ impl Engine {
         // Put result on stack
         let result = match operands[0].checked_log10() {
             Some(value) => value,
-            None => return Err("cannot take log10 of 0 or negative numbers".to_string())
+            None => return Err("cannot take log10 of 0 or negative numbers".to_string()),
         };
         let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
@@ -444,11 +440,11 @@ impl Engine {
 
         let top_log = match operands[0].checked_log10() {
             Some(value) => value,
-            None => return Err("cannot take log of 0 or negative numbers".to_string())
+            None => return Err("cannot take log of 0 or negative numbers".to_string()),
         };
         let bottom_log = match operands[1].checked_log10() {
             Some(value) => value,
-            None => return Err("cannot take log with base of 0 or negative numbers".to_string())
+            None => return Err("cannot take log with base of 0 or negative numbers".to_string()),
         };
 
         let result = top_log / bottom_log;
@@ -469,7 +465,7 @@ impl Engine {
         // Put result on stack
         let result = match operands[0].checked_ln() {
             Some(value) => value,
-            None => return Err("cannot take log10 of 0 or negative numbers".to_string())
+            None => return Err("cannot take log10 of 0 or negative numbers".to_string()),
         };
         let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
-use rust_decimal::Decimal;
+use rust_decimal::{Decimal, MathematicalOps};
 
 use crate::bucket::{Bucket, BucketTypes};
 use crate::utils::is_string_numeric;
@@ -237,27 +237,35 @@ impl Engine {
     // Power
     pub fn power(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(2) {
+        let operands = match self.get_operands_as_dec(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let result = operands[0].powf(operands[1]);
-        let _ = self.add_item_to_stack(result.into());
+        let result = operands[0].checked_powd(operands[1]);
+        let result_string = match result {
+            Some(value) => value,
+            None => return Err("Overflow".to_string())
+        };
+        let _ = self.add_item_to_stack(result_string.into());
         Ok(MessageAction::SendStack)
     }
 
     // Square root
     pub fn sqrt(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
+        let operands = match self.get_operands_as_dec(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].sqrt().into());
+        let result = match operands[0].sqrt() {
+            Some(value) => value,
+            None => return Err("Error calculating sqrt".to_string()),
+        };
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -409,39 +417,61 @@ impl Engine {
     // Logarithm
     pub fn log(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
+        let operands = match self.get_operands_as_dec(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].log(10.0).into());
+        let result = match operands[0].checked_log10() {
+            Some(value) => value,
+            None => return Err("cannot take log10 of 0 or negative numbers".to_string())
+        };
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
-    // Logarithm with custom base
+    // Logarithm with custom base using the change of base formula
     pub fn logb(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(2) {
+        let operands = match self.get_operands_as_dec(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
+        // change of base formula is defined as follows:
+        // log_b(a) = (log_d(a))/(log_d(b))
+
+        let top_log = match operands[0].checked_log10() {
+            Some(value) => value,
+            None => return Err("cannot take log of 0 or negative numbers".to_string())
+        };
+        let bottom_log = match operands[1].checked_log10() {
+            Some(value) => value,
+            None => return Err("cannot take log with base of 0 or negative numbers".to_string())
+        };
+
+        let result = top_log / bottom_log;
+
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].log(operands[1]).into());
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
     // Natural logarihm
     pub fn ln(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
+        let operands = match self.get_operands_as_dec(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].ln().into());
+        let result = match operands[0].checked_ln() {
+            Some(value) => value,
+            None => return Err("cannot take log10 of 0 or negative numbers".to_string())
+        };
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 

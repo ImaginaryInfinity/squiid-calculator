@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
+use rust_decimal::prelude::FromPrimitive;
+use rust_decimal::prelude::ToPrimitive;
 use rust_decimal::{Decimal, MathematicalOps};
 
 use crate::bucket::{Bucket, BucketTypes};
@@ -235,16 +237,31 @@ impl Engine {
     }
 
     // Power
-    // TODO: decimal in pow
     pub fn power(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(2) {
+        let operands = match self.get_operands_as_dec(2) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
+        let base = operands[0];
+        let exponent = operands[1];
+
+        // TODO: consider adding the option to use both rust_decimal and rug
+        // detect if exponent is decimal, if so, don't use decimal library as that estimates
+        let result = if exponent.fract() == Decimal::from_f64(0.0).unwrap() {
+            // is not a decimal
+            match base.checked_powd(exponent) {
+                Some(value) => value.to_f64().unwrap(),
+                None => return Err("overflow when raising to a power".to_string()),
+            }
+        } else {
+            // is a decimal
+            base.to_f64().unwrap().powf(exponent.to_f64().unwrap())
+        };
+
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].powf(operands[1]).into());
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 

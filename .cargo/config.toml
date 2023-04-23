@@ -3,3 +3,15 @@ linker = "aarch64-linux-gnu-gcc"
 
 [target.armv7-unknown-linux-gnueabihf]
 linker = "arm-linux-gnueabihf-g++"
+
+[target.aarch64-linux-android]
+ar = "/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+linker = "/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android33-clang"
+
+[target.armv7-linux-androideabi]
+ar = "/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+linker = "/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/clang"
+
+[target.i686-linux-android]
+ar = "/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+linker = "/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android33-clang"

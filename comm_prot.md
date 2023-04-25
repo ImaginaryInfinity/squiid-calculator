@@ -23,7 +23,7 @@ Once the frontend is set up, it is fairly easy to communicate with the backend s
  3. In order to connect with the server, you must dial the address that you just gave the engine. Using the nanomsg bindings for your programming language of choice, construct a socket object with the `Req` protocol (this may be different depending on the binding, such as `Req0` for Python). Now, call the dial method on this socket and pass it the address that you gave the server. If there is a way to check if this function returns correctly without an error, you should do so (e.g. `assert!()` in Rust).
  4. Great! Now that you are connected with the server, you can use the `send` (or similar) method on the socket to send data to the server, and the `recv` (or similar) to receive data from the server. The protocol for sending and receiving data is outlined below. The backend server is currently blocking, not async, however you should be able to start multiple instances on different ports and have it work fine if this suits your needs.
 
-<img src="client-server-model.svg">
+<!-- <img src="client-server-model.svg"> -->
 
 <!-- graphviz source:
 digraph G {
@@ -44,21 +44,20 @@ digraph G {
 
 } -->
 
-<!-- mermaid code:
-
+```mermaid
 flowchart TD
 
 subgraph "Required components";
 
 engine[(Engine)]-.Rep.->client([Client]);
-client--Req--\>engine;
+client--Req-->engine;
 
 caption(tcp://127.0.0.1:xxxxx)
 
 end;
 
 client <-."Shared Object".-> parser([Parser]);
- -->
+```
 
 ## Data Transmission Protocol
 

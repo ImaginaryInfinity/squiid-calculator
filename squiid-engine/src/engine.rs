@@ -6,8 +6,7 @@ use rust_decimal::prelude::ToPrimitive;
 use rust_decimal::{Decimal, MathematicalOps};
 
 use crate::bucket::{Bucket, BucketTypes};
-use crate::utils::is_string_numeric;
-use crate::utils::ID_REGEX;
+use crate::utils::{ID_REGEX, NUMERIC_REGEX};
 use crate::MessageAction;
 
 // Evaluation engine struct
@@ -67,7 +66,8 @@ impl Engine {
 
         // create a StackableFloat if item_string is numeric, else StackableString
         let item_pushable: Bucket;
-        if is_string_numeric(&item_string) {
+        eprintln!("{:?}", item_string);
+        if NUMERIC_REGEX.is_match(&item_string) {
             item_pushable = Bucket::from(item_string.parse::<f64>().unwrap());
         } else {
             item_pushable = Bucket::from(item_string);

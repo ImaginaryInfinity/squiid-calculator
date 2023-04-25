@@ -5,22 +5,9 @@ use regex::Regex;
 use crate::protocol::{ClientMessage, MessagePayload, MessageType, ServerMessage};
 
 lazy_static! {
-    pub static ref ID_REGEX: regex::Regex = Regex::new(r"[_a-zA-Z][_0-9a-zA-Z]*").unwrap();
-}
-
-// function to check if a string is numeric (includes floats)
-pub fn is_string_numeric(str: &str) -> bool {
-    for c in str.chars() {
-        // If a character is not a number or contains only a decimal point, negative sign, or e, the string is not numeric
-        if !c.is_numeric()
-            && !(['.', '-', 'e'].contains(&c)
-                && str.chars().count() > 1
-                && !['-', 'e'].contains(&(str.chars().last().unwrap())))
-        {
-            return false;
-        }
-    }
-    return true;
+    pub static ref ID_REGEX: Regex = Regex::new(r"[_a-zA-Z][_0-9a-zA-Z]*").unwrap();
+    pub static ref NUMERIC_REGEX: Regex =
+        Regex::new(r"^(?:[0-9]*\.?[0-9]+(?:[eE][-+]?\d+(?:\.\d+)?)?|[0-9]+)$").unwrap();
 }
 
 pub fn send_response(

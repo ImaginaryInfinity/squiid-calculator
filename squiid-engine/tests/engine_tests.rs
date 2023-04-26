@@ -12,7 +12,7 @@ fn test_add_negative_to_stack() {
     let mut engine = Engine::new();
 
     // negatives
-    let _ = engine.add_item_to_stack("_1".into());
+    let _ = engine.add_item_to_stack("-1".into());
     let _ = engine.add_item_to_stack("1".into());
 
     assert_eq!(engine.stack, vec![Bucket::from(-1), Bucket::from(1)]);

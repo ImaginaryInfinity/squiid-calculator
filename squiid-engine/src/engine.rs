@@ -33,13 +33,6 @@ impl Engine {
     pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<MessageAction, String> {
         // Convert item to string
         let mut item_string = item.to_string();
-        let mut chs = false;
-
-        // Set to change sign at end if beginning with _
-        if item_string.chars().next().unwrap() == '_' {
-            item_string.remove(0);
-            chs = true;
-        }
 
         // Replace with value if item is a constant
         item_string = match item_string.as_str() {
@@ -74,11 +67,6 @@ impl Engine {
 
         // push the new item to the stack
         self.stack.push(item_pushable);
-
-        // Change sign if originally began with _
-        if chs {
-            _ = self.chs();
-        }
 
         Ok(MessageAction::SendStack)
     }
@@ -119,6 +107,7 @@ impl Engine {
             let mut operands = Vec::new();
             // check that all items are of expected type
             let requested_operands = &self.stack[self.stack.len() - number as usize..];
+            eprintln!("{:?}", requested_operands);
             for item in requested_operands {
                 if item.bucket_type != BucketTypes::Float {
                     return Err(String::from(

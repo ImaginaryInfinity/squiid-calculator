@@ -7,7 +7,7 @@ use crate::protocol::{ClientMessage, MessagePayload, MessageType, ServerMessage}
 lazy_static! {
     pub static ref ID_REGEX: Regex = Regex::new(r"[_a-zA-Z][_0-9a-zA-Z]*").unwrap();
     pub static ref NUMERIC_REGEX: Regex =
-        Regex::new(r"^(?:[0-9]*\.?[0-9]+(?:[eE][-+]?\d+(?:\.\d+)?)?|[0-9]+)$").unwrap();
+        Regex::new(r"^[-]?(?:[0-9]*\.?[0-9]+(?:[eE][-+]?\d+(?:\.\d+)?)?|[0-9]+)$").unwrap();
 }
 
 pub fn send_response(

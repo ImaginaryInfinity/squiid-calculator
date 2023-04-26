@@ -45,11 +45,6 @@ impl Engine {
         // Convert item to string
         let mut item_string = item.to_string();
 
-        // set previous answer if flag is set in function arguments
-        if set_prev_ans {
-            self.previous_answer = item;
-        }
-
         // substitute previous answer
         if item_string == "@" {
             item_string = self.previous_answer.to_string();
@@ -84,6 +79,11 @@ impl Engine {
             item_pushable = Bucket::from(item_string.parse::<f64>().unwrap());
         } else {
             item_pushable = Bucket::from(item_string);
+        }
+
+        // set previous answer if flag is set in function arguments
+        if set_prev_ans {
+            self.previous_answer = item_pushable.clone();
         }
 
         // push the new item to the stack

@@ -2,6 +2,7 @@ use std::{net::TcpListener, ops::Range};
 
 use nng::{Message, Socket};
 use squiid_engine::protocol::{ClientMessage, ServerMessage};
+use squiid_parser::{lexer::lex, tokens::Token};
 
 // Send data to backend
 pub fn send_data(socket: &Socket, command: &str) -> ServerMessage {
@@ -43,5 +44,27 @@ fn port_is_available(port: u16) -> bool {
     match TcpListener::bind(("127.0.0.1", port)) {
         Ok(_) => true,
         Err(_) => false,
+    }
+}
+
+pub fn input_buffer_is_sci_notate(buffer: &str) -> bool {
+    // TODO: if RPN input can ever have a negative number, handle that
+
+    // preliminary checks
+    if buffer.is_empty() {
+        return false;
+    }
+
+    if !buffer.ends_with('e') {
+        return false;
+    }
+
+    match lex(buffer.trim_end_matches('e')) {
+        Ok(tokens) => {
+            // test if the last token before the trailing 'e' is an int or float
+            let last_token = &tokens[tokens.len() - 1];
+            return *last_token == Token::Float("_") || *last_token == Token::Int("_");
+        }
+        Err(_) => return false,
     }
 }

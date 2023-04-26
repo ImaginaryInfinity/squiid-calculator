@@ -22,7 +22,7 @@ use ratatui::{
 
 use crate::{
     config_handler,
-    utils::{current_char_index, send_data},
+    utils::{current_char_index, input_buffer_is_sci_notate, send_data},
 };
 
 #[derive(PartialEq)]
@@ -302,6 +302,7 @@ fn rpn_operator(mut app: &mut App, socket: &Socket, key: crate::event::KeyEvent)
     if command.len() > 0 {
         _ = send_data(socket, command.as_str());
     }
+
     // Select operation
     let operation = match key.code {
         _ if RPN_SYMBOL_MAP.contains_key(&key.code) => RPN_SYMBOL_MAP.get(&key.code).unwrap(),
@@ -394,7 +395,8 @@ pub fn run_app<B: Backend>(
                         }
                         // Handle single character operators
                         _ if RPN_SYMBOL_MAP.contains_key(&key.code)
-                            && app.input_mode == InputMode::RPN =>
+                            && app.input_mode == InputMode::RPN
+                            && !input_buffer_is_sci_notate(&app.input) =>
                         {
                             rpn_operator(&mut app, socket, key);
                         }

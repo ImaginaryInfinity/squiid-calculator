@@ -3,6 +3,9 @@ BINDIR ?= $(PREFIX)/bin
 BINARY_NAME := squiid
 BINARY_PATH := target/release/$(BINARY_NAME)
 
+TARGET_CMAKE_TOOLCHAIN_FILE ?= /opt/android-ndk/build/cmake/android.toolchain.cmake
+export TARGET_CMAKE_TOOLCHAIN_FILE
+
 VERSION := $(shell awk 'sub(/^[[:space:]]*version[[:space:]]*=[[:space:]]*/, "") {sub(/^"/, ""); sub(/".*$$/, ""); print}' Cargo.toml)
 export VERSION
 
@@ -117,3 +120,24 @@ windows-installer: windows-build
 
 	# build the windows installer with an output directory of the current directory
 	docker run --rm -i -v "$$PWD/package-build:/work" amake/innosetup squiid.iss /O.\\
+
+# ANDROID
+android-require: require
+ifndef platform
+	# check if platform= argument is defined
+	@echo "ERROR: platform is not defined. please specify an android ndk version with `platform=xx` (for example, 33)"
+	exit 1
+endif
+	# check if cargo ndk is installed
+	@cargo ndk --version > /dev/null 2>&1 || (echo "ERROR: cargo-ndk is required. Install it with `cargo install cargo-ndk`"; exit 1)
+
+android-armv8: android-require
+	cargo ndk --platform $(platform) --target arm64-v8a build --release
+
+android-armv7: android-require
+	cargo ndk --platform $(platform) --target armeabi-v7a build --release
+
+android-x86_64: android-require
+	cargo ndk --platform $(platform) --target x86_64 build --release
+
+android: android-armv8 android-armv7 android-x86_64

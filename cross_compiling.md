@@ -9,7 +9,8 @@ rustup target add \
     aarch64-linux-android \
     armv7-linux-androideabi \
     x86_64-linux-android \
-    i686-linux-android
+
+# i686-linux-android is currently unsupported due to a cross-compiling linking issue, however if anyone fixes this let us know
 ```
 
 Now you can build for whatever target you'd like using the `cargo ndk` command. You must supply the `TARGET_CMAKE_TOOLCHAIN_FILE` environment variable. On my system with the AUR package installed, that would be `TARGET_CMAKE_TOOLCHAIN_FILE="/opt/android-ndk/build/cmake/android.toolchain.cmake"`. Here is an example command to build Squiid for `armv7-linux-androideabi`:

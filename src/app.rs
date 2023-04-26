@@ -671,6 +671,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     };
 
     if app.input_mode == InputMode::Algebraic || app.input_mode == InputMode::RPN {
+        // THIS IS WHERE THE INPUT IS BEING ADDED TO THE PARAGRAPH DISPLAY
         let input = Paragraph::new(app.input.as_ref())
             .style(match app.input_mode {
                 _ if app.top_panel_state.currently_selecting() => Style::default(),

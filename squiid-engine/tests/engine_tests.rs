@@ -12,8 +12,8 @@ fn test_add_negative_to_stack() {
     let mut engine = Engine::new();
 
     // negatives
-    let _ = engine.add_item_to_stack("-1".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("-1".into(), false);
+    let _ = engine.add_item_to_stack("1".into(), false);
 
     assert_eq!(engine.stack, vec![Bucket::from(-1), Bucket::from(1)]);
 }
@@ -23,11 +23,11 @@ fn test_add_constants_to_stack() {
     let mut engine = Engine::new();
 
     // constants
-    let _ = engine.add_item_to_stack("#pi".into());
-    let _ = engine.add_item_to_stack("#e".into());
-    let _ = engine.add_item_to_stack("#tau".into());
-    let _ = engine.add_item_to_stack("#c".into());
-    let _ = engine.add_item_to_stack("#G".into());
+    let _ = engine.add_item_to_stack("#pi".into(), false);
+    let _ = engine.add_item_to_stack("#e".into(), false);
+    let _ = engine.add_item_to_stack("#tau".into(), false);
+    let _ = engine.add_item_to_stack("#c".into(), false);
+    let _ = engine.add_item_to_stack("#G".into(), false);
 
     assert_eq!(
         engine.stack,
@@ -45,7 +45,7 @@ fn test_add_constants_to_stack() {
 fn test_add_undefined_variable_to_stack() {
     let mut engine = Engine::new();
 
-    let result = engine.add_item_to_stack("$a".into());
+    let result = engine.add_item_to_stack("$a".into(), false);
 
     assert!(matches!(result, Err(_)));
 }
@@ -55,7 +55,7 @@ fn test_add_defined_variable_to_stack() {
     let mut engine = Engine::new();
 
     engine.variables.insert(String::from("a"), 1.into());
-    let _ = engine.add_item_to_stack("$a".into());
+    let _ = engine.add_item_to_stack("$a".into(), false);
 
     assert_eq!(engine.stack, vec![Bucket::from(1)]);
 }
@@ -68,8 +68,8 @@ fn test_add_types_to_stack() {
 
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("a".into());
-    let _ = engine.add_item_to_stack("1.5".into());
+    let _ = engine.add_item_to_stack("a".into(), false);
+    let _ = engine.add_item_to_stack("1.5".into(), false);
 
     assert_eq!(engine.stack, vec![Bucket::from("a"), Bucket::from(1.5),]);
 }
@@ -79,17 +79,17 @@ fn test_get_operands() {
     let mut engine = Engine::new();
 
     // to get as floats
-    let _ = engine.add_item_to_stack("1".into());
-    let _ = engine.add_item_to_stack("1.5".into());
-    let _ = engine.add_item_to_stack("a".into());
+    let _ = engine.add_item_to_stack("1".into(), false);
+    let _ = engine.add_item_to_stack("1.5".into(), false);
+    let _ = engine.add_item_to_stack("a".into(), false);
 
     // to get as strings
-    let _ = engine.add_item_to_stack("abc".into());
-    let _ = engine.add_item_to_stack("1.5".into());
+    let _ = engine.add_item_to_stack("abc".into(), false);
+    let _ = engine.add_item_to_stack("1.5".into(), false);
 
     // to get raw
-    let _ = engine.add_item_to_stack("test".into());
-    let _ = engine.add_item_to_stack("1.5".into());
+    let _ = engine.add_item_to_stack("test".into(), false);
+    let _ = engine.add_item_to_stack("1.5".into(), false);
 
     // retrieve things off of stack
     let raw = engine.get_operands_raw(2);
@@ -111,14 +111,14 @@ fn test_get_operands() {
 fn test_add() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("1".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("1".into(), false);
+    let _ = engine.add_item_to_stack("1".into(), false);
 
-    let _ = engine.add_item_to_stack("-1".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("-1".into(), false);
+    let _ = engine.add_item_to_stack("1".into(), false);
 
-    let _ = engine.add_item_to_stack("-1".into());
-    let _ = engine.add_item_to_stack("-1".into());
+    let _ = engine.add_item_to_stack("-1".into(), false);
+    let _ = engine.add_item_to_stack("-1".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.add();
@@ -135,14 +135,14 @@ fn test_add() {
 fn test_subtract() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("1".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("1".into(), false);
+    let _ = engine.add_item_to_stack("1".into(), false);
 
-    let _ = engine.add_item_to_stack("-1".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("-1".into(), false);
+    let _ = engine.add_item_to_stack("1".into(), false);
 
-    let _ = engine.add_item_to_stack("-1".into());
-    let _ = engine.add_item_to_stack("-1".into());
+    let _ = engine.add_item_to_stack("-1".into(), false);
+    let _ = engine.add_item_to_stack("-1".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.subtract();
@@ -159,14 +159,14 @@ fn test_subtract() {
 fn test_multiply() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("3".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("3".into(), false);
 
-    let _ = engine.add_item_to_stack("-1".into());
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("-1".into(), false);
+    let _ = engine.add_item_to_stack("2".into(), false);
 
-    let _ = engine.add_item_to_stack("-2".into());
-    let _ = engine.add_item_to_stack("-4".into());
+    let _ = engine.add_item_to_stack("-2".into(), false);
+    let _ = engine.add_item_to_stack("-4".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.multiply();
@@ -183,14 +183,14 @@ fn test_multiply() {
 fn test_divide() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("6".into());
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("6".into(), false);
+    let _ = engine.add_item_to_stack("2".into(), false);
 
-    let _ = engine.add_item_to_stack("-1".into());
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("-1".into(), false);
+    let _ = engine.add_item_to_stack("2".into(), false);
 
-    let _ = engine.add_item_to_stack("-4".into());
-    let _ = engine.add_item_to_stack("-2".into());
+    let _ = engine.add_item_to_stack("-4".into(), false);
+    let _ = engine.add_item_to_stack("-2".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.divide();
@@ -207,14 +207,14 @@ fn test_divide() {
 fn test_power() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("3".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("3".into(), false);
 
-    let _ = engine.add_item_to_stack("4".into());
-    let _ = engine.add_item_to_stack("0.5".into());
+    let _ = engine.add_item_to_stack("4".into(), false);
+    let _ = engine.add_item_to_stack("0.5".into(), false);
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("-1".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("-1".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.power();
@@ -231,9 +231,9 @@ fn test_power() {
 fn test_sqrt() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("4".into());
+    let _ = engine.add_item_to_stack("4".into(), false);
 
-    let _ = engine.add_item_to_stack("9".into());
+    let _ = engine.add_item_to_stack("9".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.sqrt();
@@ -247,14 +247,14 @@ fn test_sqrt() {
 fn test_modulo() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-9".into());
-    let _ = engine.add_item_to_stack("4".into());
+    let _ = engine.add_item_to_stack("-9".into(), false);
+    let _ = engine.add_item_to_stack("4".into(), false);
 
-    let _ = engine.add_item_to_stack("8".into());
-    let _ = engine.add_item_to_stack("4".into());
+    let _ = engine.add_item_to_stack("8".into(), false);
+    let _ = engine.add_item_to_stack("4".into(), false);
 
-    let _ = engine.add_item_to_stack("9".into());
-    let _ = engine.add_item_to_stack("4".into());
+    let _ = engine.add_item_to_stack("9".into(), false);
+    let _ = engine.add_item_to_stack("4".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.modulo();
@@ -271,11 +271,11 @@ fn test_modulo() {
 fn test_sine() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("#pi".into());
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("#pi".into(), false);
+    let _ = engine.add_item_to_stack("2".into(), false);
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("#pi".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("#pi".into(), false);
 
     // evaluate from last stack entries to first
 
@@ -294,11 +294,11 @@ fn test_sine() {
 fn test_cosine() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("#pi".into());
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("#pi".into(), false);
+    let _ = engine.add_item_to_stack("2".into(), false);
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("#pi".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("#pi".into(), false);
 
     // evaluate from last stack entries to first
 
@@ -317,11 +317,11 @@ fn test_cosine() {
 fn test_tangent() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("#pi".into());
-    let _ = engine.add_item_to_stack("4".into());
+    let _ = engine.add_item_to_stack("#pi".into(), false);
+    let _ = engine.add_item_to_stack("4".into(), false);
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("#pi".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("#pi".into(), false);
 
     // evaluate from last stack entries to first
 
@@ -340,10 +340,10 @@ fn test_tangent() {
 fn test_secant() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("#pi".into());
+    let _ = engine.add_item_to_stack("#pi".into(), false);
 
-    let _ = engine.add_item_to_stack("#pi".into());
-    let _ = engine.add_item_to_stack("3".into());
+    let _ = engine.add_item_to_stack("#pi".into(), false);
+    let _ = engine.add_item_to_stack("3".into(), false);
 
     // evaluate from last stack entries to first
 
@@ -361,11 +361,11 @@ fn test_secant() {
 fn test_cosecant() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("#pi".into());
-    let _ = engine.add_item_to_stack("6".into());
+    let _ = engine.add_item_to_stack("#pi".into(), false);
+    let _ = engine.add_item_to_stack("6".into(), false);
 
-    let _ = engine.add_item_to_stack("#pi".into());
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("#pi".into(), false);
+    let _ = engine.add_item_to_stack("2".into(), false);
 
     // evaluate from last stack entries to first
 
@@ -384,11 +384,11 @@ fn test_cosecant() {
 fn test_cotangent() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("#pi".into());
-    let _ = engine.add_item_to_stack("4".into());
+    let _ = engine.add_item_to_stack("#pi".into(), false);
+    let _ = engine.add_item_to_stack("4".into(), false);
 
-    let _ = engine.add_item_to_stack("#pi".into());
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("#pi".into(), false);
+    let _ = engine.add_item_to_stack("2".into(), false);
 
     // evaluate from last stack entries to first
 
@@ -407,9 +407,9 @@ fn test_cotangent() {
 fn test_asin() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("0.5".into());
+    let _ = engine.add_item_to_stack("0.5".into(), false);
 
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("1".into(), false);
 
     // evaluate from last stack entries to first
 
@@ -432,9 +432,9 @@ fn test_asin() {
 fn test_acos() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("0.5".into());
+    let _ = engine.add_item_to_stack("0.5".into(), false);
 
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("1".into(), false);
 
     // evaluate from last stack entries to first
 
@@ -454,9 +454,9 @@ fn test_acos() {
 fn test_atan() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("0".into());
+    let _ = engine.add_item_to_stack("0".into(), false);
 
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("1".into(), false);
 
     // evaluate from last stack entries to first
 
@@ -476,8 +476,8 @@ fn test_atan() {
 fn test_chs() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-9".into());
-    let _ = engine.add_item_to_stack("4".into());
+    let _ = engine.add_item_to_stack("-9".into(), false);
+    let _ = engine.add_item_to_stack("4".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.chs();
@@ -491,8 +491,8 @@ fn test_chs() {
 fn test_log() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("10".into());
-    let _ = engine.add_item_to_stack("100".into());
+    let _ = engine.add_item_to_stack("10".into(), false);
+    let _ = engine.add_item_to_stack("100".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.log();
@@ -506,11 +506,11 @@ fn test_log() {
 fn test_logb() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("27".into());
-    let _ = engine.add_item_to_stack("3".into());
+    let _ = engine.add_item_to_stack("27".into(), false);
+    let _ = engine.add_item_to_stack("3".into(), false);
 
-    let _ = engine.add_item_to_stack("8".into());
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("8".into(), false);
+    let _ = engine.add_item_to_stack("2".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.logb();
@@ -525,7 +525,7 @@ fn test_ln() {
     let mut engine = Engine::new();
 
     // TODO: fix variable storing as decimals
-    let _ = engine.add_item_to_stack("#e".into());
+    let _ = engine.add_item_to_stack("#e".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.ln();
@@ -536,9 +536,9 @@ fn test_ln() {
 fn test_abs() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-1".into());
-    let _ = engine.add_item_to_stack("0".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("-1".into(), false);
+    let _ = engine.add_item_to_stack("0".into(), false);
+    let _ = engine.add_item_to_stack("1".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.abs();
@@ -555,11 +555,11 @@ fn test_abs() {
 fn test_eq() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-1".into());
-    let _ = engine.add_item_to_stack("-1".into());
+    let _ = engine.add_item_to_stack("-1".into(), false);
+    let _ = engine.add_item_to_stack("-1".into(), false);
 
-    let _ = engine.add_item_to_stack("1".into());
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("1".into(), false);
+    let _ = engine.add_item_to_stack("2".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.eq();
@@ -573,14 +573,14 @@ fn test_eq() {
 fn test_gt() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-1".into());
-    let _ = engine.add_item_to_stack("0".into());
+    let _ = engine.add_item_to_stack("-1".into(), false);
+    let _ = engine.add_item_to_stack("0".into(), false);
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("1".into(), false);
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("2".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.gt();
@@ -597,14 +597,14 @@ fn test_gt() {
 fn test_lt() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-1".into());
-    let _ = engine.add_item_to_stack("0".into());
+    let _ = engine.add_item_to_stack("-1".into(), false);
+    let _ = engine.add_item_to_stack("0".into(), false);
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("1".into(), false);
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("2".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.lt();
@@ -621,14 +621,14 @@ fn test_lt() {
 fn test_gte() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-1".into());
-    let _ = engine.add_item_to_stack("0".into());
+    let _ = engine.add_item_to_stack("-1".into(), false);
+    let _ = engine.add_item_to_stack("0".into(), false);
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("1".into(), false);
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("2".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.gte();
@@ -645,14 +645,14 @@ fn test_gte() {
 fn test_lte() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-1".into());
-    let _ = engine.add_item_to_stack("0".into());
+    let _ = engine.add_item_to_stack("-1".into(), false);
+    let _ = engine.add_item_to_stack("0".into(), false);
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("1".into(), false);
 
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
+    let _ = engine.add_item_to_stack("2".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.lte();
@@ -669,10 +669,10 @@ fn test_lte() {
 fn test_round() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-1.2".into());
-    let _ = engine.add_item_to_stack("0.1".into());
-    let _ = engine.add_item_to_stack("2.6".into());
-    let _ = engine.add_item_to_stack("-1.6".into());
+    let _ = engine.add_item_to_stack("-1.2".into(), false);
+    let _ = engine.add_item_to_stack("0.1".into(), false);
+    let _ = engine.add_item_to_stack("2.6".into(), false);
+    let _ = engine.add_item_to_stack("-1.6".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.round();
@@ -692,10 +692,10 @@ fn test_round() {
 fn test_invert() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-3".into());
-    let _ = engine.add_item_to_stack("3".into());
-    let _ = engine.add_item_to_stack("-4".into());
-    let _ = engine.add_item_to_stack("4".into());
+    let _ = engine.add_item_to_stack("-3".into(), false);
+    let _ = engine.add_item_to_stack("3".into(), false);
+    let _ = engine.add_item_to_stack("-4".into(), false);
+    let _ = engine.add_item_to_stack("4".into(), false);
 
     // evaluate from last stack entries to first
     let _ = engine.invert();
@@ -715,8 +715,8 @@ fn test_invert() {
 fn test_drop() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-1.2".into());
-    let _ = engine.add_item_to_stack("0.1".into());
+    let _ = engine.add_item_to_stack("-1.2".into(), false);
+    let _ = engine.add_item_to_stack("0.1".into(), false);
 
     let _ = engine.drop();
     assert_eq!(engine.stack, vec![Bucket::from(-1.2),]);
@@ -735,9 +735,9 @@ fn test_drop() {
 fn test_swap() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-1.2".into());
-    let _ = engine.add_item_to_stack("0.1".into());
-    let _ = engine.add_item_to_stack("3".into());
+    let _ = engine.add_item_to_stack("-1.2".into(), false);
+    let _ = engine.add_item_to_stack("0.1".into(), false);
+    let _ = engine.add_item_to_stack("3".into(), false);
 
     let _ = engine.swap();
     assert_eq!(
@@ -750,8 +750,8 @@ fn test_swap() {
 fn test_dup() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-1.2".into());
-    let _ = engine.add_item_to_stack("0.1".into());
+    let _ = engine.add_item_to_stack("-1.2".into(), false);
+    let _ = engine.add_item_to_stack("0.1".into(), false);
 
     let _ = engine.dup();
     assert_eq!(
@@ -764,9 +764,9 @@ fn test_dup() {
 fn test_roll_down() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-1.2".into());
-    let _ = engine.add_item_to_stack("0.1".into());
-    let _ = engine.add_item_to_stack("3".into());
+    let _ = engine.add_item_to_stack("-1.2".into(), false);
+    let _ = engine.add_item_to_stack("0.1".into(), false);
+    let _ = engine.add_item_to_stack("3".into(), false);
 
     let _ = engine.roll_down();
     assert_eq!(
@@ -784,9 +784,9 @@ fn test_roll_down() {
 fn test_roll_up() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-1.2".into());
-    let _ = engine.add_item_to_stack("0.1".into());
-    let _ = engine.add_item_to_stack("3".into());
+    let _ = engine.add_item_to_stack("-1.2".into(), false);
+    let _ = engine.add_item_to_stack("0.1".into(), false);
+    let _ = engine.add_item_to_stack("3".into(), false);
 
     let _ = engine.roll_up();
     assert_eq!(
@@ -804,11 +804,11 @@ fn test_roll_up() {
 fn test_store() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("-1.2".into());
-    let _ = engine.add_item_to_stack("0".into());
+    let _ = engine.add_item_to_stack("-1.2".into(), false);
+    let _ = engine.add_item_to_stack("0".into(), false);
 
-    let _ = engine.add_item_to_stack("-1.2".into());
-    let _ = engine.add_item_to_stack("a".into());
+    let _ = engine.add_item_to_stack("-1.2".into(), false);
+    let _ = engine.add_item_to_stack("a".into(), false);
 
     // test valid variable assignment
     let _ = engine.store();
@@ -827,8 +827,8 @@ fn test_purge() {
         .variables
         .insert(String::from("a"), Bucket::from(-1.2));
 
-    let _ = engine.add_item_to_stack("a".into());
-    let _ = engine.add_item_to_stack("a".into());
+    let _ = engine.add_item_to_stack("a".into(), false);
+    let _ = engine.add_item_to_stack("a".into(), false);
 
     // test for variable presence
     assert_eq!(*engine.variables.get("a").unwrap(), Bucket::from(-1.2));
@@ -847,8 +847,8 @@ fn test_purge() {
 fn test_invstore() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("a".into());
-    let _ = engine.add_item_to_stack("-1.2".into());
+    let _ = engine.add_item_to_stack("a".into(), false);
+    let _ = engine.add_item_to_stack("-1.2".into(), false);
 
     let _ = engine.invstore();
 
@@ -860,9 +860,9 @@ fn test_invstore() {
 fn test_clear() {
     let mut engine = Engine::new();
 
-    let _ = engine.add_item_to_stack("23".into());
-    let _ = engine.add_item_to_stack("-1.2".into());
-    let _ = engine.add_item_to_stack("test".into());
+    let _ = engine.add_item_to_stack("23".into(), false);
+    let _ = engine.add_item_to_stack("-1.2".into(), false);
+    let _ = engine.add_item_to_stack("test".into(), false);
 
     assert!(!engine.stack.is_empty());
     let _ = engine.clear();
@@ -884,11 +884,11 @@ fn test_undo() {
 
     // after each command, we must push a copy of the stack to the engine history
 
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("1".into(), false);
     push_to_history!(engine);
-    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("2".into(), false);
     push_to_history!(engine);
-    let _ = engine.add_item_to_stack("test".into());
+    let _ = engine.add_item_to_stack("test".into(), false);
     push_to_history!(engine);
 
     // test undo of adding something to the stack
@@ -915,7 +915,7 @@ fn test_undo() {
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     // test undo of variable assignment
-    let _ = engine.add_item_to_stack("a".into());
+    let _ = engine.add_item_to_stack("a".into(), false);
     push_to_history!(engine);
     let _ = engine.store();
     push_to_history!(engine);
@@ -939,4 +939,23 @@ fn test_list_commands() {
         engine.list_commands().unwrap(),
         squiid_engine::protocol::MessageAction::SendCommands
     ));
+}
+
+#[test]
+fn test_prev_ans() {
+    let mut engine = Engine::new();
+
+    assert_eq!(engine.previous_answer, Bucket::from(0));
+
+    // simulate adding a function answer
+    let _ = engine.add_item_to_stack("10".into(), true);
+    assert_eq!(engine.previous_answer, Bucket::from(10));
+
+    // test that an operation uses it correctly
+    let _ = engine.add_item_to_stack("@".into(), false);
+    let _ = engine.add_item_to_stack("5".into(), false);
+    let _ = engine.subtract();
+
+    assert_eq!(*engine.stack.last().unwrap(), Bucket::from(5));
+    assert_eq!(engine.previous_answer, Bucket::from(5));
 }

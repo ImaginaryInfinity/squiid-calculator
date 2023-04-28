@@ -4,15 +4,43 @@ use rust_decimal::Decimal;
 use serde::{de::Visitor, Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum ConstantTypes {
+    PI,
+    E,
+    TAU,
+    C,
+    G,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum BucketTypes {
     Float,
     String,
+    Constant(ConstantTypes),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Bucket {
     pub value: String,
     pub bucket_type: BucketTypes,
+}
+
+impl Bucket {
+    pub fn from_constant(constant_type: ConstantTypes) -> Self {
+        let value = match constant_type {
+            ConstantTypes::PI => std::f64::consts::PI,
+            ConstantTypes::E => std::f64::consts::E,
+            ConstantTypes::TAU => std::f64::consts::TAU,
+            ConstantTypes::C => 299792458_f64,
+            ConstantTypes::G => 6.67430 * 10_f64.powf(-11_f64),
+        }
+        .to_string();
+
+        Bucket {
+            value: value,
+            bucket_type: BucketTypes::Constant(constant_type),
+        }
+    }
 }
 
 // implementation of .to_string()

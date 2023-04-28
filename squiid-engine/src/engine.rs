@@ -5,6 +5,7 @@ use rust_decimal::prelude::FromPrimitive;
 use rust_decimal::prelude::ToPrimitive;
 use rust_decimal::{Decimal, MathematicalOps};
 
+use crate::bucket::ConstantTypes;
 use crate::bucket::{Bucket, BucketTypes};
 use crate::utils::{ID_REGEX, NUMERIC_REGEX};
 use crate::MessageAction;
@@ -50,16 +51,6 @@ impl Engine {
             item_string = self.previous_answer.to_string();
         }
 
-        // Replace with value if item is a constant
-        item_string = match item_string.as_str() {
-            "#pi" => std::f64::consts::PI.to_string(),
-            "#e" => std::f64::consts::E.to_string(),
-            "#tau" => std::f64::consts::TAU.to_string(),
-            "#c" => "299792458".to_string(),
-            "#G" => (6.67430 * 10_f64.powf(-11_f64)).to_string(),
-            _ => item_string,
-        };
-
         // Replace with value if item is a variable
         if item_string.chars().next().unwrap() == '$' {
             // Remove $ prefix from name
@@ -73,9 +64,21 @@ impl Engine {
             }
         }
 
+        // Replace with value if item is a constant
+        let constants = HashMap::from([
+            ("#pi", ConstantTypes::PI),
+            ("#e", ConstantTypes::E),
+            ("#tau", ConstantTypes::TAU),
+            ("#c", ConstantTypes::C),
+            ("#G", ConstantTypes::G),
+        ]);
+
         // create a StackableFloat if item_string is numeric, else StackableString
         let item_pushable: Bucket;
-        if NUMERIC_REGEX.is_match(&item_string) {
+        if constants.contains_key(item_string.as_str()) {
+            item_pushable =
+                Bucket::from_constant(constants.get(item_string.as_str()).unwrap().clone());
+        } else if NUMERIC_REGEX.is_match(&item_string) {
             item_pushable = Bucket::from(item_string.parse::<f64>().unwrap());
         } else {
             item_pushable = Bucket::from(item_string);
@@ -101,17 +104,26 @@ impl Engine {
             // check that all items are of expected type
             let requested_operands = &self.stack[self.stack.len() - number as usize..];
             for item in requested_operands {
-                if item.bucket_type != BucketTypes::Float {
-                    return Err(String::from(
-                        "The operation cannot be performed on these operands",
-                    ));
+                match item.bucket_type {
+                    BucketTypes::String => {
+                        return Err(String::from(
+                            "The operation cannot be performed on these operands",
+                        ));
+                    }
+                    _ => (),
                 }
             }
 
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
                 let operand = self.stack.pop().unwrap();
-                operands.push(operand.value.parse::<f64>().unwrap());
+
+                operands.push(match operand.bucket_type {
+                    BucketTypes::Float | BucketTypes::Constant(_) => {
+                        operand.value.parse::<f64>().unwrap()
+                    }
+                    _ => return Err(String::from("you should never get this error")),
+                });
             }
             // Make the new vector's order match the stack
             operands.reverse();
@@ -129,17 +141,29 @@ impl Engine {
             // check that all items are of expected type
             let requested_operands = &self.stack[self.stack.len() - number as usize..];
             for item in requested_operands {
-                if item.bucket_type != BucketTypes::Float {
-                    return Err(String::from(
-                        "The operation cannot be performed on these operands",
-                    ));
+                match item.bucket_type {
+                    BucketTypes::String => {
+                        return Err(String::from(
+                            "The operation cannot be performed on these operands",
+                        ));
+                    }
+                    _ => (),
                 }
             }
 
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
                 let operand = self.stack.pop().unwrap();
-                operands.push(Decimal::from_str_exact(&operand.value).unwrap());
+                operands.push(match operand.bucket_type {
+                    BucketTypes::Constant(ConstantTypes::PI) => Decimal::PI,
+                    BucketTypes::Constant(ConstantTypes::E) => Decimal::E,
+                    BucketTypes::Float | BucketTypes::Constant(_) => {
+                        Decimal::from_str_exact(&operand.value).unwrap()
+                    }
+                    BucketTypes::String => {
+                        return Err(String::from("you should never get this error"))
+                    }
+                });
             }
             // Make the new vector's order match the stack
             operands.reverse();

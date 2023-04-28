@@ -1,6 +1,9 @@
 use std::f64::consts::PI;
 
-use squiid_engine::{bucket::Bucket, engine::*};
+use squiid_engine::{
+    bucket::{Bucket, BucketTypes, ConstantTypes},
+    engine::*,
+};
 
 #[test]
 fn test_create_engine() {
@@ -32,11 +35,11 @@ fn test_add_constants_to_stack() {
     assert_eq!(
         engine.stack,
         vec![
-            Bucket::from(std::f64::consts::PI),
-            Bucket::from(std::f64::consts::E),
-            Bucket::from(std::f64::consts::TAU),
-            Bucket::from(299792458),
-            Bucket::from(6.67430 * 10_f64.powf(-11_f64)),
+            Bucket::from_constant(ConstantTypes::PI),
+            Bucket::from_constant(ConstantTypes::E),
+            Bucket::from_constant(ConstantTypes::TAU),
+            Bucket::from_constant(ConstantTypes::C),
+            Bucket::from_constant(ConstantTypes::G),
         ]
     );
 }

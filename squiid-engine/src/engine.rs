@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::collections::VecDeque;
 
 use rust_decimal::prelude::FromPrimitive;
@@ -65,7 +66,7 @@ impl Engine {
         }
 
         // Replace with value if item is a constant
-        let constants = HashMap::from([
+        let exposed_constants = HashMap::from([
             ("#pi", ConstantTypes::PI),
             ("#e", ConstantTypes::E),
             ("#tau", ConstantTypes::TAU),
@@ -74,15 +75,24 @@ impl Engine {
         ]);
 
         // create a StackableFloat if item_string is numeric, else StackableString
-        let item_pushable: Bucket;
-        if constants.contains_key(item_string.as_str()) {
-            item_pushable =
-                Bucket::from_constant(constants.get(item_string.as_str()).unwrap().clone());
-        } else if NUMERIC_REGEX.is_match(&item_string) {
-            item_pushable = Bucket::from(item_string.parse::<f64>().unwrap());
-        } else {
-            item_pushable = Bucket::from(item_string);
-        }
+        let item_pushable: Bucket = match item.bucket_type {
+            BucketTypes::Constant(constant_type) => {
+                // bucket already has a constant type, use that
+                Bucket::from_constant(constant_type)
+            }
+            _ => {
+                // test all other options
+                if exposed_constants.contains_key(item_string.as_str()) {
+                    Bucket::from_constant(
+                        exposed_constants.get(item_string.as_str()).unwrap().clone(),
+                    )
+                } else if NUMERIC_REGEX.is_match(&item_string) {
+                    Bucket::from(item_string.parse::<f64>().unwrap())
+                } else {
+                    Bucket::from(item_string)
+                }
+            }
+        };
 
         // set previous answer if flag is set in function arguments
         if set_prev_ans {
@@ -157,7 +167,13 @@ impl Engine {
                 operands.push(match operand.bucket_type {
                     BucketTypes::Constant(ConstantTypes::PI) => Decimal::PI,
                     BucketTypes::Constant(ConstantTypes::E) => Decimal::E,
-                    BucketTypes::Float | BucketTypes::Constant(_) => {
+                    BucketTypes::Constant(ConstantTypes::HalfPI) => Decimal::HALF_PI,
+                    BucketTypes::Constant(ConstantTypes::QuarterPI) => Decimal::QUARTER_PI,
+                    BucketTypes::Constant(ConstantTypes::TwoPI) => Decimal::TWO_PI,
+                    BucketTypes::Float
+                    | BucketTypes::Constant(ConstantTypes::TAU)
+                    | BucketTypes::Constant(ConstantTypes::C)
+                    | BucketTypes::Constant(ConstantTypes::G) => {
                         Decimal::from_str_exact(&operand.value).unwrap()
                     }
                     BucketTypes::String => {
@@ -248,9 +264,24 @@ impl Engine {
             Err(error) => return Err(error),
         };
 
+        // manual handling for 2PI precision
+        let check_pi = HashSet::from([Decimal::PI, Decimal::from_f64(2.0).unwrap()]);
+        let operands_set: HashSet<Decimal> = operands.clone().into_iter().collect();
+        let non_matching_operands = check_pi
+            .symmetric_difference(&operands_set)
+            .into_iter()
+            .collect::<Vec<_>>();
+
+        let result = if non_matching_operands.is_empty() {
+            // the only things on the mulitplication stack are 2 and pi, replace with the constant
+            Bucket::from_constant(ConstantTypes::TwoPI)
+        } else {
+            // not 2*pi, perform normal mulitplication
+            Bucket::from(operands[0] * operands[1])
+        };
+
         // Put result on stack
-        let result = operands[0] * operands[1];
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result, true);
         Ok(MessageAction::SendStack)
     }
 
@@ -262,9 +293,25 @@ impl Engine {
             Err(error) => return Err(error),
         };
 
+        // check for pi/2 and pi/4 in order to replace with constants
+        let result = if operands[0] == Decimal::PI {
+            if operands[1] == Decimal::from_f64(2.0).unwrap() {
+                // pi/2
+                Bucket::from_constant(ConstantTypes::HalfPI)
+            } else if operands[1] == Decimal::from_f64(4.0).unwrap() {
+                // pi/4
+                Bucket::from_constant(ConstantTypes::QuarterPI)
+            } else {
+                // denominator is not 2 or 4, eval normally
+                Bucket::from(operands[0] / operands[1])
+            }
+        } else {
+            // numerator is not pi, eval normally
+            Bucket::from(operands[0] / operands[1])
+        };
+
         // Put result on stack
-        let result = operands[0] / operands[1];
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result, true);
         Ok(MessageAction::SendStack)
     }
 
@@ -331,7 +378,7 @@ impl Engine {
     // Sine
     pub fn sin(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
+        let operands = match self.get_operands_as_dec(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
@@ -344,7 +391,7 @@ impl Engine {
     // Cosine
     pub fn cos(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
+        let operands = match self.get_operands_as_dec(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
@@ -357,7 +404,7 @@ impl Engine {
     // Tangent
     pub fn tan(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
+        let operands = match self.get_operands_as_dec(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
@@ -370,39 +417,48 @@ impl Engine {
     // Secant
     pub fn sec(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
+        let operands = match self.get_operands_as_dec(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack((1.0 / operands[0].cos()).into(), true);
+        let _ = self.add_item_to_stack(
+            (Decimal::from_f64(1.0).unwrap() / operands[0].cos()).into(),
+            true,
+        );
         Ok(MessageAction::SendStack)
     }
 
     // Cosecant
     pub fn csc(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
+        let operands = match self.get_operands_as_dec(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack((1.0 / operands[0].sin()).into(), true);
+        let _ = self.add_item_to_stack(
+            (Decimal::from_f64(1.0).unwrap() / operands[0].sin()).into(),
+            true,
+        );
         Ok(MessageAction::SendStack)
     }
 
     // Cotangent
     pub fn cot(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
+        let operands = match self.get_operands_as_dec(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack((1.0 / operands[0].tan()).into(), true);
+        let _ = self.add_item_to_stack(
+            (Decimal::from_f64(1.0).unwrap() / operands[0].tan()).into(),
+            true,
+        );
         Ok(MessageAction::SendStack)
     }
 

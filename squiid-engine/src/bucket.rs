@@ -6,6 +6,9 @@ use serde::{de::Visitor, Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq)]
 pub enum ConstantTypes {
     PI,
+    HalfPI,
+    QuarterPI,
+    TwoPI,
     E,
     TAU,
     C,
@@ -29,6 +32,9 @@ impl Bucket {
     pub fn from_constant(constant_type: ConstantTypes) -> Self {
         let value = match constant_type {
             ConstantTypes::PI => std::f64::consts::PI,
+            ConstantTypes::HalfPI => std::f64::consts::PI / 2.0,
+            ConstantTypes::QuarterPI => std::f64::consts::PI / 4.0,
+            ConstantTypes::TwoPI => std::f64::consts::PI * 2.0,
             ConstantTypes::E => std::f64::consts::E,
             ConstantTypes::TAU => std::f64::consts::TAU,
             ConstantTypes::C => 299792458_f64,

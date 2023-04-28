@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 
 use squiid_engine::{
-    bucket::{Bucket, BucketTypes, ConstantTypes},
+    bucket::{Bucket, ConstantTypes},
     engine::*,
 };
 
@@ -285,7 +285,7 @@ fn test_sine() {
     // 2pi = 0
     let _ = engine.multiply();
     let _ = engine.sin();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0].round(), 0.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
 
     // pi/2 = 1
     let _ = engine.divide();

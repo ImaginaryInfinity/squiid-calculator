@@ -5,6 +5,7 @@ use std::collections::VecDeque;
 use rust_decimal::prelude::FromPrimitive;
 use rust_decimal::prelude::ToPrimitive;
 use rust_decimal::{Decimal, MathematicalOps};
+use rust_decimal_macros::dec;
 
 use crate::bucket::ConstantTypes;
 use crate::bucket::{Bucket, BucketTypes};
@@ -268,7 +269,7 @@ impl Engine {
         };
 
         // manual handling for 2PI precision
-        let check_pi = HashSet::from([Decimal::PI, Decimal::from_f64(2.0).unwrap()]);
+        let check_pi = HashSet::from([Decimal::PI, dec!(2.0)]);
         let operands_set: HashSet<Decimal> = operands.clone().into_iter().collect();
         let non_matching_operands = check_pi
             .symmetric_difference(&operands_set)
@@ -298,19 +299,19 @@ impl Engine {
 
         // check for pi/x in order to replace with constants
         let result = if operands[0] == Decimal::PI {
-            if operands[1] == Decimal::from_f64(2.0).unwrap() {
+            if operands[1] == dec!(2.0) {
                 // pi/2
                 Bucket::from_constant(ConstantTypes::HalfPI)
-            } else if operands[1] == Decimal::from_f64(4.0).unwrap() {
+            } else if operands[1] == dec!(4.0) {
                 // pi/4
                 Bucket::from_constant(ConstantTypes::QuarterPI)
-            } else if operands[1] == Decimal::from_f64(3.0).unwrap() {
+            } else if operands[1] == dec!(3.0) {
                 // pi/3
                 Bucket::from_constant(ConstantTypes::ThirdPI)
-            } else if operands[1] == Decimal::from_f64(6.0).unwrap() {
+            } else if operands[1] == dec!(6.0) {
                 // pi/6
                 Bucket::from_constant(ConstantTypes::SixthPI)
-            } else if operands[1] == Decimal::from_f64(8.0).unwrap() {
+            } else if operands[1] == dec!(8.0) {
                 // pi/8
                 Bucket::from_constant(ConstantTypes::EighthPI)
             } else {
@@ -340,7 +341,7 @@ impl Engine {
 
         // TODO: consider adding the option to use both rust_decimal and rug
         // detect if exponent is decimal, if so, don't use decimal library as that estimates
-        let result = if exponent.fract() == Decimal::from_f64(0.0).unwrap() {
+        let result = if exponent.fract() == dec!(0.0) {
             // is not a decimal
             match base.checked_powd(exponent) {
                 Some(value) => value.to_f64().unwrap(),
@@ -396,81 +397,97 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].sin().into(), true);
+        let result = match operands[0].sin() {
+            Some(value) => value,
+            None => return Err("could not sin operand".to_string()),
+        };
+        let _ = self.add_item_to_stack(result, true);
         Ok(MessageAction::SendStack)
     }
 
     // Cosine
     pub fn cos(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(1) {
+        eprintln!("{:?}", self.stack);
+        let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].cos().into(), true);
+        let result = match operands[0].cos() {
+            Some(value) => value,
+            None => return Err("could not cos operand".to_string()),
+        };
+        let _ = self.add_item_to_stack(result, true);
         Ok(MessageAction::SendStack)
     }
 
     // Tangent
     pub fn tan(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(1) {
+        let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].tan().into(), true);
+        let result = match operands[0].tan() {
+            Some(value) => value,
+            None => return Err("could not tan operand".to_string()),
+        };
+        let _ = self.add_item_to_stack(result, true);
         Ok(MessageAction::SendStack)
     }
 
     // Secant
     pub fn sec(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(1) {
+        let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(
-            (Decimal::from_f64(1.0).unwrap() / operands[0].cos()).into(),
-            true,
-        );
+        let result = match operands[0].sec() {
+            Some(value) => value,
+            None => return Err("could not sec operand".to_string()),
+        };
+        let _ = self.add_item_to_stack(result, true);
         Ok(MessageAction::SendStack)
     }
 
     // Cosecant
     pub fn csc(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(1) {
+        let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(
-            (Decimal::from_f64(1.0).unwrap() / operands[0].sin()).into(),
-            true,
-        );
+        let result = match operands[0].csc() {
+            Some(value) => value,
+            None => return Err("could not csc operand".to_string()),
+        };
+        let _ = self.add_item_to_stack(result, true);
         Ok(MessageAction::SendStack)
     }
 
     // Cotangent
     pub fn cot(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(1) {
+        let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(
-            (Decimal::from_f64(1.0).unwrap() / operands[0].tan()).into(),
-            true,
-        );
+        let result = match operands[0].cot() {
+            Some(value) => value,
+            None => return Err("could not sine operand".to_string()),
+        };
+        let _ = self.add_item_to_stack(result, true);
         Ok(MessageAction::SendStack)
     }
 

@@ -26,6 +26,7 @@ pub enum BucketTypes {
     Float,
     String,
     Constant(ConstantTypes),
+    Undefined,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -57,6 +58,7 @@ impl Bucket {
         }
     }
 
+    // TODO: should we hardcode some trig in? like tan(pi/4)
     pub fn sin(&self) -> Option<Self> {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
@@ -74,7 +76,7 @@ impl Bucket {
             BucketTypes::Float => Some(Self::from(
                 Decimal::from_f64(self.value.parse::<f64>().unwrap())?.checked_sin()?,
             )),
-            BucketTypes::String => None,
+            BucketTypes::String | BucketTypes::Undefined => None,
         }
     }
 
@@ -95,7 +97,7 @@ impl Bucket {
             BucketTypes::Float => Some(Self::from(
                 Decimal::from_f64(self.value.parse::<f64>().unwrap())?.checked_cos()?,
             )),
-            BucketTypes::String => None,
+            BucketTypes::String | BucketTypes::Undefined => None,
         }
     }
 
@@ -116,7 +118,7 @@ impl Bucket {
             BucketTypes::Float => Some(Self::from(
                 Decimal::from_f64(self.value.parse::<f64>().unwrap())?.checked_tan()?,
             )),
-            BucketTypes::String => None,
+            BucketTypes::String | BucketTypes::Undefined => None,
         }
     }
 
@@ -155,7 +157,7 @@ impl Bucket {
             BucketTypes::Float => Some(Self::from(
                 dec!(1.0) / Decimal::from_f64(self.value.parse::<f64>().unwrap())?.checked_sin()?,
             )),
-            BucketTypes::String => None,
+            BucketTypes::String | BucketTypes::Undefined => None,
         }
     }
 
@@ -194,7 +196,7 @@ impl Bucket {
             BucketTypes::Float => Some(Self::from(
                 dec!(1.0) / Decimal::from_f64(self.value.parse::<f64>().unwrap())?.checked_cos()?,
             )),
-            BucketTypes::String => None,
+            BucketTypes::String | BucketTypes::Undefined => None,
         }
     }
 
@@ -233,7 +235,7 @@ impl Bucket {
             BucketTypes::Float => Some(Self::from(
                 dec!(1.0) / Decimal::from_f64(self.value.parse::<f64>().unwrap())?.checked_tan()?,
             )),
-            BucketTypes::String => None,
+            BucketTypes::String | BucketTypes::Undefined => None,
         }
     }
 }

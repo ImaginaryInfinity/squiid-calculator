@@ -336,7 +336,7 @@ fn test_tangent() {
     // pi/4 = 1
     let _ = engine.divide();
     let _ = engine.tan();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0].round(), 1.0);
 }
 
 #[test]

@@ -115,7 +115,7 @@ impl Engine {
             let requested_operands = &self.stack[self.stack.len() - number as usize..];
             for item in requested_operands {
                 match item.bucket_type {
-                    BucketTypes::String => {
+                    BucketTypes::String | BucketTypes::Undefined => {
                         return Err(String::from(
                             "The operation cannot be performed on these operands",
                         ));
@@ -152,7 +152,7 @@ impl Engine {
             let requested_operands = &self.stack[self.stack.len() - number as usize..];
             for item in requested_operands {
                 match item.bucket_type {
-                    BucketTypes::String => {
+                    BucketTypes::String | BucketTypes::Undefined => {
                         return Err(String::from(
                             "The operation cannot be performed on these operands",
                         ));
@@ -179,7 +179,7 @@ impl Engine {
                     | BucketTypes::Constant(ConstantTypes::EighthPI) => {
                         Decimal::from_str_exact(&operand.value).unwrap()
                     }
-                    BucketTypes::String => {
+                    BucketTypes::String | BucketTypes::Undefined => {
                         return Err(String::from("you should never get this error"))
                     }
                 });
@@ -425,11 +425,11 @@ impl Engine {
     // Tangent
     pub fn tan(&mut self) -> Result<MessageAction, String> {
         // Get operands
+        // TODO: undefined handling
         let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };
-
         // Put result on stack
         let result = match operands[0].tan() {
             Some(value) => value,

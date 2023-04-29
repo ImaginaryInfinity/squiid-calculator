@@ -313,7 +313,7 @@ fn test_cosine() {
     // pi/2 = 0
     let _ = engine.divide();
     let _ = engine.cos();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0].round(), 0.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
 }
 
 #[test]
@@ -331,12 +331,12 @@ fn test_tangent() {
     // 2pi = 0
     let _ = engine.multiply();
     let _ = engine.tan();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0].round(), 0.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
 
     // pi/4 = 1
     let _ = engine.divide();
     let _ = engine.tan();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0].round(), 1.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 }
 
 #[test]
@@ -353,11 +353,11 @@ fn test_secant() {
     // pi/3 = 2
     let _ = engine.divide();
     let _ = engine.sec();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0].round(), 2.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
 
     // pi = -1
     let _ = engine.sec();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0].round(), -1.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -1.0);
 }
 
 #[test]
@@ -375,12 +375,12 @@ fn test_cosecant() {
     // pi/2 = 1
     let _ = engine.divide();
     let _ = engine.csc();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0].round(), 1.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 
     // pi/6 = 2
     let _ = engine.divide();
     let _ = engine.csc();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0].round(), 2.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
 }
 
 #[test]
@@ -398,12 +398,12 @@ fn test_cotangent() {
     // pi/2 = 0
     let _ = engine.divide();
     let _ = engine.cot();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0].round(), 0.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
 
     // pi/4 = 1
     let _ = engine.divide();
     let _ = engine.cot();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0].round(), 1.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 }
 
 #[test]

@@ -1,5 +1,7 @@
 // items on the stack are called Buckets
 
+use std::f64::consts;
+
 use rust_decimal::Decimal;
 use serde::{de::Visitor, Deserialize, Serialize};
 
@@ -7,7 +9,10 @@ use serde::{de::Visitor, Deserialize, Serialize};
 pub enum ConstantTypes {
     PI,
     HalfPI,
+    ThirdPI,
     QuarterPI,
+    SixthPI,
+    EighthPI,
     TwoPI,
     E,
     TAU,
@@ -31,12 +36,15 @@ pub struct Bucket {
 impl Bucket {
     pub fn from_constant(constant_type: ConstantTypes) -> Self {
         let value = match constant_type {
-            ConstantTypes::PI => std::f64::consts::PI,
-            ConstantTypes::HalfPI => std::f64::consts::PI / 2.0,
-            ConstantTypes::QuarterPI => std::f64::consts::PI / 4.0,
-            ConstantTypes::TwoPI => std::f64::consts::PI * 2.0,
-            ConstantTypes::E => std::f64::consts::E,
-            ConstantTypes::TAU => std::f64::consts::TAU,
+            ConstantTypes::PI => consts::PI,
+            ConstantTypes::HalfPI => consts::FRAC_PI_2,
+            ConstantTypes::ThirdPI => consts::FRAC_PI_3,
+            ConstantTypes::QuarterPI => consts::FRAC_PI_4,
+            ConstantTypes::SixthPI => consts::FRAC_PI_6,
+            ConstantTypes::EighthPI => consts::FRAC_PI_8,
+            ConstantTypes::TwoPI => consts::PI * 2.0,
+            ConstantTypes::E => consts::E,
+            ConstantTypes::TAU => consts::TAU,
             ConstantTypes::C => 299792458_f64,
             ConstantTypes::G => 6.67430 * 10_f64.powf(-11_f64),
         }
@@ -47,6 +55,32 @@ impl Bucket {
             bucket_type: BucketTypes::Constant(constant_type),
         }
     }
+
+    pub fn sin(&self) {
+        todo!();
+    }
+
+    pub fn cos(&self) {
+        todo!();
+    }
+
+    pub fn tan(&self) {
+        todo!();
+    }
+
+    pub fn csc(&self) {
+
+    }
+
+    pub fn sec(&self) {
+
+    }
+
+    pub fn cot(&self) {
+        
+    }
+
+
 }
 
 // implementation of .to_string()

@@ -173,7 +173,10 @@ impl Engine {
                     BucketTypes::Float
                     | BucketTypes::Constant(ConstantTypes::TAU)
                     | BucketTypes::Constant(ConstantTypes::C)
-                    | BucketTypes::Constant(ConstantTypes::G) => {
+                    | BucketTypes::Constant(ConstantTypes::G)
+                    | BucketTypes::Constant(ConstantTypes::ThirdPI)
+                    | BucketTypes::Constant(ConstantTypes::SixthPI)
+                    | BucketTypes::Constant(ConstantTypes::EighthPI) => {
                         Decimal::from_str_exact(&operand.value).unwrap()
                     }
                     BucketTypes::String => {
@@ -293,7 +296,7 @@ impl Engine {
             Err(error) => return Err(error),
         };
 
-        // check for pi/2 and pi/4 in order to replace with constants
+        // check for pi/x in order to replace with constants
         let result = if operands[0] == Decimal::PI {
             if operands[1] == Decimal::from_f64(2.0).unwrap() {
                 // pi/2
@@ -301,6 +304,15 @@ impl Engine {
             } else if operands[1] == Decimal::from_f64(4.0).unwrap() {
                 // pi/4
                 Bucket::from_constant(ConstantTypes::QuarterPI)
+            } else if operands[1] == Decimal::from_f64(3.0).unwrap() {
+                // pi/3
+                Bucket::from_constant(ConstantTypes::ThirdPI)
+            } else if operands[1] == Decimal::from_f64(6.0).unwrap() {
+                // pi/6
+                Bucket::from_constant(ConstantTypes::SixthPI)
+            } else if operands[1] == Decimal::from_f64(8.0).unwrap() {
+                // pi/8
+                Bucket::from_constant(ConstantTypes::EighthPI)
             } else {
                 // denominator is not 2 or 4, eval normally
                 Bucket::from(operands[0] / operands[1])
@@ -378,7 +390,7 @@ impl Engine {
     // Sine
     pub fn sin(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(1) {
+        let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
         };

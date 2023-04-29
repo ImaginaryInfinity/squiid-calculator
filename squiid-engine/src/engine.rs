@@ -296,6 +296,10 @@ impl Engine {
             Err(error) => return Err(error),
         };
 
+        if operands[1] == dec!(0.0) {
+            return Err("cannot divide by 0".to_string());
+        }
+
         // check for pi/x in order to replace with constants
         let result = if operands[0] == Decimal::PI {
             if operands[1] == dec!(2.0) {

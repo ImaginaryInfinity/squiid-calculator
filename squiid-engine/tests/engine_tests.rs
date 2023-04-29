@@ -195,7 +195,13 @@ fn test_divide() {
     let _ = engine.add_item_to_stack("-4".into(), false);
     let _ = engine.add_item_to_stack("-2".into(), false);
 
+    let _ = engine.add_item_to_stack("1".into(), false);
+    let _ = engine.add_item_to_stack("0".into(), false);
+
     // evaluate from last stack entries to first
+    let result = engine.divide();
+    assert!(matches!(result, Err(_)));
+
     let _ = engine.divide();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
 

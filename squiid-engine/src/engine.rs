@@ -76,6 +76,7 @@ impl Engine {
 
         // create a StackableFloat if item_string is numeric, else StackableString
         let item_pushable: Bucket = match item.bucket_type {
+            BucketTypes::Undefined => Bucket::new_undefined(),
             BucketTypes::Constant(constant_type) => {
                 // bucket already has a constant type, use that
                 Bucket::from_constant(constant_type)
@@ -130,7 +131,7 @@ impl Engine {
 
                 operands.push(match operand.bucket_type {
                     BucketTypes::Float | BucketTypes::Constant(_) => {
-                        operand.value.parse::<f64>().unwrap()
+                        operand.value.unwrap().parse::<f64>().unwrap()
                     }
                     _ => return Err(String::from("you should never get this error")),
                 });
@@ -177,7 +178,7 @@ impl Engine {
                     | BucketTypes::Constant(ConstantTypes::ThirdPI)
                     | BucketTypes::Constant(ConstantTypes::SixthPI)
                     | BucketTypes::Constant(ConstantTypes::EighthPI) => {
-                        Decimal::from_str_exact(&operand.value).unwrap()
+                        Decimal::from_str_exact(&operand.value.unwrap()).unwrap()
                     }
                     BucketTypes::String | BucketTypes::Undefined => {
                         return Err(String::from("you should never get this error"))
@@ -203,7 +204,7 @@ impl Engine {
             for _ in 0..number {
                 let operand = self.stack.pop().unwrap();
 
-                operands.push(operand.value);
+                operands.push(operand.to_string());
             }
             // Make the new vector's order match the stack
             operands.reverse();

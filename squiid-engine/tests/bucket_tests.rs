@@ -20,6 +20,8 @@ fn test_bucket_creation() {
     assert_eq!(Bucket::from(-3).bucket_type, BucketTypes::Float);
 
     assert_eq!(Bucket::from(-3.0).bucket_type, BucketTypes::Float);
+
+    assert_eq!(Bucket::new_undefined().bucket_type, BucketTypes::Undefined);
 }
 
 #[test]

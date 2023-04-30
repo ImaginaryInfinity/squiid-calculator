@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 
 use squiid_engine::{
-    bucket::{Bucket, ConstantTypes},
+    bucket::{Bucket, ConstantTypes, BucketTypes},
     engine::*,
 };
 
@@ -334,7 +334,7 @@ fn test_tangent() {
 
     // evaluate from last stack entries to first
 
-    // 2pi = 0
+    // 2pi = 1
     let _ = engine.multiply();
     let _ = engine.tan();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
@@ -342,7 +342,7 @@ fn test_tangent() {
     // pi/4 = 1
     let _ = engine.divide();
     let _ = engine.tan();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0].round(), 1.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 }
 
 #[test]
@@ -399,7 +399,14 @@ fn test_cotangent() {
     let _ = engine.add_item_to_stack("#pi".into(), false);
     let _ = engine.add_item_to_stack("2".into(), false);
 
+    let _ = engine.add_item_to_stack("#pi".into(), false);
+
     // evaluate from last stack entries to first
+
+    // pi
+    let _ = engine.cot();
+    assert_eq!(engine.stack.last().unwrap().bucket_type, BucketTypes::Undefined);
+    let _ = engine.drop();
 
     // pi/2 = 0
     let _ = engine.divide();

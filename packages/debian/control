@@ -1,0 +1,16 @@
+Source: squiid
+Section: math
+Priority: optional
+Maintainer: Connor Sample <tabulatejarl8@gmail.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.0
+Homepage: https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid
+#Vcs-Browser: https://salsa.debian.org/debian/squiid
+#Vcs-Git: https://salsa.debian.org/debian/squiid.git
+Rules-Requires-Root: no
+
+Package: squiid
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A modular calculator written in Rust.
+ It is currently very early in development but it is intended to be the successor to ImaginaryInfinity Calculator.

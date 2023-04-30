@@ -59,3 +59,12 @@ build-appimage:
   artifacts:
     paths:
       - package-build/Squiid_Calculator.AppImage
+
+build-deb:
+  stage: build
+  image: ubuntu:latest
+  before_script:
+    - apt update
+    - apt install -y build-essential binutils lintian debhelper dh-make devscripts cargo
+  script:
+    - make deb

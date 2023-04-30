@@ -163,3 +163,36 @@ android-x86_64: android-require ## Build the Android x86_64 release
 	cargo ndk --platform $(platform) --target x86_64 build --release
 
 android: android-armv8 android-armv7 android-x86_64 ## Build all android targets
+
+aur-metadata: require clean ## Build the AUR metadata files for deployment
+	# check for makepkg
+	@makepkg --version > /dev/null 2>&1 || (echo "ERROR: makepkg is required"; exit 1)
+
+	mkdir -p package-build/
+	@envsubst '$${VERSION}' < packages/arch/PKGBUILD > package-build/PKGBUILD
+	# retrieve sha512sum of source
+	export SHA512SUM=$$(curl -sL $$(cd package-build; makepkg --printsrcinfo | makepkg --printsrcinfo | grep -oP 'source = \K.*') | sha512sum | awk '{print $$1}'); \
+	envsubst '$${SHA512SUM}' < package-build/PKGBUILD > package-build/PKGBUILD-new
+
+	mv package-build/PKGBUILD-new package-build/PKGBUILD
+
+	cd package-build; makepkg --printsrcinfo > .SRCINFO
+
+arch-package: aur-metadata ## Build an Arch package
+	cd package-build; makepkg -s
+
+deb: require clean
+	# TODO: things
+
+	ls packages
+
+	mkdir -p package-build/usr/bin
+	cp -r packages/debian package-build/DEBIAN
+
+	# cargo build --release --target=x86_64-unknown-linux-musl
+
+	cp target/x86_64-unknown-linux-musl/release/squiid package-build/usr/bin/
+
+	# dpkg-deb --build package-build squiid.deb
+	# dpkg -b package-build squiid.deb
+	DEBEMAIL="example@mail.com" dpkg-buildpackage

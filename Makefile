@@ -1,3 +1,5 @@
+.DEFAULT_GOAL:=help
+
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 BINARY_NAME := squiid
@@ -6,10 +8,31 @@ BINARY_PATH := target/release/$(BINARY_NAME)
 TARGET_CMAKE_TOOLCHAIN_FILE ?= /opt/android-ndk/build/cmake/android.toolchain.cmake
 export TARGET_CMAKE_TOOLCHAIN_FILE
 
+APPIMAGETOOL ?= appimagetool
+
 VERSION := $(shell awk 'sub(/^[[:space:]]*version[[:space:]]*=[[:space:]]*/, "") {sub(/^"/, ""); sub(/".*$$/, ""); print}' Cargo.toml)
 export VERSION
 
-clean:
+.PHONY: help
+help: ## Shows this help message
+	@awk 'BEGIN { \
+		# Set the field separator (FS) to ":.*##" \
+		FS = ":.*##"; \
+		# Print a usage message with a highlighted <target> placeholder \
+		printf "Usage: make \033[36m<target>\033[0m\n" \
+	} \
+	/^[a-zA-Z_-]+:.*?##/ { \
+		# If the line matches the pattern for a target and its description, \
+		# print the target name and description in a formatted string \
+		printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 \
+	} \
+	/^##@/ { \
+		# If the line matches the pattern for a section header, \
+		# print it in bold font \
+		printf "\n\033[1m%s\033[0m\n", substr($$0, 5) \
+	}' $(MAKEFILE_LIST)
+
+clean: ## Clean the build environment
 	rm -rf package-build \
 		org.imaginaryinfinity.Squiid.json \
 		generated-sources.json \
@@ -20,20 +43,20 @@ require:
 	@echo "Checking the programs required for the build are installed..."
 	@cargo --version >/dev/null 2>&1 || (echo "ERROR: cargo is required."; exit 1)
 
-test:
+test: ## Test each component of the project
 	cargo test -p squiid-parser -p squiid-engine -p squiid
 
-build: require
+build: require ## Build the release version of the program for the system platform
 	cargo build --release
 
-install: $(BINARY_PATH) build
+install: $(BINARY_PATH) build ## Install Squiid to the system
 	mkdir -p $(DESTDIR)$(BINDIR)
 	cp $(BINARY_PATH) $(DESTDIR)$(BINDIR)
 
-uninstall:
+uninstall: ## Uninstall the version of Squiid installed with the Makefile
 	rm $(DESTDIR)$(BINDIR)/$(BINARY_NAME)
 
-flatpak: require clean
+flatpak: require clean ## Build the flatpak in package-build/
 	@python3 --version >/dev/null 2>&1 || (echo "ERROR: python3 is required."; exit 1)
 	@flatpak-builder --version >/dev/null 2>&1 || (echo "ERROR: flatpak-builder is required."; exit 1)
 	@curl --version >/dev/null 2>&1 || (echo "ERROR: curl is required."; exit 1)
@@ -50,7 +73,7 @@ flatpak: require clean
 
 	rm -f org.imaginaryinfinity.Squiid.json generated-sources.json flatpak-cargo-generator.py
 
-snap: require clean
+snap: require clean ## Build the snap
 	@snapcraft --version >/dev/null 2>&1 || (echo "ERROR: snapcraft is required."; exit 1)
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 
@@ -61,8 +84,7 @@ snap: require clean
 
 	rm -f snapcraft.yaml
 
-APPIMAGETOOL ?= appimagetool
-appimage: require clean build
+appimage: require clean build ## Build the AppImage
 	# Check for appimagetool
 	@$(APPIMAGETOOL) --version > /dev/null 2>&1 || (echo "ERROR: appimagetool is required"; exit 1)
 	# Check for curl
@@ -101,11 +123,11 @@ appimage: require clean build
 	# Build appimage
 	$(APPIMAGETOOL) package-build/squiid.AppDir package-build/Squiid_Calculator.AppImage
 
-windows-build: require clean
+windows-build: require clean ## Cross compile the Windows release
 	# cross compile windows version
 	cargo build --release --target=x86_64-pc-windows-gnu
 
-windows-installer: windows-build
+windows-installer: windows-build ## Build the Windows installer
 	# Check for docker
 	@docker --version > /dev/null 2>&1 || (echo "ERROR: docker is required"; exit 1)
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
@@ -131,13 +153,13 @@ endif
 	# check if cargo ndk is installed
 	@cargo ndk --version > /dev/null 2>&1 || (echo "ERROR: cargo-ndk is required. Install it with `cargo install cargo-ndk`"; exit 1)
 
-android-armv8: android-require
+android-armv8: android-require ## Build the Android ARMv8 release
 	cargo ndk --platform $(platform) --target arm64-v8a build --release
 
-android-armv7: android-require
+android-armv7: android-require ## Build the Android ARMv7 release
 	cargo ndk --platform $(platform) --target armeabi-v7a build --release
 
-android-x86_64: android-require
+android-x86_64: android-require ## Build the Android x86_64 release
 	cargo ndk --platform $(platform) --target x86_64 build --release
 
-android: android-armv8 android-armv7 android-x86_64
+android: android-armv8 android-armv7 android-x86_64 ## Build all android targets

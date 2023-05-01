@@ -172,6 +172,7 @@ android: android-armv8 android-armv7 android-x86_64 ## Build all android targets
 aur-metadata: require clean ## Build the AUR metadata files for deployment
 	# check for makepkg
 	@makepkg --version > /dev/null 2>&1 || (echo "ERROR: makepkg is required"; exit 1)
+	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 
 	mkdir -p package-build/
 	@envsubst '$${VERSION}' < packages/arch/PKGBUILD > package-build/PKGBUILD
@@ -200,3 +201,10 @@ deb: require clean
 	# cd package-build; debuild
 
 	rm -rf squiid_0.1.0.orig.tar.gz debian
+
+rpm: require clean
+	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
+
+	mkdir -p package-build
+
+	@envsubst '$${VERSION}' < packages/fedora/squiid.spec > package-build/squiid.spec

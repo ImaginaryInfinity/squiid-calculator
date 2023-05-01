@@ -8,3 +8,7 @@ generated-sources.json
 .gitlab-ci-local/
 squiid-installer.exe
 flatpak-cargo-generator.py
+*.buildinfo
+*.changes
+*.deb
+*.tar.gz

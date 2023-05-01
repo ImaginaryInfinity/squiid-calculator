@@ -13,11 +13,15 @@
 # package maintainers to append LDFLAGS
 #export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
-
 %:
 	dh $@
 
+override_dh_auto_build:
+	# TODO: change to build-musl
+	dh_auto_build -- build
 
+# override_dh_auto_install:
+# 	dh_auto_install -- BINARY_PATH=target/x86_64-unknown-linux-musl/release/squiid
 # dh_make generated override targets
 # This is example for Cmake (See https://bugs.debian.org/641051 )
 #override_dh_auto_configure:

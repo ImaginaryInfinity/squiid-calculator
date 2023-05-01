@@ -1,12 +1,11 @@
 .DEFAULT_GOAL:=help
 
-PREFIX ?= /usr/local
+PREFIX ?= /usr
 BINDIR ?= $(PREFIX)/bin
 BINARY_NAME := squiid
-BINARY_PATH := target/release/$(BINARY_NAME)
+BINARY_PATH ?= target/release/$(BINARY_NAME)
 
-TARGET_CMAKE_TOOLCHAIN_FILE ?= /opt/android-ndk/build/cmake/android.toolchain.cmake
-export TARGET_CMAKE_TOOLCHAIN_FILE
+android%: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 
 APPIMAGETOOL ?= appimagetool
 
@@ -37,7 +36,9 @@ clean: ## Clean the build environment
 		org.imaginaryinfinity.Squiid.json \
 		generated-sources.json \
 		.flatpak-builder \
-		flatpak-cargo-generator.py
+		flatpak-cargo-generator.py \
+		squiid_0.1.0.orig.tar.gz \
+		debian
 
 require:
 	@echo "Checking the programs required for the build are installed..."
@@ -49,9 +50,12 @@ test: ## Test each component of the project
 build: require ## Build the release version of the program for the system platform
 	cargo build --release
 
-install: $(BINARY_PATH) build ## Install Squiid to the system
+build-musl: require ## Build the Linux MUSL version
+	cargo build --release --target=x86_64-unknown-linux-musl
+
+install: $(BINARY_PATH) ## Install Squiid to the system
 	mkdir -p $(DESTDIR)$(BINDIR)
-	cp $(BINARY_PATH) $(DESTDIR)$(BINDIR)
+	install -v -m755 $(BINARY_PATH) $(DESTDIR)$(BINDIR)
 
 uninstall: ## Uninstall the version of Squiid installed with the Makefile
 	rm $(DESTDIR)$(BINDIR)/$(BINARY_NAME)
@@ -144,6 +148,7 @@ windows-installer: windows-build ## Build the Windows installer
 	docker run --rm -i -v "$$PWD/package-build:/work" amake/innosetup squiid.iss /O.\\
 
 # ANDROID
+# TODO: fix android building
 android-require: require
 ifndef platform
 	# check if platform= argument is defined
@@ -187,12 +192,11 @@ deb: require clean
 	ls packages
 
 	mkdir -p package-build/usr/bin
-	cp -r packages/debian package-build/DEBIAN
+	cp -r packages/debian ./
 
-	# cargo build --release --target=x86_64-unknown-linux-musl
+	git archive --format=tar.gz -o squiid_0.1.0.orig.tar.gz trunk
 
-	cp target/x86_64-unknown-linux-musl/release/squiid package-build/usr/bin/
+	dpkg-buildpackage -nc -i
+	# cd package-build; debuild
 
-	# dpkg-deb --build package-build squiid.deb
-	# dpkg -b package-build squiid.deb
-	DEBEMAIL="example@mail.com" dpkg-buildpackage
+	rm -rf squiid_0.1.0.orig.tar.gz debian

@@ -1,0 +1,16 @@
+site_name: Squiid
+nav:
+    - Home: index.md
+    - Cross Compiling: cross_compiling.md
+    - Communication Protocol: comm_prot.md
+
+plugins:
+    - search
+    - mermaid2
+
+theme:
+    name: readthedocs
+    highlightjs: true
+
+extra_javascript:
+    - https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js

@@ -1,6 +1,6 @@
 # Client-Server Communication Protocol
 
-Squiid is unique in that the part that actually does the calculations (the engine) is completely separate from the part that the user sees (the frontend). The main thing that makes Squiid Squiid is the engine, and the program was designed with this in mind. While we do provide our own parser and frontend(s), developers do not need to use these and can create their own parsers and frontends with the features that they would like. However, this is not required if you would like a feature to be included in Squiid, and you can simply [submit an issue]() or a [merge request]() <!-- TODO: --> that adds or requests the addition of the feature you would like.
+Squiid is unique in that the part that actually does the calculations (the engine) is completely separate from the part that the user sees (the frontend). The main thing that makes Squiid Squiid is the engine, and the program was designed with this in mind. While we do provide our own parser and frontend(s), developers do not need to use these and can create their own parsers and frontends with the features that they would like. However, this is not required if you would like a feature to be included in Squiid, and you can simply [submit an issue](https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/issues/) or a [merge request](https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/merge_requests) that adds or requests the addition of the feature you would like.
 
 ## Network flow
 

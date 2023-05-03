@@ -37,7 +37,7 @@ clean: ## Clean the build environment
 		generated-sources.json \
 		.flatpak-builder \
 		flatpak-cargo-generator.py \
-		squiid_0.1.0.orig.tar.gz \
+		../squiid_0.1.0.orig.tar.gz \
 		debian
 
 require:
@@ -188,23 +188,21 @@ arch-package: aur-metadata ## Build an Arch package
 	cd package-build; makepkg -s
 
 deb: require clean
-	# TODO: things
+	@git --version > /dev/null 2>&1 || (echo "ERROR: git is required"; exit 1)
+	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
 
 	ls packages
 
-	# mkdir -p package-build/usr/bin
 	mkdir -p package-build
 	cp -r packages/debian ./
 
 	git archive --format=tar.gz -o ../squiid_0.1.0.orig.tar.gz trunk
 
-	# dpkg-buildpackage -nc -i
-	# cd package-build; debuild
 	debuild -us -uc
 
-	mv ../squiid_0.1.0-1_amd64.deb ./
+	mv ../squiid*.deb ../squiid*.build ../squiid*.changes ../squiid*.tar.xz ../squiid*.dsc ../squiid*.buildinfo ./package-build || true
 
-	rm -rf squiid_0.1.0.orig.tar.gz debian
+	rm -rf ../squiid_0.1.0.orig.tar.gz debian
 
 rpm: require clean
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)

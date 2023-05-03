@@ -65,17 +65,11 @@ build-deb:
   image: ubuntu:latest
   before_script:
     - apt update
-    - apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git cmake musl-dev musl-tools cargo
-    # - curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh -s -- -y
-    # - source "$HOME/.cargo/env"
-    # - rustup target add x86_64-unknown-linux-musl
-    # - rustup show
-    # - rustup default stable
-    - ln -sf /usr/bin/g++ /usr/bin/musl-g++
+    - apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git cargo
   script:
     - make deb
   artifacts:
     paths:
-      - squiid_0.1.0-1_amd64.deb
-      - squiid_0.1.0-1_amd64.buildinfo
-      - squiid_0.1.0-1_amd64.changes
+      - package-build/squiid_0.1.0-1_amd64.deb
+      - package-build/squiid_0.1.0-1_amd64.dsc
+      - package-build/squiid_0.1.0-1_amd64.changes

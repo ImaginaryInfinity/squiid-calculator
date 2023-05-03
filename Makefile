@@ -195,10 +195,11 @@ deb: require clean
 	mkdir -p package-build/usr/bin
 	cp -r packages/debian ./
 
-	git archive --format=tar.gz -o squiid_0.1.0.orig.tar.gz trunk
+	git archive --format=tar.gz -o ../squiid_0.1.0.orig.tar.gz trunk
 
-	dpkg-buildpackage -nc -i
+	# dpkg-buildpackage -nc -i
 	# cd package-build; debuild
+	debuild -us -uc
 
 	rm -rf squiid_0.1.0.orig.tar.gz debian
 

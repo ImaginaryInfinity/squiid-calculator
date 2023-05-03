@@ -14,7 +14,7 @@ export DH_VERBOSE = 1
 #export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
 %:
-	dh $@ --builddirectory=package-build/
+	dh $@
 
 override_dh_auto_build:
 	# TODO: change to build-musl

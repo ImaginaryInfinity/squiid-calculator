@@ -7,8 +7,6 @@ BINARY_PATH ?= target/release/$(BINARY_NAME)
 
 DEBUILD_OPTIONS ?= -us -uc
 
-android%: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
-
 APPIMAGETOOL ?= appimagetool
 
 VERSION := $(shell awk 'sub(/^[[:space:]]*version[[:space:]]*=[[:space:]]*/, "") {sub(/^"/, ""); sub(/".*$$/, ""); print}' Cargo.toml)
@@ -160,15 +158,19 @@ endif
 	# check if cargo ndk is installed
 	@cargo ndk --version > /dev/null 2>&1 || (echo "ERROR: cargo-ndk is required. Install it with `cargo install cargo-ndk`"; exit 1)
 
+android-armv8: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android-armv8: android-require ## Build the Android ARMv8 release
-	cargo ndk --platform $(platform) --target arm64-v8a build --release
+	RUST_LOG=debug cargo ndk --platform $(platform) --target arm64-v8a build --release
 
+android-armv7: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android-armv7: android-require ## Build the Android ARMv7 release
 	cargo ndk --platform $(platform) --target armeabi-v7a build --release
 
+android-x86_64: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android-x86_64: android-require ## Build the Android x86_64 release
 	cargo ndk --platform $(platform) --target x86_64 build --release
 
+android: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android: android-armv8 android-armv7 android-x86_64 ## Build all android targets
 
 aur-metadata: require clean ## Build the AUR metadata files for deployment

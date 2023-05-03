@@ -192,14 +192,15 @@ deb: require clean
 
 	ls packages
 
-	mkdir -p package-build/usr/bin
-	cp -r packages/debian ./
+	# mkdir -p package-build/usr/bin
+	mkdir -p package-build
+	cp -r packages/debian ./package-build
 
-	git archive --format=tar.gz -o ../squiid_0.1.0.orig.tar.gz trunk
+	git archive --format=tar.gz -o ./squiid_0.1.0.orig.tar.gz trunk
 
 	# dpkg-buildpackage -nc -i
 	# cd package-build; debuild
-	debuild -us -uc
+	cd package-build; debuild -us -uc
 
 	rm -rf squiid_0.1.0.orig.tar.gz debian
 

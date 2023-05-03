@@ -65,7 +65,7 @@ build-deb:
   image: ubuntu:latest
   before_script:
     - apt update
-    - apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git cargo
+    - apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git cargo cmake
   script:
     - make deb
   artifacts:

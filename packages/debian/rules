@@ -23,13 +23,6 @@ override_dh_auto_build:
 override_dh_auto_clean:
 	# stop this step so that it doesn't delete the debian/ directory
 
-override_dh_auto_test:
-	echo
-
-# override_dh_auto_install:
-# 	dh_auto_install
-# 	install -p -D -m 0755 target/release/squiid $(DESTROOT)/usr/bin/squiid
-
 # override_dh_auto_install:
 # 	dh_auto_install -- BINARY_PATH=target/x86_64-unknown-linux-musl/release/squiid
 # dh_make generated override targets

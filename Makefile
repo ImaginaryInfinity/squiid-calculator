@@ -5,6 +5,8 @@ BINDIR ?= $(PREFIX)/bin
 BINARY_NAME := squiid
 BINARY_PATH ?= target/release/$(BINARY_NAME)
 
+DEBUILD_OPTIONS ?= -us -uc
+
 android%: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 
 APPIMAGETOOL ?= appimagetool
@@ -198,7 +200,7 @@ deb: require clean
 
 	git archive --format=tar.gz -o ../squiid_0.1.0.orig.tar.gz trunk
 
-	debuild -us -uc
+	debuild $(DEBUILD_OPTIONS)
 
 	mv ../squiid*.deb ../squiid*.build ../squiid*.changes ../squiid*.tar.xz ../squiid*.dsc ../squiid*.buildinfo ./package-build || true
 

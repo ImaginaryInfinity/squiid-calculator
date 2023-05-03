@@ -202,6 +202,8 @@ deb: require clean
 	# cd package-build; debuild
 	debuild -us -uc
 
+	mv ../squiid_0.1.0-1_amd64.deb ./
+
 	rm -rf squiid_0.1.0.orig.tar.gz debian
 
 rpm: require clean

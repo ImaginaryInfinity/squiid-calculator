@@ -27,5 +27,5 @@ unicode-width = "0.1.10"
 winresource = "0.1.15"
 
 [profile.release]
-strip = true
+strip = "symbols"
 lto = true

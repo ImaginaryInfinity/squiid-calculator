@@ -80,8 +80,25 @@ build-deb:
   stage: build
   image: proget.makedeb.org/docker/makedeb/makedeb:debian-bullseye
   before_script:
+    # copy needed files
     - mkdir package-build/
     - cp packages/debian/PKGBUILD package-build/
+
+    # add non root user to execute makedeb
+    - useradd -m non_root
+    - "echo 'non_root ALL=NOPASSWD: ALL' >> /etc/sudoers"
+    - cat /etc/sudoers
+    - chown -R non_root:non_root package-build/
+
+    # install build dependencies
+    - apt install -y curl cmake git cargo
+    # - curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh -s -- -y
+    # - source "$HOME/.cargo/env"
+    # - rustup target add x86_64-unknown-linux-musl
+    # - rustup show
+    # - rustup default stable
+
   script:
+    - git archive --format=tar.gz -o package-build/squiid-0.1.0.tar.gz trunk
     - cd package-build/
-    - makedeb
+    - sudo -u non_root makedeb

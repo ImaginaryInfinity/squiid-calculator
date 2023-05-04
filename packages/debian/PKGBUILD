@@ -6,7 +6,7 @@ pkgdesc="A modular calculator written in Rust. Intended to be the successor to I
 arch=('any')
 depends=()
 focal_depends=()
-makedepends=('cargo')
+makedepends=('cargo' 'cmake')
 makedepends_x86_64=()
 checkdepends=()
 optdepends=()
@@ -24,24 +24,21 @@ license=('GPLv3')
 url='https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid'
 
 source=("https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/archive/$pkgver/$pkgname-$pkgver.tar.gz")
-sha256sums=('')
+sha256sums=('SKIP')
 noextract=()
 
 prepare() {
-	cd "${pkgname}-${pkgver}/"
 	export RUSTUP_TOOLCHAIN=stable
 	cargo fetch --locked --target "$CARCH-unknown-linux-gnu"
 }
 
 build() {
-	cd "${pkgname}-${pkgver}/"
 	export RUSTUP_TOOLCHAIN=stable
 	export CARGO_TARGET_DIR=target
 	cargo build --frozen --release --all-features
 }
 
 package() {
-	cd "${pkgname}-${pkgver}/"
 	install -Dm0755 -t "$pkgdir/usr/bin/" "target/release/$pkgname"
 }
 

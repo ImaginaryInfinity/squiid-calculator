@@ -6,7 +6,7 @@ pkgdesc="A modular calculator written in Rust. Intended to be the successor to I
 arch=('any')
 url="https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid"
 license=('GPLv3')
-makedepends=('cargo')
+makedepends=('cargo' 'cmake')
 source=("https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/archive/$pkgver/$pkgname-$pkgver.tar.gz")
 sha512sums=('${SHA512SUM}')
 

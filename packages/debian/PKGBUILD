@@ -1,12 +1,12 @@
 # Maintainer: Your Name <foobar@example.com>
-pkgname=squiid
-pkgver=0.1.0
+pkgname=squiid-bin
+pkgver=${VERSION}
 pkgrel=1
 pkgdesc="A modular calculator written in Rust. Intended to be the successor to ImaginaryInfinity Calculator."
 arch=('any')
 depends=()
 focal_depends=()
-makedepends=('cargo' 'cmake')
+makedepends=()
 makedepends_x86_64=()
 checkdepends=()
 optdepends=()
@@ -23,20 +23,10 @@ options=()
 license=('GPLv3')
 url='https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid'
 
+# TODO: change to musl version
 source=("https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/archive/$pkgver/$pkgname-$pkgver.tar.gz")
-sha256sums=('SKIP')
+sha256sums=('${SHA512SUM}')
 noextract=()
-
-prepare() {
-	export RUSTUP_TOOLCHAIN=stable
-	cargo fetch --locked --target "$CARCH-unknown-linux-gnu"
-}
-
-build() {
-	export RUSTUP_TOOLCHAIN=stable
-	export CARGO_TARGET_DIR=target
-	cargo build --frozen --release --all-features
-}
 
 package() {
 	install -Dm0755 -t "$pkgdir/usr/bin/" "target/release/$pkgname"

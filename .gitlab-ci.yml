@@ -87,11 +87,11 @@ build-deb:
     # add non root user to execute makedeb
     - useradd -m non_root
     - "echo 'non_root ALL=NOPASSWD: ALL' >> /etc/sudoers"
-    - cat /etc/sudoers
     - chown -R non_root:non_root package-build/
 
     # install build dependencies
-    - apt install -y curl cmake git cargo
+    - cat /etc/apt/sources.list.d/makedeb.list
+    - apt install -y curl cmake git rustup
     # - curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh -s -- -y
     # - source "$HOME/.cargo/env"
     # - rustup target add x86_64-unknown-linux-musl

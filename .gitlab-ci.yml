@@ -60,18 +60,28 @@ build-appimage:
     paths:
       - package-build/Squiid_Calculator.AppImage
 
+# build-deb:
+#   stage: build
+#   image: ubuntu:latest
+#   before_script:
+#     - apt update
+#     - apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git cargo cmake gnupg
+#     - echo "$GPG_PRIVATE_KEY_B64" | base64 --decode | gpg --batch --import
+#     - gpg --list-keys --fingerprint --with-colons | sed -E -n -e 's/^fpr:::::::::([0-9A-F]+):$/\1:6:/p' | gpg --import-ownertrust
+#   script:
+#     - make deb DEBUILD_OPTIONS=-p"gpg --batch --passphrase $GPG_PASSPHRASE --pinentry-mode loopback"
+#   artifacts:
+#     paths:
+#       - package-build/squiid_0.1.0-1_amd64.deb
+#       - package-build/squiid_0.1.0-1_amd64.dsc
+#       - package-build/squiid_0.1.0-1_amd64.changes
+
 build-deb:
   stage: build
-  image: ubuntu:latest
+  image: proget.makedeb.org/docker/makedeb/makedeb:debian-bullseye
   before_script:
-    - apt update
-    - apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git cargo cmake gnupg
-    - echo "$GPG_PRIVATE_KEY_B64" | base64 --decode | gpg --batch --import
-    - gpg --list-keys --fingerprint --with-colons | sed -E -n -e 's/^fpr:::::::::([0-9A-F]+):$/\1:6:/p' | gpg --import-ownertrust
+    - mkdir package-build/
+    - cp packages/debian/PKGBUILD package-build/
   script:
-    - make deb DEBUILD_OPTIONS=-p"gpg --batch --passphrase $GPG_PASSPHRASE --pinentry-mode loopback"
-  artifacts:
-    paths:
-      - package-build/squiid_0.1.0-1_amd64.deb
-      - package-build/squiid_0.1.0-1_amd64.dsc
-      - package-build/squiid_0.1.0-1_amd64.changes
+    - cd package-build/
+    - makedeb

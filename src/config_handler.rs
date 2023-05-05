@@ -25,6 +25,7 @@ impl Config {
     }
 
     // Set a specific key in a specific section of the config
+    #[allow(dead_code)]
     pub fn set(&mut self, section: &str, key: &str, value: Value) {
         if let Value::Table(config) = &mut self.config {
             if let Some(section_value) = config.get_mut(section) {
@@ -36,6 +37,7 @@ impl Config {
     }
 
     // Create a new section in the config
+    #[allow(dead_code)]
     pub fn create_section(&mut self, section: &str) {
         if let Value::Table(config) = &mut self.config {
             config.insert(section.to_string(), Value::Table(toml::map::Map::new()));

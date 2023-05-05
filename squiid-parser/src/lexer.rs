@@ -2,7 +2,7 @@ use logos::Logos;
 
 use crate::tokens::Token;
 
-// lex a given input string
+/// Lex a given input string
 pub fn lex(input: &str) -> Result<Vec<Token>, String> {
     let mut lex = Token::lexer(input).spanned();
     let mut tokens = Vec::new();

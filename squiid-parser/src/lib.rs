@@ -6,6 +6,7 @@ pub mod tokens;
 use crate::lexer::lex;
 use parser::{parse_implicit_multiplication, parse_subtract_sign, shunting_yard_parser};
 
+/// Parse an input string into a Vec
 pub fn parse(input: &str) -> Result<Vec<&str>, String> {
     // check for unmatched parenthesis
     if input.matches('(').count() != input.matches(')').count() {

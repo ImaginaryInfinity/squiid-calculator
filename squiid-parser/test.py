@@ -13,7 +13,7 @@ rust_lib.free_string_array.argtypes = [ctypes.POINTER(ctypes.c_char_p), ctypes.c
 if __name__ == '__main__':
 	# Call get_strings function and get the returned string array and length
 	len_ptr = ctypes.c_int(0)
-	s = rust_lib.parse_exposed(ctypes.create_string_buffer(b'3+3'), ctypes.byref(len_ptr))
+	s = rust_lib.parse_exposed(ctypes.create_string_buffer(b'sin(3+3(9))*8'), ctypes.byref(len_ptr))
 	len_s = len_ptr.value
 
 	# Print the strings

@@ -4,6 +4,7 @@ use log::debug;
 
 use crate::tokens::Token::{self, *};
 
+/// Types of tokens that can be on the left side of implicit multiplication
 const LEFT_SIDE_IMPLICIT: [Token; 7] = [
     VariableRecal("_"),
     Constant("_"),
@@ -14,6 +15,7 @@ const LEFT_SIDE_IMPLICIT: [Token; 7] = [
     RParen("_"),
 ];
 
+/// Types of tokens that can be on the right side of implicit multiplication
 const RIGHT_SIDE_IMPLICIT: [Token; 8] = [
     Function("_"),
     VariableRecal("_"),
@@ -25,16 +27,19 @@ const RIGHT_SIDE_IMPLICIT: [Token; 8] = [
     LParen("_"),
 ];
 
+/// Parse whether this is a negative sign or a minus operator.
+/// It is a negative sign if:
+///
+/// - at the beginning of an expression
+///
+/// - at the beginning of an opening parenthesis (-3+6)
+/// 
+/// - at the beginning of a function (func(-5))
+/// 
+/// - after another operator (3+-5, 3*-5, 3^-5)
+/// 
+/// - as an argument in a function, so after a comma (function(3, -3))
 pub fn parse_subtract_sign(tokens: &mut Vec<Token>) {
-    // parse whether this is a negative sign or a minus operator
-    // it is a negative sign if:
-    //
-    // at the beginning of an expression
-    // at the beginning of an opening parenthesis (-3+6)
-    // at the beginning of a function (func(-5))
-    // after another operator (3+-5, 3*-5, 3^-5)
-    // as an argument in a function, so after a comma (function(3, -3))
-
     let mut negative_replacements: Vec<usize> = Vec::new();
 
     for (index, token) in tokens.iter().enumerate() {
@@ -67,15 +72,16 @@ pub fn parse_subtract_sign(tokens: &mut Vec<Token>) {
     }
 }
 
+/// Left side (current token):
+///
+/// - Function, VariableRecal, Constant, ScientificNotation, Float, Int, PrevAns, RParen
+///
+/// Right Side (peek token):
+/// 
+/// - Function, VariableRecal, Constant, ScientificNotation, Float, Int, PrevAns, LParen
+///
+/// Implicit multiplication happens if something on the left side list is followed by something on the right side list
 pub fn parse_implicit_multiplication(tokens: &mut Vec<Token>) {
-    // Left side (current token):
-    // Function, VariableRecal, Constant, ScientificNotation, Float, Int, PrevAns, RParen
-    //
-    // Right Side (peek token):
-    // Function, VariableRecal, Constant, ScientificNotation, Float, Int, PrevAns, LParen
-    //
-    // Implicit multiplication happens if something on the left side list is followed by something on the right side list
-
     let mut multiply_insertions = Vec::new();
 
     for (index, token) in tokens.iter().enumerate() {
@@ -98,6 +104,7 @@ pub fn parse_implicit_multiplication(tokens: &mut Vec<Token>) {
     }
 }
 
+/// Parse a Vec of tokens using an implementation of the shunting yard algorithm
 pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, String> {
     debug!("{:?}", tokens);
 

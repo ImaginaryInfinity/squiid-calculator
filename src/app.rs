@@ -25,15 +25,19 @@ use crate::{
     utils::{current_char_index, input_buffer_is_sci_notate, send_data},
 };
 
+/// The input mode state of the application
 #[derive(PartialEq)]
 enum InputMode {
+    /// No input mode (select, info view, etc.)
     None,
+    /// Algebraic input mode
     Algebraic,
+    /// RPN input mode
     RPN,
 }
 
-// RPN symbols and their corresponding commands
 lazy_static! {
+    /// RPN symbols and their corresponding commands
     static ref RPN_SYMBOL_MAP: HashMap<KeyCode, &'static str> = [
         (KeyCode::Char('+'), "add"),
         (KeyCode::Char('-'), "subtract"),
@@ -49,12 +53,16 @@ lazy_static! {
     .collect();
 }
 
+/// State of the selection view
 struct StatefulTopPanel {
+    /// State of selection
     state: ListState,
+    /// The list of items that can be selected
     items: Vec<String>,
 }
 
 impl StatefulTopPanel {
+    /// Initiate a new selection state from a Vec
     fn with_items(items: Vec<String>) -> StatefulTopPanel {
         StatefulTopPanel {
             state: ListState::default(),
@@ -62,6 +70,7 @@ impl StatefulTopPanel {
         }
     }
 
+    /// Move the selection to the next item
     fn next(&mut self, stack: &Vec<String>) {
         let i = match self.state.selected() {
             Some(i) => {
@@ -76,6 +85,7 @@ impl StatefulTopPanel {
         self.state.select(Some(i));
     }
 
+    /// Move the selection to the previous item
     fn previous(&mut self, stack: &Vec<String>) {
         let i = match self.state.selected() {
             Some(i) => {
@@ -90,14 +100,17 @@ impl StatefulTopPanel {
         self.state.select(Some(i));
     }
 
+    /// Deselect selected item
     fn deselect(&mut self) {
         self.state.select(None);
     }
 
+    /// Check if an item is currently selected
     fn currently_selecting(&mut self) -> bool {
         self.state.selected().is_some()
     }
 
+    /// Get the current selected item
     fn selected_item(&mut self) -> String {
         let selected_index = self.state.selected();
         match selected_index {
@@ -115,15 +128,15 @@ pub struct App {
     input_mode: InputMode,
     /// History of recorded messages
     history: Vec<String>,
-    // Calculator info
+    /// Calculator info
     info: Vec<String>,
-    // Stack for RPN mode
+    /// Stack for RPN mode
     stack: Vec<String>,
-    // Most recent error message
+    /// Most recent error message
     error: String,
-    // current cursor offset
+    /// Current cursor offset
     left_cursor_offset: u16,
-    // stack selection index
+    /// Stack selection state
     top_panel_state: StatefulTopPanel,
 }
 
@@ -149,6 +162,7 @@ impl Default for App {
     }
 }
 
+/// Update the stack if msg is not an error. If it is an error, display that error
 fn update_stack_or_error(msg: ServerMessage, app: &mut App) {
     // TODO: make a seperate display for commands
     match msg.message_type {
@@ -171,7 +185,7 @@ fn update_stack_or_error(msg: ServerMessage, app: &mut App) {
     }
 }
 
-// Handle algebraic expressions
+/// Handle algebraic expressions
 fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     // Get string from input box and empty it
     let entered_expression: String = app.input.drain(..).collect();
@@ -250,7 +264,7 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     app.history.push(history_entry);
 }
 
-// Handle typing in RPN mode
+/// Handle typing in RPN mode
 fn rpn_input(mut app: &mut App, socket: &Socket, c: char) {
     // Add character to input box
     let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
@@ -273,7 +287,7 @@ fn rpn_input(mut app: &mut App, socket: &Socket, c: char) {
     }
 }
 
-// Handle RPN enter
+/// Handle RPN enter
 fn rpn_enter(mut app: &mut App, socket: &Socket) {
     // Get command from input box and empty it
     let command: String = app.input.drain(..).collect();
@@ -292,7 +306,7 @@ fn rpn_enter(mut app: &mut App, socket: &Socket) {
     update_stack_or_error(msg, &mut app);
 }
 
-// Handle RPN operators
+/// Handle RPN operators
 fn rpn_operator(mut app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
     // Get operand from input box and empty it
     let command: String = app.input.drain(..).collect();
@@ -314,6 +328,7 @@ fn rpn_operator(mut app: &mut App, socket: &Socket, key: crate::event::KeyEvent)
     update_stack_or_error(msg, &mut app);
 }
 
+/// Create the main application and run it
 pub fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     mut app: App,
@@ -518,6 +533,7 @@ pub fn run_app<B: Backend>(
     }
 }
 
+/// Create the UI of the app
 fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)

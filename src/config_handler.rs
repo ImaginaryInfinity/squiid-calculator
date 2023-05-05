@@ -1,9 +1,10 @@
 use std::{fs, io::Write, path::PathBuf};
 use toml::Value;
 
-// wrapper for the config
+/// Wrapper for the config
 #[derive(Debug, Clone)]
 pub struct Config {
+    /// The toml config object
     config: Value,
 }
 
@@ -14,7 +15,7 @@ impl From<Value> for Config {
 }
 
 impl Config {
-    // get a section/key from the config
+    /// Get a section/key from the config
     pub fn get(&self, section: &str, key: &str) -> Option<&Value> {
         let section_value = self.config.get(section);
         if let Some(Value::Table(section_table)) = section_value {
@@ -24,7 +25,7 @@ impl Config {
         }
     }
 
-    // Set a specific key in a specific section of the config
+    /// Set a specific key in a specific section of the config
     #[allow(dead_code)]
     pub fn set(&mut self, section: &str, key: &str, value: Value) {
         if let Value::Table(config) = &mut self.config {
@@ -36,7 +37,7 @@ impl Config {
         }
     }
 
-    // Create a new section in the config
+    /// Create a new section in the config
     #[allow(dead_code)]
     pub fn create_section(&mut self, section: &str) {
         if let Value::Table(config) = &mut self.config {
@@ -45,7 +46,7 @@ impl Config {
     }
 }
 
-// config handler
+/// Initialize config handler
 pub fn init_config() -> Config {
     let config_path = determine_config_path();
     let config_exists = config_path.exists();
@@ -58,7 +59,7 @@ pub fn init_config() -> Config {
     config.unwrap()
 }
 
-// Determine the path of the config file and make directories if required
+/// Determine the path of the config file and make directories if required
 fn determine_config_path() -> PathBuf {
     let mut config_directory = dirs::home_dir().unwrap();
 
@@ -71,8 +72,8 @@ fn determine_config_path() -> PathBuf {
     config_directory
 }
 
-// Copy default config file
-// returns true if the config file exists, false if not
+/// Copy default config file.
+/// Returns true if the config file exists, false if not
 fn copy_default_config(config_path: PathBuf) -> bool {
     let mut file = fs::File::create(config_path.clone()).unwrap();
     let _ = file.write_all(include_bytes!("config.toml"));
@@ -80,7 +81,7 @@ fn copy_default_config(config_path: PathBuf) -> bool {
     config_path.exists()
 }
 
-// read the config at the given path
+/// Read the config at the given path
 fn read_config(config_path: PathBuf) -> Option<Config> {
     if config_path.exists() {
         let contents = fs::read_to_string(config_path).unwrap();
@@ -91,7 +92,7 @@ fn read_config(config_path: PathBuf) -> Option<Config> {
     }
 }
 
-// write config file
+/// Write config file
 fn write_config(config: Config, config_path: PathBuf) {
     let config_string = toml::to_string_pretty(&config.config).unwrap();
 
@@ -101,7 +102,7 @@ fn write_config(config: Config, config_path: PathBuf) {
         .unwrap();
 }
 
-// Function to update TOML config
+/// Function to update TOML config
 pub fn update_user_config() -> Option<Config> {
     let config_path = determine_config_path();
     if !config_path.exists() {
@@ -125,7 +126,7 @@ pub fn update_user_config() -> Option<Config> {
     Some(new_user_config)
 }
 
-// Recursive function to update TOML values
+/// Recursive function to update TOML values
 fn update_toml_values(user_config: &mut Value, system_config: &Value) {
     match (user_config, system_config) {
         (Value::Table(user_table), Value::Table(system_table)) => {

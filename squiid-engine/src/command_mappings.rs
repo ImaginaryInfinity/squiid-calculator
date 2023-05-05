@@ -2,7 +2,7 @@ use std::{borrow::BorrowMut, collections::HashMap};
 
 use crate::{engine::Engine, protocol::MessageAction};
 
-// function map stuff for creating a hashmap of available functions
+/// Insert a function and reference name into a hashmap
 macro_rules! function_map_entry {
     ($function_map:expr,$name:expr,$func_name:ident) => {
         $function_map.insert(
@@ -14,6 +14,7 @@ macro_rules! function_map_entry {
 
 type EngineFunction = dyn Fn(&mut Engine) -> Result<MessageAction, String>;
 
+/// Create a map of every available function and it's respective command
 pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     let mut function_map = HashMap::new();
 

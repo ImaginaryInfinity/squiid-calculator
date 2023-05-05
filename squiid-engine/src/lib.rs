@@ -18,8 +18,10 @@ use crate::{
     utils::{recv_data, send_response},
 };
 
+/// The default address to start the server on
 const DEFAULT_ADDRESS: &'static str = "tcp://*:33242";
 
+/// Start the server at the given address (default is DEFAULT_ADDRESS)
 pub fn start_server(address: Option<&str>) {
     // Use default address unless one was specified from the command line
     let address_to_bind = match address {

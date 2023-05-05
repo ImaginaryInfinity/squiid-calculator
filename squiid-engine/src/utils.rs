@@ -5,11 +5,14 @@ use regex::Regex;
 use crate::protocol::{ClientMessage, MessagePayload, MessageType, ServerMessage};
 
 lazy_static! {
+    /// Identifier string
     pub static ref ID_REGEX: Regex = Regex::new(r"^[_a-zA-Z][_0-9a-zA-Z]*$").unwrap();
+    /// Numeric string
     pub static ref NUMERIC_REGEX: Regex =
         Regex::new(r"^[-]?(?:[0-9]*\.?[0-9]+(?:[eE][-+]?\d+(?:\.\d+)?)?|[0-9]+)$").unwrap();
 }
 
+/// Send a response to the client
 pub fn send_response(
     socket: &Socket,
     response_type: MessageType,
@@ -23,6 +26,7 @@ pub fn send_response(
     Ok(())
 }
 
+/// Recieve data from the client
 pub fn recv_data(socket: &Socket) -> Result<ClientMessage, serde_json::Error> {
     // recieve data from client
     let msg = socket.recv().unwrap();

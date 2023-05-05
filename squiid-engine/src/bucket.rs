@@ -6,6 +6,7 @@ use rust_decimal::{prelude::FromPrimitive, Decimal, MathematicalOps};
 use rust_decimal_macros::dec;
 use serde::{de::Visitor, Deserialize, Serialize};
 
+/// Types of constants
 #[derive(Debug, Clone, PartialEq)]
 pub enum ConstantTypes {
     PI,
@@ -21,6 +22,7 @@ pub enum ConstantTypes {
     G,
 }
 
+/// Types of Buckets
 #[derive(Debug, Clone, PartialEq)]
 pub enum BucketTypes {
     Float,
@@ -29,14 +31,17 @@ pub enum BucketTypes {
     Undefined,
 }
 
+/// Bucket contains the items that can be on the stack
 #[derive(Debug, Clone, PartialEq)]
 pub struct Bucket {
-    // value will be None when undefined
+    /// Bucket value. Will be None when undefined
     pub value: Option<String>,
+    /// The type of the Bucket
     pub bucket_type: BucketTypes,
 }
 
 impl Bucket {
+    /// Create a new undefined Bucket
     pub fn new_undefined() -> Self {
         Self {
             value: None,
@@ -44,6 +49,7 @@ impl Bucket {
         }
     }
 
+    /// Create a Bucket from a constant
     pub fn from_constant(constant_type: ConstantTypes) -> Self {
         let value = match constant_type {
             ConstantTypes::PI => consts::PI,
@@ -66,7 +72,7 @@ impl Bucket {
         }
     }
 
-    // TODO: should we hardcode some trig in? like tan(pi/4)
+    /// Sine
     pub fn sin(&self) -> Option<Self> {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
@@ -90,6 +96,7 @@ impl Bucket {
         }
     }
 
+    /// Cosine
     pub fn cos(&self) -> Option<Self> {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
@@ -113,6 +120,7 @@ impl Bucket {
         }
     }
 
+    /// Tangent
     pub fn tan(&self) -> Option<Self> {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
@@ -136,6 +144,7 @@ impl Bucket {
         }
     }
 
+    /// Cosecant
     pub fn csc(&self) -> Option<Self> {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
@@ -176,6 +185,7 @@ impl Bucket {
         }
     }
 
+    /// Secant
     pub fn sec(&self) -> Option<Self> {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
@@ -218,6 +228,7 @@ impl Bucket {
         }
     }
 
+    /// Cotangent
     pub fn cot(&self) -> Option<Self> {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {

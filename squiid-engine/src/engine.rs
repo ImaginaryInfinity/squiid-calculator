@@ -11,7 +11,7 @@ use crate::bucket::{Bucket, BucketTypes};
 use crate::utils::{ID_REGEX, NUMERIC_REGEX};
 use crate::MessageAction;
 
-// Evaluation engine struct
+/// Evaluation engine struct
 pub struct Engine {
     pub stack: Vec<Bucket>,
     pub variables: HashMap<String, Bucket>,
@@ -20,25 +20,25 @@ pub struct Engine {
     pub previous_answer: Bucket,
 }
 
-// Evaluation engine implementation
+/// Evaluation engine implementation
 impl Engine {
-    // helper to construct a new engine object
+    /// Helper to construct a new engine object
     pub fn new() -> Engine {
         Engine {
-            // the stack of bucket items
+            /// The stack of bucket items
             stack: Vec::new(),
-            // hashmap of set variables
+            /// Hashmap of set variables
             variables: HashMap::new(),
-            // history vecdeque for undo support
+            /// History vecdeque for undo support
             history: VecDeque::new(),
-            // variables vecdeque for undo support
+            /// Variables vecdeque for undo support
             variable_history: VecDeque::new(),
-            // previous answer
+            /// Previous answer
             previous_answer: Bucket::from(0),
         }
     }
 
-    // add item to stack
+    /// Add item to stack
     pub fn add_item_to_stack(
         &mut self,
         item: Bucket,
@@ -106,7 +106,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Get operands from stack as float
+    /// Get operands from stack as float
     pub fn get_operands_as_f(&mut self, number: i32) -> Result<Vec<f64>, String> {
         // Make sure there are actually enough items on the stack
         if self.stack.len() as i32 >= number {
@@ -144,6 +144,7 @@ impl Engine {
         }
     }
 
+    /// Get operands as a decimal object
     pub fn get_operands_as_dec(&mut self, number: i32) -> Result<Vec<Decimal>, String> {
         // Make sure there are actually enough items on the stack
         if self.stack.len() as i32 >= number {
@@ -193,6 +194,7 @@ impl Engine {
         }
     }
 
+    /// Get operands as a string
     pub fn get_operands_as_string(&mut self, number: i32) -> Result<Vec<String>, String> {
         // Make sure there are actually enough items on the stack
         if self.stack.len() as i32 >= number {
@@ -214,6 +216,7 @@ impl Engine {
         }
     }
 
+    /// Get the raw Buckets from the stack
     pub fn get_operands_raw(&mut self, number: i32) -> Result<Vec<Bucket>, String> {
         if self.stack.len() as i32 >= number {
             // Create vector to store operands
@@ -233,7 +236,7 @@ impl Engine {
         }
     }
 
-    // Add
+    /// Add
     pub fn add(&mut self) -> Result<MessageAction, String> {
         let operands = match self.get_operands_as_dec(2) {
             Ok(content) => content,
@@ -246,7 +249,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Subtract
+    /// Subtract
     pub fn subtract(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_dec(2) {
@@ -260,7 +263,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Multiply
+    /// Multiply
     pub fn multiply(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_dec(2) {
@@ -289,7 +292,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Divide
+    /// Divide
     pub fn divide(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_dec(2) {
@@ -332,7 +335,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Power
+    /// Power
     pub fn power(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_dec(2) {
@@ -361,7 +364,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Square root
+    /// Square root
     pub fn sqrt(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_dec(1) {
@@ -378,7 +381,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Modulo
+    /// Modulo
     pub fn modulo(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
@@ -392,7 +395,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Sine
+    /// Sine
     pub fn sin(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_raw(1) {
@@ -409,7 +412,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Cosine
+    /// Cosine
     pub fn cos(&mut self) -> Result<MessageAction, String> {
         // Get operands
         eprintln!("{:?}", self.stack);
@@ -427,7 +430,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Tangent
+    /// Tangent
     pub fn tan(&mut self) -> Result<MessageAction, String> {
         // Get operands
         // TODO: undefined handling
@@ -444,7 +447,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Secant
+    /// Secant
     pub fn sec(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_raw(1) {
@@ -461,7 +464,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Cosecant
+    /// Cosecant
     pub fn csc(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_raw(1) {
@@ -478,7 +481,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Cotangent
+    /// Cotangent
     pub fn cot(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_raw(1) {
@@ -495,7 +498,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Asin
+    /// Asin
     pub fn asin(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
@@ -508,7 +511,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Acos
+    /// Acos
     pub fn acos(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
@@ -521,7 +524,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Atan
+    /// Atan
     pub fn atan(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
@@ -534,7 +537,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Change sign
+    /// Change sign
     pub fn chs(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
@@ -548,7 +551,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Logarithm
+    /// Logarithm
     pub fn log(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_dec(1) {
@@ -565,7 +568,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Logarithm with custom base using the change of base formula
+    /// Logarithm with custom base using the change of base formula
     pub fn logb(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_dec(2) {
@@ -592,7 +595,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Natural logarihm
+    /// Natural logarihm
     pub fn ln(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_dec(1) {
@@ -609,7 +612,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Absolute value
+    /// Absolute value
     pub fn abs(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(1) {
@@ -622,7 +625,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Equal to
+    /// Equal to
     pub fn eq(&mut self) -> Result<MessageAction, String> {
         // Get operands
         // TODO: maybe make this work with strings
@@ -637,7 +640,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Greater than
+    /// Greater than
     pub fn gt(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
@@ -651,7 +654,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Less than
+    /// Less than
     pub fn lt(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
@@ -665,7 +668,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Greater than or equal to
+    /// Greater than or equal to
     pub fn gte(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
@@ -679,7 +682,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Less than or equal to
+    /// Less than or equal to
     pub fn lte(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
@@ -693,7 +696,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // round to nearest int
+    /// Round to nearest int
     pub fn round(&mut self) -> Result<MessageAction, String> {
         // Get operand
         let operands = match self.get_operands_as_f(1) {
@@ -706,7 +709,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Calculate 1/x
+    /// Calculate 1/x
     pub fn invert(&mut self) -> Result<MessageAction, String> {
         // Get operand
         let operands = match self.get_operands_as_f(1) {
@@ -719,14 +722,14 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Drop last item from stack
+    /// Drop last item from stack
     pub fn drop(&mut self) -> Result<MessageAction, String> {
         // Remove last item from stack
         self.stack.pop();
         Ok(MessageAction::SendStack)
     }
 
-    // Swap last two items on stack
+    /// Swap last two items on stack
     pub fn swap(&mut self) -> Result<MessageAction, String> {
         // Get last two values from stack
         let operands = match self.get_operands_raw(2) {
@@ -740,7 +743,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Duplicate the last item of the stack
+    /// Duplicate the last item of the stack
     pub fn dup(&mut self) -> Result<MessageAction, String> {
         // Get the last value from the stack
         let operands = match self.get_operands_raw(1) {
@@ -754,7 +757,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Roll down
+    /// Roll down
     pub fn roll_down(&mut self) -> Result<MessageAction, String> {
         if self.stack.len() > 0 {
             // Rotate stack right
@@ -765,7 +768,7 @@ impl Engine {
         }
     }
 
-    // Roll up
+    /// Roll up
     pub fn roll_up(&mut self) -> Result<MessageAction, String> {
         if self.stack.len() > 0 {
             // Rotate stack left
@@ -776,7 +779,7 @@ impl Engine {
         }
     }
 
-    // Store value in variable
+    /// Store value in variable
     pub fn store(&mut self) -> Result<MessageAction, String> {
         // Get 2 operands from stack
         let operands = match self.get_operands_raw(2) {
@@ -796,7 +799,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Delete variable
+    /// Delete variable
     pub fn purge(&mut self) -> Result<MessageAction, String> {
         // Get operand from stack
         let operands = match self.get_operands_raw(1) {
@@ -819,7 +822,7 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
-    // Store value in variable, with inverted argument order
+    /// Store value in variable, with inverted argument order
     pub fn invstore(&mut self) -> Result<MessageAction, String> {
         match self.swap() {
             Ok(_) => {}
@@ -828,11 +831,13 @@ impl Engine {
         self.store()
     }
 
+    /// Clear stack
     pub fn clear(&mut self) -> Result<MessageAction, String> {
         self.stack = Vec::new();
         Ok(MessageAction::SendStack)
     }
 
+    /// Undo last operation
     pub fn undo(&mut self) -> Result<MessageAction, String> {
         if self.history.len() > 1 {
             // Throw away current stack
@@ -849,6 +854,7 @@ impl Engine {
         }
     }
 
+    /// Send a list of commands to the client
     pub fn list_commands(&mut self) -> Result<MessageAction, String> {
         Ok(MessageAction::SendCommands)
     }

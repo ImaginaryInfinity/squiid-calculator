@@ -4,14 +4,14 @@ use serde::{Deserialize, Serialize};
 
 use crate::bucket::Bucket;
 
-// server response type for internal handling
+/// Server response type for internal handling
 #[derive(Debug, PartialEq)]
 pub enum MessageAction {
     SendStack,
     SendCommands,
 }
 
-// client message datatype
+/// Client message datatype
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ClientMessage {
     pub payload: String,
@@ -25,7 +25,7 @@ impl ClientMessage {
     }
 }
 
-// response struct
+/// Response struct
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ServerMessage {
     pub message_type: MessageType,
@@ -41,6 +41,7 @@ impl ServerMessage {
     }
 }
 
+/// Types of messages to send back to the client
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub enum MessageType {
     #[serde(rename = "stack")]
@@ -53,6 +54,7 @@ pub enum MessageType {
     QuitSig,
 }
 
+/// Types of message payloads to send to the client
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub enum MessagePayload {
     #[serde(rename = "stack")]
@@ -61,11 +63,12 @@ pub enum MessagePayload {
     Commands(Vec<String>),
     #[serde(rename = "error")]
     Error(String),
+    /// This should always be set to None
     #[serde(rename = "quitsig")]
-    QuitSig(Option<u8>), // this should always be set to none
+    QuitSig(Option<u8>),
 }
 
-// macro for getting data out of message payload
+/// Macro for getting data out of message payload
 #[macro_export]
 macro_rules! extract_data {
     ($payload:expr, $variant:path) => {

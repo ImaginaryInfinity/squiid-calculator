@@ -12,7 +12,7 @@ build = "build.rs"
 
 [dependencies]
 crossterm = "0.26.1"
-dirs = "5.0.0"
+directories = "5.0.1"
 lazy_static = "1.4.0"
 nng = "1.0.1"
 ratatui = "0.20.1"

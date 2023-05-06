@@ -22,11 +22,11 @@ pub enum Token<'a> {
     Constant(&'a str),
 
     /// optional int/float
-    /// 
+    ///
     /// an e followed by an option + or -
-    /// 
+    ///
     /// 1 or more digits (the number following the e)
-    /// 
+    ///
     /// an optional decimal point followed by 1 or more digits (3.1) or (.1)
     #[regex(r"[0-9]*\.?[0-9]+([eE][-+]?\d+(\.\d+)?)", priority = 3)]
     ScientificNotation(&'a str),

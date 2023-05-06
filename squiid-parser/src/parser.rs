@@ -33,11 +33,11 @@ const RIGHT_SIDE_IMPLICIT: [Token; 8] = [
 /// - at the beginning of an expression
 ///
 /// - at the beginning of an opening parenthesis (-3+6)
-/// 
+///
 /// - at the beginning of a function (func(-5))
-/// 
+///
 /// - after another operator (3+-5, 3*-5, 3^-5)
-/// 
+///
 /// - as an argument in a function, so after a comma (function(3, -3))
 pub fn parse_subtract_sign(tokens: &mut Vec<Token>) {
     let mut negative_replacements: Vec<usize> = Vec::new();
@@ -77,7 +77,7 @@ pub fn parse_subtract_sign(tokens: &mut Vec<Token>) {
 /// - Function, VariableRecal, Constant, ScientificNotation, Float, Int, PrevAns, RParen
 ///
 /// Right Side (peek token):
-/// 
+///
 /// - Function, VariableRecal, Constant, ScientificNotation, Float, Int, PrevAns, LParen
 ///
 /// Implicit multiplication happens if something on the left side list is followed by something on the right side list

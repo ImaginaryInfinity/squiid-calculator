@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 
 use squiid_engine::{
-    bucket::{Bucket, ConstantTypes, BucketTypes},
+    bucket::{Bucket, BucketTypes, ConstantTypes},
     engine::*,
 };
 
@@ -405,7 +405,10 @@ fn test_cotangent() {
 
     // pi
     let _ = engine.cot();
-    assert_eq!(engine.stack.last().unwrap().bucket_type, BucketTypes::Undefined);
+    assert_eq!(
+        engine.stack.last().unwrap().bucket_type,
+        BucketTypes::Undefined
+    );
     let _ = engine.drop();
 
     // pi/2 = 0

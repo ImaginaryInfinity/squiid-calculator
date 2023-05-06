@@ -1,3 +1,4 @@
+use directories::{BaseDirs, ProjectDirs};
 use std::{fs, io::Write, path::PathBuf};
 use toml::Value;
 
@@ -60,12 +61,35 @@ pub fn init_config() -> Config {
 }
 
 /// Determine the path of the config file and make directories if required
+/// 
+/// Linux: `~/.config/squiid/`
+/// 
+/// MacOS: `/Users/<NAME>/Library/Application Support/org.ImaginaryInfinity.Squiid/`
+/// 
+/// Windows: `C:\Users\<NAME>\AppData\Roaming\ImaginaryInfinity\Squiid\config`
+/// 
+/// Anything else: See Linux
 fn determine_config_path() -> PathBuf {
-    let mut config_directory = dirs::home_dir().unwrap();
+    // try to determine correct config path
+    let config_directory =
+        if let Some(proj_dirs) = ProjectDirs::from("org", "ImaginaryInfinity", "Squiid") {
+            let mut config_directory = proj_dirs.config_dir().to_path_buf();
+            config_directory.push("config.toml");
+            config_directory
 
-    config_directory.push(".config");
-    config_directory.push("squiid");
-    config_directory.push("config.toml");
+        // couldn't determine config path, default to home directory .config folder
+        } else {
+            let home_dir = BaseDirs::new().unwrap().home_dir().to_owned();
+            let config_directory: PathBuf = [
+                home_dir.to_str().unwrap(),
+                ".config",
+                "squiid",
+                "config.toml",
+            ]
+            .iter()
+            .collect();
+            config_directory
+        };
 
     let _ = fs::create_dir_all(config_directory.parent().unwrap());
 

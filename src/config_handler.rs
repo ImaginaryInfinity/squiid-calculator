@@ -61,13 +61,13 @@ pub fn init_config() -> Config {
 }
 
 /// Determine the path of the config file and make directories if required
-/// 
+///
 /// Linux: `~/.config/squiid/`
-/// 
+///
 /// MacOS: `/Users/<NAME>/Library/Application Support/org.ImaginaryInfinity.Squiid/`
-/// 
+///
 /// Windows: `C:\Users\<NAME>\AppData\Roaming\ImaginaryInfinity\Squiid\config`
-/// 
+///
 /// Anything else: See Linux
 fn determine_config_path() -> PathBuf {
     // try to determine correct config path

@@ -1,15 +1,13 @@
-use std::collections::HashMap;
-use std::collections::HashSet;
-use std::collections::VecDeque;
+use std::collections::{HashMap, HashSet, VecDeque};
 
-use rust_decimal::prelude::ToPrimitive;
-use rust_decimal::{Decimal, MathematicalOps};
+use rust_decimal::{prelude::ToPrimitive, Decimal, MathematicalOps};
 use rust_decimal_macros::dec;
 
-use crate::bucket::ConstantTypes;
-use crate::bucket::{Bucket, BucketTypes};
-use crate::utils::{ID_REGEX, NUMERIC_REGEX};
-use crate::MessageAction;
+use crate::{
+    bucket::{Bucket, BucketTypes, ConstantTypes},
+    utils::{ID_REGEX, NUMERIC_REGEX},
+    MessageAction,
+};
 
 /// Evaluation engine struct
 pub struct Engine {

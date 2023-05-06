@@ -1,5 +1,4 @@
-use squiid_parser::lexer::lex;
-use squiid_parser::tokens::Token;
+use squiid_parser::{lexer::lex, tokens::Token};
 
 fn tokenize_and_compare(input: &str, expected_tokens: Vec<Token>) {
     let tokens = lex(input).unwrap();

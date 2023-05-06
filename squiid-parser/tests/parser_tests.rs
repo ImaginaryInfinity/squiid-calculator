@@ -1,7 +1,7 @@
-use squiid_parser::tokens::Token::{self, *};
 use squiid_parser::{
     parse,
     parser::{parse_implicit_multiplication, parse_subtract_sign},
+    tokens::Token::{self, *},
 };
 
 fn parse_and_compare(input: &str, expected_tokens: Vec<&str>) {

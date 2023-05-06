@@ -10,7 +10,7 @@ The network flow is detailed in the diagram below. You can see that the parser i
 2. Build your own parser in the language of your choice and use that as seen in the diagram
 3. Build your own parser into your frontend program, completely eliminating the need to use and call a separate shared object file.
 
-Note that a parser is **NOT** required if your frontend only supports entering calculations in reverse polish notation, or postfix notation. More documentation on building a parser can be found <!-- TODO: --> [here]().
+Note that a parser is **NOT** required if your frontend only supports entering calculations in reverse polish notation, or postfix notation. More documentation on building a parser can be found [here](./parser.md).
 
 After you choose how you would like to parse user input, you must build your frontend. This is completely up to you except for one constraining factor, the IPC communication library. We use NNG (nanomsg next generation) for IPC between the frontend and the engine, and at the time of writing this documentation, the available language bindings can be found [here](https://nanomsg.org/documentation.html). Many popular languages are currently supported such as Rust, Python, Java, JavaScript, C, and many others. Make sure that the language you are implementing the frontend in has NNG bindings. Other than this constraint, the frontend is entirely up to you. You can make a GUI, a TUI, or any other abomination of a user interface that you can think of.
 
@@ -22,27 +22,6 @@ Once the frontend is set up, it is fairly easy to communicate with the backend s
  2. Now that you have started the server in its thread, it should be listening. The official Squiid client had to put in a 10 millisecond delay after starting the server to wait for it to bind, or else sometimes it wouldn't bind quick enough and the program would hang. This is not a required step but it is recommended.
  3. In order to connect with the server, you must dial the address that you just gave the engine. Using the NNG bindings for your programming language of choice, construct a socket object with the `Req` protocol (this may be different depending on the binding, such as `Req0` for Python). Now, call the dial method on this socket and pass it the address that you gave the server. If there is a way to check if this function returns correctly without an error, you should do so (e.g. `assert!()` in Rust).
  4. Great! Now that you are connected with the server, you can use the `send` (or similar) method on the socket to send data to the server, and the `recv` (or similar) to receive data from the server. The protocol for sending and receiving data is outlined below. The backend server is currently blocking, not async, however you should be able to start multiple instances on different ports and have it work fine if this suits your needs.
-
-<!-- <img src="client-server-model.svg"> -->
-
-<!-- graphviz source:
-digraph G {
-
-    subgraph cluster_required {
-        label="Required components"
-        style=filled;
-		color=lightgrey;
-		node [style=filled,color=white];
-        engine [shape=box]
-        client [shape=diamond]
-        client -> engine [style=dashed]
-        engine -> client [label="tcp://127.0.0.1:xxxxx" fontsize="8" ]
-    }
-
-    parser
-    client -> parser [dir=both style=dotted]
-
-} -->
 
 ```mermaid
 flowchart TD

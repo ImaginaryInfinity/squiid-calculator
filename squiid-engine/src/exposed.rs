@@ -1,4 +1,4 @@
-use std::{ffi::CStr, os::raw::c_char};
+use std::{ffi::CStr, os::raw::c_char, thread};
 
 use crate::{start_server, DEFAULT_ADDRESS};
 
@@ -12,5 +12,7 @@ pub extern "C" fn start_server_exposed(address: *const c_char) {
             .expect("Input is not valid UTF-8")
     };
 
-    start_server(Some(address_to_bind));
+    thread::spawn(|| {
+        start_server(Some(address_to_bind));
+    });
 }

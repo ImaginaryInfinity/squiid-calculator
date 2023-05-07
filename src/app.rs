@@ -339,9 +339,9 @@ pub fn run_app<B: Backend>(
     socket: &Socket,
     backend_join_handle: &thread::JoinHandle<()>,
 ) -> io::Result<()> {
-
     // set default start mode
-    let start_mode = app.config
+    let start_mode = app
+        .config
         .get("system", "start_mode")
         .unwrap()
         .as_str()

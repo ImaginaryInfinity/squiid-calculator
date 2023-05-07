@@ -194,6 +194,9 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     // Get string from input box and empty it
     let entered_expression: String = app.input.drain(..).collect();
 
+    // Clear stack
+    _ = send_data(socket, "clear");
+
     // Special frontend commands
     match entered_expression.as_str() {
         "clear" => {

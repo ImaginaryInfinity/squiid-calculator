@@ -250,8 +250,8 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
         update_stack_or_error(msg, &mut app);
     }
 
-    // Placeholder result of none in case there is nothing on the stack
-    let mut result = "None";
+    // Empty placeholder result in case there is nothing on the stack
+    let mut result = "";
     // Set result to last item in stack if there is one
     if app.stack.len() > 0 {
         result = app.stack.last().unwrap();
@@ -265,6 +265,8 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     } else if !app.error.is_empty() {
         history_entry.push_str(" : ");
         history_entry.push_str(app.error.as_str());
+    } else {
+        history_entry.push_str(" : Done");
     }
 
     // Add to history

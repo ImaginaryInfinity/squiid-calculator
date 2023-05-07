@@ -24,7 +24,7 @@ This function takes a mutable reference to a vector of `Token`s and parses wheth
 
 This function takes a mutable reference to a vector of `Token`s and parses whether implicit multiplication is needed between two tokens. Implicit multiplication happens when two tokens are adjacent to each other and there is no operator between them. The function uses two constant arrays, `LEFT_SIDE_IMPLICIT` and `RIGHT_SIDE_IMPLICIT`, to determine whether implicit multiplication is needed. If a token in the left side array is followed by a token in the right side array, the function inserts a `Token::Multiply` token between them in the vector.
 
-## Exposed C API Functions
+## Exposed FFI Functions
 
 ### `parse_exposed`
 The `parse_exposed` function takes a null-terminated C string `input` and returns a pointer to an array of null-terminated C strings. The length of the array is stored in the `outlen` variable, which must be passed as a pointer
@@ -66,7 +66,7 @@ int main() {
 }
 ```
 
-A similar result can be achieved in other languages which allow you to interact with shared object libraries via the C API, such as Python, Go, and many others. 
+A similar result can be achieved in other languages which allow you to interact with shared object libraries via the FFI, such as Python, Go, and many others. 
 
 ## Tokens
 

@@ -1,7 +1,7 @@
 pub mod bucket;
 pub mod command_mappings;
 pub mod engine;
-pub mod exposed;
+pub mod ffi;
 pub mod protocol;
 pub mod utils;
 

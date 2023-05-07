@@ -1,5 +1,3 @@
-// exposed function to the C API
-
 use std::{
     ffi::{CStr, CString},
     mem,

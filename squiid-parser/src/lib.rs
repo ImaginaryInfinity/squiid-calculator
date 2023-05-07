@@ -1,4 +1,4 @@
-mod exposed;
+mod ffi;
 pub mod lexer;
 pub mod parser;
 pub mod tokens;

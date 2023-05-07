@@ -138,10 +138,13 @@ pub struct App {
     left_cursor_offset: u16,
     /// Stack selection state
     top_panel_state: StatefulTopPanel,
+    /// Configuration
+    config: config_handler::Config,
 }
 
 impl Default for App {
     fn default() -> App {
+        config_handler::init_config();
         App {
             input: String::new(),
             input_mode: InputMode::None,
@@ -158,6 +161,7 @@ impl Default for App {
             error: String::new(),
             left_cursor_offset: 0,
             top_panel_state: StatefulTopPanel::with_items(vec![]),
+            config: config_handler::update_user_config().unwrap(),
         }
     }
 }
@@ -335,11 +339,9 @@ pub fn run_app<B: Backend>(
     socket: &Socket,
     backend_join_handle: &thread::JoinHandle<()>,
 ) -> io::Result<()> {
-    config_handler::init_config();
-    let config = config_handler::update_user_config().unwrap();
 
     // set default start mode
-    let start_mode = config
+    let start_mode = app.config
         .get("system", "start_mode")
         .unwrap()
         .as_str()

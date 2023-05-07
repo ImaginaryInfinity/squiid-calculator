@@ -28,6 +28,7 @@ pub enum BucketTypes {
     Float,
     String,
     Constant(ConstantTypes),
+    // TODO: should undefined error out? in trig and stuff
     Undefined,
 }
 

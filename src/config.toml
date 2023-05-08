@@ -15,6 +15,5 @@ exit = "escape"
 
 rpn_swap = "tab"
 rpn_drop = "\\"
-
-roll_up = "page_up"
-roll_down = "page_down"
+rpn_roll_up = "page_up"
+rpn_roll_down = "page_down"

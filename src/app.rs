@@ -680,8 +680,8 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 Span::styled(
                     format!(
                         "{}/{}",
-                        app.keybind_from_config("roll_up").to_owned(),
-                        app.keybind_from_config("roll_down").to_owned()
+                        app.keybind_from_config("rpn_roll_up").to_owned(),
+                        app.keybind_from_config("rpn_roll_down").to_owned()
                     ),
                     Style::default().add_modifier(Modifier::BOLD),
                 ),

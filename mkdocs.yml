@@ -4,6 +4,7 @@ nav:
     - Cross Compiling: cross_compiling.md
     - Communication Protocol: comm_prot.md
     - Squiid Parser: parser.md
+    - Squiid Engine: engine.md
 
 plugins:
     - search

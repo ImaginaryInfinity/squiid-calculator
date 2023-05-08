@@ -13,7 +13,8 @@ mode_rpn = "r"
 enter = "enter"
 exit = "escape"
 
-swap = "tab"
+rpn_swap = "tab"
+rpn_drop = "\\"
 
 roll_up = "page_up"
 roll_down = "page_down"

@@ -46,7 +46,6 @@ lazy_static! {
         (KeyCode::Char('%'), "mod"),
         (KeyCode::Char('^'), "power"),
         (KeyCode::Char('_'), "chs"),
-        (KeyCode::Char('\\'), "drop"),
     ]
     .iter()
     .copied()
@@ -457,13 +456,18 @@ pub fn run_app<B: Backend>(
                         {
                             rpn_operator(&mut app, socket, key);
                         }
+
+                        _ if key.code == app.keycode_from_config("rpn_drop") => {
+                            update_stack_or_error(send_data(socket, "drop"), &mut app)
+                        }
+
                         KeyCode::PageUp => {
                             update_stack_or_error(send_data(socket, "rollup"), &mut app)
                         }
                         KeyCode::PageDown => {
                             update_stack_or_error(send_data(socket, "rolldown"), &mut app)
                         }
-                        _ if key.code == app.keycode_from_config("swap") => {
+                        _ if key.code == app.keycode_from_config("rpn_swap") => {
                             update_stack_or_error(send_data(socket, "swap"), &mut app)
                         }
                         // Handle typing characters
@@ -682,10 +686,13 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                     Style::default().add_modifier(Modifier::BOLD),
                 ),
                 Span::raw(": roll stack  "),
-                Span::styled("\\", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    app.keybind_from_config("rpn_drop").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(": drop  "),
                 Span::styled(
-                    app.keybind_from_config("swap").to_owned(),
+                    app.keybind_from_config("rpn_swap").to_owned(),
                     Style::default().add_modifier(Modifier::BOLD),
                 ),
                 Span::raw(": swap"),

@@ -29,7 +29,7 @@ pub fn start_server(address: Option<&str>) {
         None => DEFAULT_ADDRESS,
     };
 
-    // create zeromq socket to listen on
+    // create NNG socket to listen on
     let responder = Socket::new(Protocol::Rep0).unwrap();
 
     // Print and bind to selected port

@@ -1,4 +1,4 @@
-site_name: Squiid
+site_name: Squiid Documentation
 nav:
     - Home: index.md
     - Cross Compiling: cross_compiling.md

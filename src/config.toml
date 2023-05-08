@@ -2,3 +2,18 @@
 # the start mode of the calculator
 # options: info, algebraic, rpn
 start_mode = "algebraic"
+
+[keybinds]
+# keyboard shortcuts for calulcator features
+
+quit = "q"
+mode_algebraic = "a"
+mode_rpn = "r"
+
+enter = "enter"
+exit = "escape"
+
+swap = "tab"
+
+roll_up = "page_up"
+roll_down = "page_down"

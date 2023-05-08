@@ -166,6 +166,41 @@ impl Default for App {
     }
 }
 
+impl App {
+    /// Get keybind from config file as string
+    pub fn keybind_from_config(&self, keybind_name: &str) -> &str {
+        self.config
+            .get("keybinds", keybind_name)
+            .unwrap()
+            .as_str()
+            .unwrap()
+    }
+
+    /// Get keycode from config
+    pub fn keycode_from_config(&self, keybind_name: &str) -> KeyCode {
+        let name = self.keybind_from_config(keybind_name);
+        match name {
+            "backspace" => KeyCode::Backspace,
+            "enter" => KeyCode::Enter,
+            "left" => KeyCode::Left,
+            "right" => KeyCode::Right,
+            "up" => KeyCode::Up,
+            "down" => KeyCode::Down,
+            "home" => KeyCode::Home,
+            "end" => KeyCode::End,
+            "page_up" => KeyCode::PageUp,
+            "page_down" => KeyCode::PageDown,
+            "tab" => KeyCode::Tab,
+            "backtab" => KeyCode::BackTab,
+            "delete" => KeyCode::Delete,
+            "insert" => KeyCode::Insert,
+            "escape" => KeyCode::Esc,
+            _ if name.len() == 1 => KeyCode::Char(name.chars().next().unwrap()),
+            _ => KeyCode::Null,
+        }
+    }
+}
+
 /// Update the stack if msg is not an error. If it is an error, display that error
 fn update_stack_or_error(msg: ServerMessage, app: &mut App) {
     // TODO: make a seperate display for commands
@@ -373,13 +408,13 @@ pub fn run_app<B: Backend>(
             match app.input_mode {
                 // Handle keypresses for normal (non-editing) mode
                 InputMode::None => match key.code {
-                    KeyCode::Char('a') => {
+                    _ if key.code == app.keycode_from_config("mode_algebraic") => {
                         app.input_mode = InputMode::Algebraic;
                     }
-                    KeyCode::Char('r') => {
+                    _ if key.code == app.keycode_from_config("mode_rpn") => {
                         app.input_mode = InputMode::RPN;
                     }
-                    KeyCode::Char('q') => {
+                    _ if key.code == app.keycode_from_config("quit") => {
                         return Ok(());
                     }
                     _ => {}
@@ -388,7 +423,7 @@ pub fn run_app<B: Backend>(
                 InputMode::Algebraic | InputMode::RPN if key.kind == KeyEventKind::Press => {
                     match key.code {
                         // Handle enter
-                        KeyCode::Enter => {
+                        _ if key.code == app.keycode_from_config("enter") => {
                             if app.top_panel_state.currently_selecting() {
                                 // currently selecting, insert into text
                                 let selected_item = app
@@ -428,7 +463,9 @@ pub fn run_app<B: Backend>(
                         KeyCode::PageDown => {
                             update_stack_or_error(send_data(socket, "rolldown"), &mut app)
                         }
-                        KeyCode::Tab => update_stack_or_error(send_data(socket, "swap"), &mut app),
+                        _ if key.code == app.keycode_from_config("swap") => {
+                            update_stack_or_error(send_data(socket, "swap"), &mut app)
+                        }
                         // Handle typing characters
                         KeyCode::Char(c) => {
                             if app.input_mode == InputMode::Algebraic {
@@ -471,7 +508,7 @@ pub fn run_app<B: Backend>(
                             }
                         }
                         // Handle escape
-                        KeyCode::Esc => {
+                        _ if key.code == app.keycode_from_config("exit") => {
                             // currently selecting; deselect
                             if app.top_panel_state.currently_selecting() {
                                 app.top_panel_state.deselect();
@@ -571,9 +608,15 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         _ if app.top_panel_state.currently_selecting() => (
             vec![
                 Span::raw("Press "),
-                Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    app.keybind_from_config("exit").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(" to exit, "),
-                Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    app.keybind_from_config("enter").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(" to insert the selected option, "),
             ],
             Style::default(),
@@ -582,11 +625,20 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         InputMode::None => (
             vec![
                 Span::raw("Press "),
-                Span::styled("q", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    app.keybind_from_config("quit").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(" to exit, "),
-                Span::styled("a", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    app.keybind_from_config("mode_algebraic").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(" for algebraic mode, "),
-                Span::styled("r", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    app.keybind_from_config("mode_rpn").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(" for RPN mode."),
             ],
             Style::default(),
@@ -595,9 +647,15 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         InputMode::Algebraic => (
             vec![
                 Span::raw("Press "),
-                Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    app.keybind_from_config("exit").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(" for options, "),
-                Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    app.keybind_from_config("enter").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(" to evaluate"),
             ],
             Style::default(),
@@ -605,18 +663,31 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         // Display help for RPN mode
         InputMode::RPN => (
             vec![
-                Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    app.keybind_from_config("exit").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(": options  "),
-                Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    app.keybind_from_config("enter").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(": enter in stack  "),
                 Span::styled(
-                    "Page Up/Down",
+                    format!(
+                        "{}/{}",
+                        app.keybind_from_config("roll_up").to_owned(),
+                        app.keybind_from_config("roll_down").to_owned()
+                    ),
                     Style::default().add_modifier(Modifier::BOLD),
                 ),
                 Span::raw(": roll stack  "),
                 Span::styled("\\", Style::default().add_modifier(Modifier::BOLD)),
                 Span::raw(": drop  "),
-                Span::styled("Tab", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    app.keybind_from_config("swap").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(": swap"),
             ],
             Style::default(),

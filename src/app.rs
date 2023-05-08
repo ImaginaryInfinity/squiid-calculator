@@ -177,8 +177,8 @@ impl App {
 
     /// Get keycode from config
     pub fn keycode_from_config(&self, keybind_name: &str) -> KeyCode {
-        let name = self.keybind_from_config(keybind_name);
-        match name {
+        let keybind = self.keybind_from_config(keybind_name);
+        match keybind {
             "backspace" => KeyCode::Backspace,
             "enter" => KeyCode::Enter,
             "left" => KeyCode::Left,
@@ -194,7 +194,7 @@ impl App {
             "delete" => KeyCode::Delete,
             "insert" => KeyCode::Insert,
             "escape" => KeyCode::Esc,
-            _ if name.len() == 1 => KeyCode::Char(name.chars().next().unwrap()),
+            _ if keybind.len() == 1 => KeyCode::Char(keybind.chars().next().unwrap()),
             _ => KeyCode::Null,
         }
     }

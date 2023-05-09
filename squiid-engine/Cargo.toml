@@ -10,7 +10,7 @@ edition = "2021"
 
 [dependencies]
 lazy_static = "1.4.0"
-nng = "1.0.1"
+nng = { version = "1.0.1", optional = true }
 regex = "1.7.3"
 rust_decimal = { version = "1.29.1", features = ["maths"] }
 rust_decimal_macros = "1.29.1"
@@ -20,6 +20,11 @@ serde_json = "1.0.95"
 [profile.release]
 strip = "symbols"
 lto = true
+
+[features]
+default = ["ipc"]
+# enable IPC support with NNG
+ipc = ["dep:nng"]
 
 [lib]
 name = "squiid_engine"

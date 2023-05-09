@@ -1,26 +1,33 @@
 pub mod bucket;
 pub mod command_mappings;
 pub mod engine;
-pub mod ffi;
 pub mod protocol;
 pub mod utils;
+
+#[cfg(feature = "ipc")]
+pub mod ffi;
 
 use std::borrow::BorrowMut;
 
 use bucket::Bucket;
+use command_mappings::CommandsMap;
 use engine::Engine;
 use protocol::MessageAction;
 
+#[cfg(feature = "ipc")]
 use nng::{Protocol, Socket};
 
+#[cfg(feature = "ipc")]
 use crate::{
     protocol::{MessagePayload, MessageType},
     utils::{recv_data, send_response},
 };
 
+#[cfg(feature = "ipc")]
 /// The default address to start the server on
 const DEFAULT_ADDRESS: &'static str = "tcp://*:33242";
 
+#[cfg(feature = "ipc")]
 /// Start the server at the given address (default is DEFAULT_ADDRESS)
 pub fn start_server(address: Option<&str>) {
     // Use default address unless one was specified from the command line
@@ -47,11 +54,6 @@ pub fn start_server(address: Option<&str>) {
 
     // listen forever
     loop {
-        if engine.history.len() > 20 {
-            _ = engine.history.pop_front();
-            _ = engine.variable_history.pop_front();
-        }
-
         // recieve message from client
         let data = recv_data(&responder);
         // check if error was encountered when parsing JSON
@@ -68,27 +70,7 @@ pub fn start_server(address: Option<&str>) {
             }
         };
 
-        // Don't add to history if command is refresh or commands as it does not affect the stack
-        if !["refresh", "commands"].contains(&recieved) {
-            // Add current stack to history
-            engine.history.push_back(engine.stack.clone());
-            // Add current variable state to history
-            engine.variable_history.push_back(engine.variables.clone());
-        }
-
-        // TODO: protocol implementation of setting the previous answer variable
-        // unless theres a better way, this should add support for just typing in
-        // a variable or number and having that be the previous answer
-        let result = match recieved {
-            "quit" => break,
-            recieved => match commands.get(recieved) {
-                Some(func) => func(engine.borrow_mut()),
-                None => {
-                    // return result value of adding item to stack
-                    engine.add_item_to_stack(Bucket::from(recieved.to_string()), false)
-                }
-            },
-        };
+        let result = handle_data(&mut engine, &commands, recieved);
 
         match result {
             Ok(MessageAction::SendStack) => {
@@ -111,6 +93,7 @@ pub fn start_server(address: Option<&str>) {
                     MessagePayload::Commands(avaiable_commands),
                 );
             }
+            Ok(MessageAction::Quit) => break,
             Err(error) => {
                 let _ = send_response(
                     &responder,
@@ -127,4 +110,36 @@ pub fn start_server(address: Option<&str>) {
         MessageType::QuitSig,
         MessagePayload::QuitSig(None),
     );
+}
+
+pub fn handle_data(
+    engine: &mut Engine,
+    commands: &CommandsMap,
+    data: &str,
+) -> Result<MessageAction, String> {
+    if engine.history.len() > 20 {
+        _ = engine.history.pop_front();
+        _ = engine.variable_history.pop_front();
+    }
+
+    // Don't add to history if command is refresh or commands as it does not affect the stack
+    if !["refresh", "commands"].contains(&data) {
+        // Add current stack to history
+        engine.history.push_back(engine.stack.clone());
+        // Add current variable state to history
+        engine.variable_history.push_back(engine.variables.clone());
+    }
+
+    // TODO: protocol implementation of setting the previous answer variable
+    // unless theres a better way, this should add support for just typing in
+    // a variable or number and having that be the previous answer
+    let result = match commands.get(data) {
+        Some(func) => func(engine.borrow_mut()),
+        None => {
+            // return result value of adding item to stack
+            engine.add_item_to_stack(Bucket::from(data.to_string()), false)
+        }
+    };
+
+    result
 }

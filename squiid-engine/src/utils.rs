@@ -1,6 +1,8 @@
 use lazy_static::lazy_static;
-use nng::Socket;
 use regex::Regex;
+
+#[cfg(feature = "ipc")]
+use nng::Socket;
 
 use crate::protocol::{ClientMessage, MessagePayload, MessageType, ServerMessage};
 
@@ -12,6 +14,7 @@ lazy_static! {
         Regex::new(r"^[-]?(?:[0-9]*\.?[0-9]+(?:[eE][-+]?\d+(?:\.\d+)?)?|[0-9]+)$").unwrap();
 }
 
+#[cfg(feature = "ipc")]
 /// Send a response to the client
 pub fn send_response(
     socket: &Socket,
@@ -26,6 +29,7 @@ pub fn send_response(
     Ok(())
 }
 
+#[cfg(feature = "ipc")]
 /// Recieve data from the client
 pub fn recv_data(socket: &Socket) -> Result<ClientMessage, serde_json::Error> {
     // recieve data from client

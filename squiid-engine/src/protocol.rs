@@ -9,6 +9,7 @@ use crate::bucket::Bucket;
 pub enum MessageAction {
     SendStack,
     SendCommands,
+    Quit,
 }
 
 /// Client message datatype

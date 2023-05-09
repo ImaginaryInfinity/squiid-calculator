@@ -13,6 +13,7 @@ macro_rules! function_map_entry {
 }
 
 type EngineFunction = dyn Fn(&mut Engine) -> Result<MessageAction, String>;
+pub type CommandsMap = HashMap<String, Box<dyn Fn(&mut Engine) -> Result<MessageAction, String>>>;
 
 /// Create a map of every available function and it's respective command
 pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
@@ -60,6 +61,7 @@ pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     function_map_entry!(function_map, "clear", clear);
     function_map_entry!(function_map, "undo", undo);
     function_map_entry!(function_map, "commands", list_commands);
+    function_map_entry!(function_map, "quit", quit);
 
     // manually insert refresh since it doesn't use an engine method
     function_map.insert(

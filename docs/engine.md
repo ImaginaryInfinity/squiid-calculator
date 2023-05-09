@@ -13,6 +13,8 @@ The function also maintains a history of the calculator's state, including the s
 
 The quit command can be used to exit the server.
 
+The `handle_data` file is an abstraction which allows the calculator to be run without NNG if wanted. This could be useful in certain cases such as WebAssembly where we can't use IPC to communicate between the frontend and backend. If you would like to disable NNG, just include squiid engine without any default features in your Rust project. The `ipc` feature is what adds IPC support. When you are not using the included `start_server` function, you will need to maintain engine state and communication between client and server yourself, which shouldn't be too difficult. Check `lib.rs` for an example on how to do that.
+
 Overall, this code provides the core functionality for a command-line calculator server. It can be used as a library in other programs (as a Rust library or as a shared object file) or as a standalone calculator server.
 
 ## Internal files

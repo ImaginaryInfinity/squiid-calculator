@@ -12,3 +12,4 @@ flatpak-cargo-generator.py
 *.changes
 *.deb
 *.tar.gz
+.gitlab-ci-local-variables.yml

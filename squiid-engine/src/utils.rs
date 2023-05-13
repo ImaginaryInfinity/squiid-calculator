@@ -3,7 +3,7 @@ use regex::Regex;
 
 #[cfg(feature = "ipc")]
 use nng::Socket;
-
+#[cfg(feature = "ipc")]
 use crate::protocol::{ClientMessage, MessagePayload, MessageType, ServerMessage};
 
 lazy_static! {

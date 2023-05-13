@@ -62,10 +62,10 @@ build-appimage:
 
 build-deb:
   stage: build
-  image: ubuntu:latest
+  image: ubuntu:focal
   before_script:
-    - apt update
-    - apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git cargo cmake gnupg
+    - DEBIAN_FRONTEND=noninteractive apt update
+    - DEBIAN_FRONTEND=noninteractive apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git cargo cmake gnupg
     - echo "$GPG_PRIVATE_KEY_B64" | base64 --decode | gpg --batch --import
     - gpg --list-keys --fingerprint --with-colons | sed -E -n -e 's/^fpr:::::::::([0-9A-F]+):$/\1:6:/p' | gpg --import-ownertrust
   script:

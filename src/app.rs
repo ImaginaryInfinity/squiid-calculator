@@ -457,7 +457,9 @@ pub fn run_app<B: Backend>(
                             rpn_operator(&mut app, socket, key);
                         }
 
-                        _ if key.code == app.keycode_from_config("rpn_drop") && app.input_mode == InputMode::RPN => {
+                        _ if key.code == app.keycode_from_config("rpn_drop")
+                            && app.input_mode == InputMode::RPN =>
+                        {
                             update_stack_or_error(send_data(socket, "drop"), &mut app)
                         }
 

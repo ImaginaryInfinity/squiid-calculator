@@ -38,6 +38,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         .dial(&format!("tcp://127.0.0.1:{}", port_num))
         .is_ok());
 
+    // set panic hook to clean the terminal
+    let original_hook = std::panic::take_hook();
+
+    std::panic::set_hook(Box::new(move |panic| {
+        reset_terminal().unwrap();
+        original_hook(panic);
+    }));
+
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -49,18 +57,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     let app = App::default();
     let res = run_app(&mut terminal, app, &socket, &backend_join_handle);
 
-    // restore terminal
-    disable_raw_mode()?;
-    execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )?;
-    terminal.show_cursor()?;
+    reset_terminal()?;
 
     if let Err(err) = res {
         println!("{:?}", err)
     }
+
+    Ok(())
+}
+
+/// Reset the terminal to the default state
+fn reset_terminal() -> Result<(), std::io::Error> {
+    disable_raw_mode()?;
+    execute!(io::stdout(), LeaveAlternateScreen, DisableMouseCapture)?;
 
     Ok(())
 }

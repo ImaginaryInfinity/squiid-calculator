@@ -457,17 +457,25 @@ pub fn run_app<B: Backend>(
                             rpn_operator(&mut app, socket, key);
                         }
 
-                        _ if key.code == app.keycode_from_config("rpn_drop") => {
+                        _ if key.code == app.keycode_from_config("rpn_drop")
+                            && app.input_mode == InputMode::RPN =>
+                        {
                             update_stack_or_error(send_data(socket, "drop"), &mut app)
                         }
 
-                        KeyCode::PageUp => {
+                        _ if key.code == app.keycode_from_config("rpn_roll_up")
+                            && app.input_mode == InputMode::RPN =>
+                        {
                             update_stack_or_error(send_data(socket, "rollup"), &mut app)
                         }
-                        KeyCode::PageDown => {
+                        _ if key.code == app.keycode_from_config("rpn_roll_down")
+                            && app.input_mode == InputMode::RPN =>
+                        {
                             update_stack_or_error(send_data(socket, "rolldown"), &mut app)
                         }
-                        _ if key.code == app.keycode_from_config("rpn_swap") => {
+                        _ if key.code == app.keycode_from_config("rpn_swap")
+                            && app.input_mode == InputMode::RPN =>
+                        {
                             update_stack_or_error(send_data(socket, "swap"), &mut app)
                         }
                         // Handle typing characters

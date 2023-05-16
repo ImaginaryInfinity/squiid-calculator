@@ -11,6 +11,5 @@ Rules-Requires-Root: no
 
 Package: squiid
 Architecture: any
-Depends: libc6 (>= 2.27), ${shlibs:Depends}, ${misc:Depends}
 Description: A modular calculator written in Rust.
  It is currently very early in development but it is intended to be the successor to ImaginaryInfinity Calculator.

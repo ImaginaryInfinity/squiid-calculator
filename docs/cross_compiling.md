@@ -3,6 +3,9 @@
 This page contains special cross compiling instructions from Linux to other platforms. All of the commands in this documentation were tested in Arch Linux. If you have any issue building for a specific platform, please [open an issue](https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/issues/) and we may be able to help.
 
 ## Android
+
+## Android compilation does not work at the moment
+
 1. Install the Android NDK. On Arch this can be installed via the [android-ndk](https://aur.archlinux.org/packages/android-ndk) AUR package. 
 2. Install [cargo-ndk](https://github.com/bbqsrc/cargo-ndk) with `cargo install cargo-ndk`.
 3. Install the toolchains you wish to build for:

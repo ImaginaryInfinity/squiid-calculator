@@ -522,7 +522,7 @@ fn test_log() {
 }
 
 #[test]
-fn test_logb() {
+fn test_blog() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("27".into(), false);
@@ -532,10 +532,10 @@ fn test_logb() {
     let _ = engine.add_item_to_stack("2".into(), false);
 
     // evaluate from last stack entries to first
-    let _ = engine.logb();
+    let _ = engine.blog();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 3.0);
 
-    let _ = engine.logb();
+    let _ = engine.blog();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 3.0);
 }
 
@@ -637,7 +637,7 @@ fn test_lt() {
 }
 
 #[test]
-fn test_gte() {
+fn test_egt() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("-1".into(), false);
@@ -650,18 +650,18 @@ fn test_gte() {
     let _ = engine.add_item_to_stack("2".into(), false);
 
     // evaluate from last stack entries to first
-    let _ = engine.gte();
+    let _ = engine.egt();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 
-    let _ = engine.gte();
+    let _ = engine.egt();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 
-    let _ = engine.gte();
+    let _ = engine.egt();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
 }
 
 #[test]
-fn test_lte() {
+fn test_elt() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("-1".into(), false);
@@ -674,13 +674,13 @@ fn test_lte() {
     let _ = engine.add_item_to_stack("2".into(), false);
 
     // evaluate from last stack entries to first
-    let _ = engine.lte();
+    let _ = engine.elt();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 
-    let _ = engine.lte();
+    let _ = engine.elt();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
 
-    let _ = engine.lte();
+    let _ = engine.elt();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 }
 

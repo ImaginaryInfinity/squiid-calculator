@@ -38,14 +38,14 @@ pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     function_map_entry!(function_map, "acos", acos);
     function_map_entry!(function_map, "atan", atan);
     function_map_entry!(function_map, "log", log);
-    function_map_entry!(function_map, "logb", logb);
+    function_map_entry!(function_map, "blog", blog);
     function_map_entry!(function_map, "ln", ln);
     function_map_entry!(function_map, "abs", abs);
     function_map_entry!(function_map, "eq", eq);
     function_map_entry!(function_map, "gt", gt);
     function_map_entry!(function_map, "lt", lt);
-    function_map_entry!(function_map, "gte", gte);
-    function_map_entry!(function_map, "lte", lte);
+    function_map_entry!(function_map, "egt", egt);
+    function_map_entry!(function_map, "elt", elt);
     function_map_entry!(function_map, "round", round);
     function_map_entry!(function_map, "invert", invert);
     function_map_entry!(function_map, "chs", chs);

@@ -566,7 +566,7 @@ impl Engine {
     }
 
     /// Logarithm with custom base using the change of base formula
-    pub fn logb(&mut self) -> Result<MessageAction, String> {
+    pub fn blog(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_dec(2) {
             Ok(content) => content,
@@ -666,7 +666,7 @@ impl Engine {
     }
 
     /// Greater than or equal to
-    pub fn gte(&mut self) -> Result<MessageAction, String> {
+    pub fn egt(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -680,7 +680,7 @@ impl Engine {
     }
 
     /// Less than or equal to
-    pub fn lte(&mut self) -> Result<MessageAction, String> {
+    pub fn elt(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,

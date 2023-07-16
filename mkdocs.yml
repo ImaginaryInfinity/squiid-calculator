@@ -33,7 +33,7 @@ nav:
                 - Sine: user/commands/trig/sin.md
                 - Tangent: user/commands/trig/tan.md
             - Logarithms:
-                - Logarithm: user/commands/logs/log.md
+                - Logarithm (Base 10): user/commands/logs/log.md
                 - Logarithm (Specified Base): user/commands/logs/blog.md
                 - Natural Log: user/commands/logs/ln.md
             - Logic:

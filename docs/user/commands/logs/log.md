@@ -1,4 +1,4 @@
-# Logarithm
+# Logarithm (Base 10)
 `log`
 
 The `log` command will calculate the logarithm of a number with base 10

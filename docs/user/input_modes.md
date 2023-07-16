@@ -1,4 +1,4 @@
-Squiid supports two different styles of inputting expressions, algebraic mode and RPN mode.
+Squiid supports two different styles of inputting expressions, algebraic mode and RPN mode. The input mode can be changed by pressing escape and then pressing the key shown on screen for the desired mode.
 
 ## Algebraic mode
 Also known as infix notation, this is likely the style you are already familiar with as it is used on calculators made by Texas Intstruments, Casio, and most others as well as most software calculators. In this style of input, most operations are placed *between* the numbers they are acting on and inputted expressions are evaluated by pressing enter. For example, to add the numbers 5 and 7, you would input `5+7`. Operations which are not placed between their operands are placed before them, with the operands in parenthesis, separated by commas afterwards. For example, to calculate the logarithm of 7 with base 14 you would input `blog(7,14)`.

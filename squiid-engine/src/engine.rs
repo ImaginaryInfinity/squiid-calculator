@@ -413,7 +413,6 @@ impl Engine {
     /// Cosine
     pub fn cos(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        eprintln!("{:?}", self.stack);
         let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
             Err(error) => return Err(error),

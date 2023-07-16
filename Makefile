@@ -204,6 +204,8 @@ deb: require clean
 
 	debuild $(DEBUILD_OPTIONS)
 
+	ls ..
+
 	mv ../squiid*.deb ../squiid*.build ../squiid*.changes ../squiid*.tar.xz ../squiid*.dsc ../squiid*.buildinfo ./package-build || true
 
 	rm -rf ../squiid_0.1.0.orig.tar.gz debian

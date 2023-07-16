@@ -205,17 +205,17 @@ fn test_shunting_yard_parser() {
         vec!["3", "2", "^", "4", "16", "sqrt", "*", "-"],
     );
     parse_and_compare(
-        "sin(cos(tan(1))) + logb(2, 8)",
-        vec!["1", "tan", "cos", "sin", "2", "8", "logb", "+"],
+        "sin(cos(tan(1))) + blog(2, 8)",
+        vec!["1", "tan", "cos", "sin", "2", "8", "blog", "+"],
     );
     parse_and_compare(
         "(2 + 3) * 4 - abs(-5)",
         vec!["2", "3", "+", "4", "*", "5", "chs", "abs", "-"],
     );
     parse_and_compare(
-        "sqrt(5 + 3 * sin(2)) / logb(2, 8)",
+        "sqrt(5 + 3 * sin(2)) / blog(2, 8)",
         vec![
-            "5", "3", "2", "sin", "*", "+", "sqrt", "2", "8", "logb", "/",
+            "5", "3", "2", "sin", "*", "+", "sqrt", "2", "8", "blog", "/",
         ],
     );
     parse_and_compare(

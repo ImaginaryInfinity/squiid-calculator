@@ -34,7 +34,7 @@ nav:
                 - Tangent: user/commands/trig/tan.md
             - Logarithms:
                 - Logarithm: user/commands/logs/log.md
-                - Logarithm (Base): user/commands/logs/logb.md
+                - Logarithm (Specified Base): user/commands/logs/blog.md
                 - Natural Log: user/commands/logs/ln.md
             - Logic:
                 - Equals: user/commands/logic/eq.md
@@ -55,7 +55,8 @@ nav:
                 - Undo: user/commands/rpn/undo.md
             - Internal Functions:
                 - Inverted Store: user/commands/internal-funcs/invstore.md
-            
+
+        - Input Modes: user/input_modes.md
         - Variables: user/variables.md
         - Negative Numbers: user/negative_numbers.md
     - Developer Documentation:

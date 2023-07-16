@@ -18,6 +18,9 @@ fn check_commands(strings: &Vec<String>) -> Option<(String, String)> {
 
 #[test]
 fn test_no_conflicts() {
-    let commands = command_mappings::create_function_map().keys().map(|k| k.to_owned()).collect();
+    let commands = command_mappings::create_function_map()
+        .keys()
+        .map(|k| k.to_owned())
+        .collect();
     assert_eq!(check_commands(&commands), None);
 }

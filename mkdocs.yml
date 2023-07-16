@@ -1,10 +1,63 @@
 site_name: Squiid Documentation
 nav:
     - Home: index.md
-    - Cross Compiling: cross_compiling.md
-    - Communication Protocol: comm_prot.md
-    - Squiid Parser: parser.md
-    - Squiid Engine: engine.md
+    - User Documentation:
+        - Commands:
+            - Operations:
+                - Add: user/commands/operations/add.md
+                - Divide: user/commands/operations/divide.md
+                - Modulo: user/commands/operations/mod.md
+                - Multiply: user/commands/operations/multiply.md
+                - Power: user/commands/operations/power.md
+                - Subtract: user/commands/operations/subtract.md
+            - Functions:
+                - Absolute Value: user/commands/functions/abs.md
+                - Clear (Algebraic): user/commands/functions/clear.md
+                - Purge: user/commands/functions/purge.md
+                - Round: user/commands/functions/round.md
+                - Square Root: user/commands/functions/sqrt.md
+                - Quit: user/commands/functions/quit.md
+            - Trigonometry:
+                - Arccosine: user/commands/trig/acos.md
+                - Arcsine: user/commands/trig/asin.md
+                - Arctangent: user/commands/trig/atan.md
+                - Cosecant: user/commands/trig/csc.md
+                - Cosine: user/commands/trig/cos.md
+                - Cotangent: user/commands/trig/cot.md
+                - Secant: user/commands/trig/sec.md
+                - Sine: user/commands/trig/sin.md
+                - Tangent: user/commands/trig/tan.md
+            - Logarithms:
+                - Logarithm: user/commands/logs/log.md
+                - Logarithm (Base): user/commands/logs/logb.md
+                - Natural Log: user/commands/logs/ln.md
+            - Logic:
+                - Equals: user/commands/logic/eq.md
+                - Greater Than: user/commands/logic/gt.md
+                - Greater Than or Equal To: user/commands/logic/egt.md
+                - Less Than: user/commands/logic/lt.md
+                - Less Than or Equal To: user/commands/logic/elt.md
+            - RPN Mode:
+                - Change Sign: user/commands/rpn/chs.md
+                - Clear (RPN): user/commands/rpn/clear.md
+                - Drop: user/commands/rpn/drop.md
+                - Duplicate: user/commands/rpn/dup.md
+                - Invert: user/commands/rpn/invert.md
+                - Roll Down: user/commands/rpn/rolldown.md
+                - Roll Up: user/commands/rpn/rollup.md
+                - Store: user/commands/rpn/store.md
+                - Swap: user/commands/rpn/swap.md
+                - Undo: user/commands/rpn/undo.md
+            - Internal Functions:
+                - Inverted Store: user/commands/internal-funcs/invstore.md
+            
+        - Variables: user/variables.md
+        - Negative Numbers: user/negative_numbers.md
+    - Developer Documentation:
+        - Cross Compiling: dev/cross_compiling.md
+        - Communication Protocol: dev/comm_prot.md
+        - Squiid Parser: dev/parser.md
+        - Squiid Engine: dev/engine.md
 
 plugins:
     - search

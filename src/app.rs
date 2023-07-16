@@ -45,6 +45,8 @@ lazy_static! {
         (KeyCode::Char('/'), "divide"),
         (KeyCode::Char('%'), "mod"),
         (KeyCode::Char('^'), "power"),
+        (KeyCode::Char('<'), "lt"),
+        (KeyCode::Char('>'), "gt"),
         (KeyCode::Char('_'), "chs"),
     ]
     .iter()

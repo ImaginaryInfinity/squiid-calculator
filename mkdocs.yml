@@ -1,4 +1,9 @@
 site_name: Squiid Documentation
+repo_url: https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid
+repo_name: GitLab
+edit_uri: edit/trunk/docs/
+site_description: Squiid is a modular calculator written in Rust. It is currently very early in development but it is intended to be the successor to ImaginaryInfinity Calculator.
+
 nav:
     - Home: index.md
     - User Documentation:

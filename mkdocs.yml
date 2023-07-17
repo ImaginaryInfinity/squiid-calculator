@@ -57,6 +57,7 @@ nav:
                 - Inverted Store: user/commands/internal-funcs/invstore.md
 
         - Input Modes: user/input_modes.md
+        - Constants: user/constants.md
         - Variables: user/variables.md
         - Negative Numbers: user/negative_numbers.md
     - Developer Documentation:

@@ -220,6 +220,12 @@ fn test_individual_tokenization() {
     tokenize_and_compare("%", vec![Token::Modulo("%")]);
     tokenize_and_compare("+", vec![Token::Add("+")]);
     tokenize_and_compare("-", vec![Token::Subtract("-")]);
+    tokenize_and_compare("=", vec![Token::Equal("=")]);
+    tokenize_and_compare(">", vec![Token::GreaterThan(">")]);
+    tokenize_and_compare("<", vec![Token::LessThan("<")]);
+    tokenize_and_compare(">=", vec![Token::GreaterThanEqualTo(">=")]);
+    tokenize_and_compare("<=", vec![Token::LessThanEqualTo("<=")]);
+    tokenize_and_compare("==", vec![Token::EqualTo("==")]);
 }
 
 #[test]

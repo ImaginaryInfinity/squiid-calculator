@@ -278,6 +278,11 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
             "%" => "mod",
             "^" => "power",
             "=" => "invstore",
+            "==" => "eq",
+            ">" => "gt",
+            "<" => "lt",
+            ">=" => "egt",
+            "<=" => "elt",
             _ => command_raw,
         };
         // Send command to server

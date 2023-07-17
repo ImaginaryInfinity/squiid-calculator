@@ -117,13 +117,20 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
     // this is used for all other tokens (insert directly after)
     let mut insert_chs = false;
 
+    // using C as a reference can be helpful
+    // http://www.eecs.northwestern.edu/~wkliao/op-prec.htm
     let precedence_map = HashMap::from([
-        ("^", 4),
-        ("*", 3),
-        ("/", 3),
-        ("%", 3),
-        ("+", 2),
-        ("-", 2),
+        ("^", 6),
+        ("*", 5),
+        ("/", 5),
+        ("%", 5),
+        ("+", 4),
+        ("-", 4),
+        (">", 3),
+        ("<", 3),
+        ("<=", 3),
+        (">=", 3),
+        ("==", 2),
         ("(", 1),
     ]);
 
@@ -210,7 +217,12 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
             | Token::Divide(token_name)
             | Token::Modulo(token_name)
             | Token::Add(token_name)
-            | Token::Subtract(token_name) => {
+            | Token::Subtract(token_name)
+            | Token::GreaterThan(token_name)
+            | Token::LessThan(token_name)
+            | Token::GreaterThanEqualTo(token_name)
+            | Token::LessThanEqualTo(token_name)
+            | Token::EqualTo(token_name) => {
                 while let Some(operator) = operator_stack.pop() {
                     if operator == "("
                         // functions should have the highest precedence  

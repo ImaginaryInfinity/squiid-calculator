@@ -59,6 +59,19 @@ pub enum Token<'a> {
     #[token("-")]
     Subtract(&'a str),
 
+    // Logic Operators
+    #[token(">")]
+    GreaterThan(&'a str),
+    #[token("<")]
+    LessThan(&'a str),
+    #[token(">=")]
+    GreaterThanEqualTo(&'a str),
+    #[token("<=")]
+    LessThanEqualTo(&'a str),
+    #[token("==")]
+    EqualTo(&'a str),
+
+
     /// This cannot be a token, it is used for differentiation between minus and negative later on in parsing
     Negative(&'a str),
 }

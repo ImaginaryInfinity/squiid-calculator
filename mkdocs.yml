@@ -7,6 +7,10 @@ site_description: Squiid is a modular calculator written in Rust. It is currentl
 nav:
     - Home: index.md
     - User Documentation:
+        - Input Modes: user/input_modes.md
+        - Constants: user/constants.md
+        - Variables: user/variables.md
+        - Negative Numbers: user/negative_numbers.md
         - Commands:
             - Operations:
                 - Add: user/commands/operations/add.md
@@ -55,11 +59,6 @@ nav:
                 - Undo: user/commands/rpn/undo.md
             - Internal Functions:
                 - Inverted Store: user/commands/internal-funcs/invstore.md
-
-        - Input Modes: user/input_modes.md
-        - Constants: user/constants.md
-        - Variables: user/variables.md
-        - Negative Numbers: user/negative_numbers.md
     - Developer Documentation:
         - Cross Compiling: dev/cross_compiling.md
         - Communication Protocol: dev/comm_prot.md

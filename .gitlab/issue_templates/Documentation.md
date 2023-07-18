@@ -25,4 +25,4 @@ List any external references or resources that are relevant to the documentation
 ## Revision History
 Document any changes or updates made to the documentation, including the version number, date, and a brief description of the changes.
 
-/label ~documentation
+/label ~"type::documentation"

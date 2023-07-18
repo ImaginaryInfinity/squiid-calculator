@@ -22,4 +22,4 @@ Highlight any technical or implementation considerations that should be taken in
 ## Related Issues
 List any related issues or references, if applicable.
 
-/label ~enhancement
+/label ~"type::enhancement"

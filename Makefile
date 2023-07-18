@@ -53,7 +53,7 @@ build: require ## Build the release version of the program for the system platfo
 build-musl: require ## Build the Linux MUSL version
 	cargo build --release --target=x86_64-unknown-linux-musl
 
-install: $(BINARY_PATH) ## Install Squiid to the system
+install: build ## Install Squiid to the system
 	mkdir -p $(DESTDIR)$(BINDIR)
 	install -v -m755 $(BINARY_PATH) $(DESTDIR)$(BINDIR)
 

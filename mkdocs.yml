@@ -6,6 +6,7 @@ site_description: Squiid is a modular calculator written in Rust. It is currentl
 
 nav:
     - Home: index.md
+    - Getting Started: getting_started.md
     - User Documentation:
         - Input Modes: user/input_modes.md
         - Constants: user/constants.md

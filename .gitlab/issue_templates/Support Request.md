@@ -25,4 +25,4 @@ Describe any workaround attempts you've made, if any, and their results.
 ## Steps Taken So Far
 Outline any steps you've taken so far to resolve the issue, including any research or troubleshooting you've done.
 
-/label ~support
+/label ~"type::support"

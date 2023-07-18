@@ -29,4 +29,4 @@ If you would like to manually build Squiid, for example if there isn't a package
 5. To uninstall Squiid, run `sudo make uninstall` or manually remove the binary that you placed.
 
 #### Requesting a packaged version of Squiid
-If we do not provide a packaged version of Squiid for your operating system, you can [start an issue]() to request one.
+If we do not provide a packaged version of Squiid for your operating system, you can [start an issue](http://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/issues/new?issuable_template=Package%20Request) to request one.

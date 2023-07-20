@@ -8,9 +8,10 @@ stages:
   - build
   - deploy
 
-#test:
-#  stage: test
-#  image: rust:latest
-#  script:
-#    - cargo build --verbose
-#    - RUST_BACKTRACE=1 cargo test -p squiid -p squiid-engine -p squiid-parser
+test:
+ stage: test
+ image: rust:latest
+ script:
+   - apt install cmake -y
+   - cargo build --verbose
+   - RUST_BACKTRACE=1 cargo test -p squiid -p squiid-engine -p squiid-parser

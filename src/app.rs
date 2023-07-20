@@ -33,7 +33,7 @@ enum InputMode {
     /// Algebraic input mode
     Algebraic,
     /// RPN input mode
-    RPN,
+    Rpn,
 }
 
 lazy_static! {
@@ -67,7 +67,7 @@ impl StatefulTopPanel {
     fn with_items(items: Vec<String>) -> StatefulTopPanel {
         StatefulTopPanel {
             state: ListState::default(),
-            items: items,
+            items,
         }
     }
 
@@ -151,12 +151,9 @@ impl Default for App {
             input_mode: InputMode::None,
             history: Vec::new(),
             info: vec![
-                format!(
-                    "Squiid Calculator version {}",
-                    option_env!("CARGO_PKG_VERSION").unwrap()
-                ),
+                format!("Squiid Calculator version {}", env!("CARGO_PKG_VERSION")),
                 "Copyright 2023 Connor Sample and Finian Wright".to_string(),
-                option_env!("CARGO_PKG_REPOSITORY").unwrap().to_string(),
+                env!("CARGO_PKG_REPOSITORY").to_string(),
             ],
             stack: Vec::new(),
             error: String::new(),
@@ -226,7 +223,7 @@ fn update_stack_or_error(msg: ServerMessage, app: &mut App) {
 }
 
 /// Handle algebraic expressions
-fn algebraic_eval(mut app: &mut App, socket: &Socket) {
+fn algebraic_eval(app: &mut App, socket: &Socket) {
     // Get string from input box and empty it
     let entered_expression: String = app.input.drain(..).collect();
 
@@ -234,13 +231,10 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
     _ = send_data(socket, "clear");
 
     // Special frontend commands
-    match entered_expression.as_str() {
-        "clear" => {
-            app.history = Vec::new();
-            return;
-        }
-        _ => {}
-    }
+    if entered_expression.as_str() == "clear" {
+        app.history = Vec::new();
+        return;
+    };
 
     // reset cursor offset
     app.left_cursor_offset = 0;
@@ -288,19 +282,19 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
         // Send command to server
         let msg = send_data(socket, command);
         // Update stack
-        update_stack_or_error(msg, &mut app);
+        update_stack_or_error(msg, app);
     }
 
     // Empty placeholder result in case there is nothing on the stack
     let mut result = "";
     // Set result to last item in stack if there is one
-    if app.stack.len() > 0 {
+    if !app.stack.is_empty() {
         result = app.stack.last().unwrap();
     }
 
     // Combine entry and result into line to print
     let mut history_entry = entered_expression;
-    if app.error.is_empty() && result.len() > 0 {
+    if app.error.is_empty() && !result.is_empty() {
         history_entry.push_str(" = ");
         history_entry.push_str(result);
     } else if !app.error.is_empty() {
@@ -315,7 +309,7 @@ fn algebraic_eval(mut app: &mut App, socket: &Socket) {
 }
 
 /// Handle typing in RPN mode
-fn rpn_input(mut app: &mut App, socket: &Socket, c: char) {
+fn rpn_input(app: &mut App, socket: &Socket, c: char) {
     // Add character to input box
     let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
     app.input.insert(index, c);
@@ -329,7 +323,7 @@ fn rpn_input(mut app: &mut App, socket: &Socket, c: char) {
         // Send command
         let msg = send_data(socket, app.input.as_str());
         // Update stack display
-        update_stack_or_error(msg, &mut app);
+        update_stack_or_error(msg, app);
         // Clear input
         app.input.drain(..);
         // reset cursor offset
@@ -338,32 +332,31 @@ fn rpn_input(mut app: &mut App, socket: &Socket, c: char) {
 }
 
 /// Handle RPN enter
-fn rpn_enter(mut app: &mut App, socket: &Socket) {
+fn rpn_enter(app: &mut App, socket: &Socket) {
     // Get command from input box and empty it
     let command: String = app.input.drain(..).collect();
     // reset cursor offset
     app.left_cursor_offset = 0;
-    let msg;
     // Send command if there is one, otherwise duplicate last item in stack
-    if command.len() > 0 {
+    let msg = if !command.is_empty() {
         // Send to backend and get response
-        msg = send_data(socket, command.as_str());
+        send_data(socket, command.as_str())
     } else {
         // Empty input, duplicate
-        msg = send_data(socket, "dup");
-    }
+        send_data(socket, "dup")
+    };
     // Update stack display
-    update_stack_or_error(msg, &mut app);
+    update_stack_or_error(msg, app);
 }
 
 /// Handle RPN operators
-fn rpn_operator(mut app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
+fn rpn_operator(app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
     // Get operand from input box and empty it
     let command: String = app.input.drain(..).collect();
     // reset cursor offset
     app.left_cursor_offset = 0;
     // Send operand to backend if there is one
-    if command.len() > 0 {
+    if !command.is_empty() {
         _ = send_data(socket, command.as_str());
     }
 
@@ -375,7 +368,7 @@ fn rpn_operator(mut app: &mut App, socket: &Socket, key: crate::event::KeyEvent)
     // Send operation
     let msg = send_data(socket, operation);
     // Update stack display
-    update_stack_or_error(msg, &mut app);
+    update_stack_or_error(msg, app);
 }
 
 /// Create the main application and run it
@@ -395,7 +388,7 @@ pub fn run_app<B: Backend>(
 
     app.input_mode = match start_mode {
         "algebraic" => InputMode::Algebraic,
-        "rpn" => InputMode::RPN,
+        "rpn" => InputMode::Rpn,
         _ => InputMode::None,
     };
 
@@ -418,7 +411,7 @@ pub fn run_app<B: Backend>(
                         app.input_mode = InputMode::Algebraic;
                     }
                     _ if key.code == app.keycode_from_config("mode_rpn") => {
-                        app.input_mode = InputMode::RPN;
+                        app.input_mode = InputMode::Rpn;
                     }
                     _ if key.code == app.keycode_from_config("quit") => {
                         return Ok(());
@@ -426,7 +419,7 @@ pub fn run_app<B: Backend>(
                     _ => {}
                 },
                 // Handle keypresses for algebraic input mode
-                InputMode::Algebraic | InputMode::RPN if key.kind == KeyEventKind::Press => {
+                InputMode::Algebraic | InputMode::Rpn if key.kind == KeyEventKind::Press => {
                     match key.code {
                         // Handle enter
                         _ if key.code == app.keycode_from_config("enter") => {
@@ -458,30 +451,30 @@ pub fn run_app<B: Backend>(
                         }
                         // Handle single character operators
                         _ if RPN_SYMBOL_MAP.contains_key(&key.code)
-                            && app.input_mode == InputMode::RPN
+                            && app.input_mode == InputMode::Rpn
                             && !input_buffer_is_sci_notate(&app.input) =>
                         {
                             rpn_operator(&mut app, socket, key);
                         }
 
                         _ if key.code == app.keycode_from_config("rpn_drop")
-                            && app.input_mode == InputMode::RPN =>
+                            && app.input_mode == InputMode::Rpn =>
                         {
                             update_stack_or_error(send_data(socket, "drop"), &mut app)
                         }
 
                         _ if key.code == app.keycode_from_config("rpn_roll_up")
-                            && app.input_mode == InputMode::RPN =>
+                            && app.input_mode == InputMode::Rpn =>
                         {
                             update_stack_or_error(send_data(socket, "rollup"), &mut app)
                         }
                         _ if key.code == app.keycode_from_config("rpn_roll_down")
-                            && app.input_mode == InputMode::RPN =>
+                            && app.input_mode == InputMode::Rpn =>
                         {
                             update_stack_or_error(send_data(socket, "rolldown"), &mut app)
                         }
                         _ if key.code == app.keycode_from_config("rpn_swap")
-                            && app.input_mode == InputMode::RPN =>
+                            && app.input_mode == InputMode::Rpn =>
                         {
                             update_stack_or_error(send_data(socket, "swap"), &mut app)
                         }
@@ -494,7 +487,7 @@ pub fn run_app<B: Backend>(
                                     app.input.len(),
                                 );
                                 app.input.insert(index, c);
-                            } else if app.input_mode == InputMode::RPN {
+                            } else if app.input_mode == InputMode::Rpn {
                                 rpn_input(&mut app, socket, c);
                             }
                         }
@@ -560,20 +553,20 @@ pub fn run_app<B: Backend>(
                         }
                         // up keypress
                         KeyCode::Up => {
-                            if app.input_mode == InputMode::RPN && app.stack.len() > 0 {
+                            if app.input_mode == InputMode::Rpn && !app.stack.is_empty() {
                                 app.top_panel_state.next(&app.stack);
                             } else if app.input_mode == InputMode::Algebraic
-                                && app.history.len() > 0
+                                && !app.history.is_empty()
                             {
                                 app.top_panel_state.next(&app.history);
                             }
                         }
                         // Down keypress
                         KeyCode::Down => {
-                            if app.input_mode == InputMode::RPN && app.stack.len() > 0 {
+                            if app.input_mode == InputMode::Rpn && !app.stack.is_empty() {
                                 app.top_panel_state.previous(&app.stack);
                             } else if app.input_mode == InputMode::Algebraic
-                                && app.history.len() > 0
+                                && !app.history.is_empty()
                             {
                                 app.top_panel_state.previous(&app.history);
                             }
@@ -680,7 +673,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             Style::default(),
         ),
         // Display help for RPN mode
-        InputMode::RPN => (
+        InputMode::Rpn => (
             vec![
                 Span::styled(
                     app.keybind_from_config("exit").to_owned(),
@@ -720,7 +713,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let mut display = match app.input_mode {
         InputMode::None => app.info.clone(),
         InputMode::Algebraic => app.history.clone(),
-        InputMode::RPN => app.stack.clone(),
+        InputMode::Rpn => app.stack.clone(),
     };
 
     // Reverse display since we're rendering from the bottom
@@ -734,7 +727,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             let displayed_string = format!(
                 "{: >3}: {}",
                 match app.input_mode {
-                    InputMode::Algebraic | InputMode::RPN => i.to_string(),
+                    InputMode::Algebraic | InputMode::Rpn => i.to_string(),
                     InputMode::None => "".to_string(),
                 },
                 m
@@ -751,7 +744,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let list_title = match app.input_mode {
         _ if app.top_panel_state.currently_selecting() => "Select",
         InputMode::Algebraic => "History",
-        InputMode::RPN => "Stack",
+        InputMode::Rpn => "Stack",
         InputMode::None => "Squiid",
     };
 
@@ -782,18 +775,18 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 
     let input_label = match app.input_mode {
         InputMode::Algebraic => "Algebraic",
-        InputMode::RPN => "RPN",
+        InputMode::Rpn => "RPN",
         _ => "If this message appears, you have broken something",
     };
 
-    if app.input_mode == InputMode::Algebraic || app.input_mode == InputMode::RPN {
+    if app.input_mode == InputMode::Algebraic || app.input_mode == InputMode::Rpn {
         // THIS IS WHERE THE INPUT IS BEING ADDED TO THE PARAGRAPH DISPLAY
         let input = Paragraph::new(app.input.as_ref())
             .style(match app.input_mode {
                 _ if app.top_panel_state.currently_selecting() => Style::default(),
                 InputMode::None => Style::default(),
                 InputMode::Algebraic => Style::default().fg(Color::Yellow),
-                InputMode::RPN => Style::default().fg(Color::Red),
+                InputMode::Rpn => Style::default().fg(Color::Red),
             })
             .block(Block::default().borders(Borders::ALL).title(input_label));
         f.render_widget(input, chunks[2]);
@@ -803,7 +796,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
             {}
 
-        InputMode::Algebraic | InputMode::RPN if !app.top_panel_state.currently_selecting() => {
+        InputMode::Algebraic | InputMode::Rpn if !app.top_panel_state.currently_selecting() => {
             // Make the cursor visible and ask ratatui to put it at the specified coordinates after rendering
 
             let mut cursor_position_x = chunks[2].x + app.input.width() as u16 + 1;

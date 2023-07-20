@@ -25,14 +25,11 @@ fn deserialize_message(msg: Message) -> ServerMessage {
 
 /// Get current character index based on cursor position and text length
 pub fn current_char_index(left_cursor_offset: usize, input_len: usize) -> usize {
-    let index: usize;
     if left_cursor_offset > input_len {
-        index = 0;
+        0
     } else {
-        index = input_len - left_cursor_offset;
+        input_len - left_cursor_offset
     }
-
-    index
 }
 
 /// Find the first available port in a provided range
@@ -42,10 +39,7 @@ pub fn get_available_port(mut range: Range<u16>) -> Option<u16> {
 
 /// Test if a specific TCP port is avaiable
 fn port_is_available(port: u16) -> bool {
-    match TcpListener::bind(("127.0.0.1", port)) {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    TcpListener::bind(("127.0.0.1", port)).is_ok()
 }
 
 /// Test if a str buffer is scientific notation
@@ -67,6 +61,6 @@ pub fn input_buffer_is_sci_notate(buffer: &str) -> bool {
             let last_token = &tokens[tokens.len() - 1];
             return *last_token == Token::Float("_") || *last_token == Token::Int("_");
         }
-        Err(_) => return false,
+        Err(_) => false,
     }
 }

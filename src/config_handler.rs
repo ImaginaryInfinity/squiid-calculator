@@ -30,10 +30,8 @@ impl Config {
     #[allow(dead_code)]
     pub fn set(&mut self, section: &str, key: &str, value: Value) {
         if let Value::Table(config) = &mut self.config {
-            if let Some(section_value) = config.get_mut(section) {
-                if let Value::Table(section_config) = section_value {
-                    section_config.insert(key.to_string(), value);
-                }
+            if let Some(Value::Table(section_config)) = config.get_mut(section) {
+                section_config.insert(key.to_string(), value);
             }
         }
     }

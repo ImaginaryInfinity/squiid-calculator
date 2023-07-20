@@ -11,7 +11,8 @@ stages:
 test:
  stage: test
  image: rust:latest
- script:
+ before_script:
+   - apt update
    - apt install cmake -y
-   - cargo build --verbose
-   - RUST_BACKTRACE=1 cargo test -p squiid -p squiid-engine -p squiid-parser
+ script:
+   - RUST_BACKTRACE=1 cargo test -p squiid -p squiid-engine -p squiid-parser --verbose

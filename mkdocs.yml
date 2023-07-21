@@ -12,6 +12,7 @@ nav:
         - Constants: user/constants.md
         - Variables: user/variables.md
         - Negative Numbers: user/negative_numbers.md
+        - Previous Answer: user/previous_answer.md
         - Commands:
             - Operations:
                 - Add: user/commands/operations/add.md

@@ -4,7 +4,7 @@ use rust_decimal::{prelude::ToPrimitive, Decimal, MathematicalOps};
 use rust_decimal_macros::dec;
 
 use crate::{
-    bucket::{Bucket, BucketTypes, ConstantTypes},
+    bucket::{Bucket, BucketTypes, ConstantTypes, build_exposed_constants},
     utils::{ID_REGEX, NUMERIC_REGEX},
     MessageAction,
 };
@@ -63,13 +63,7 @@ impl Engine {
         }
 
         // Replace with value if item is a constant
-        let exposed_constants = HashMap::from([
-            ("#pi", ConstantTypes::PI),
-            ("#e", ConstantTypes::E),
-            ("#tau", ConstantTypes::TAU),
-            ("#c", ConstantTypes::C),
-            ("#G", ConstantTypes::G),
-        ]);
+        let exposed_constants = build_exposed_constants();
 
         // create a StackableFloat if item_string is numeric, else StackableString
         let item_pushable: Bucket = match item.bucket_type {
@@ -170,7 +164,8 @@ impl Engine {
                     | BucketTypes::Constant(ConstantTypes::G)
                     | BucketTypes::Constant(ConstantTypes::ThirdPI)
                     | BucketTypes::Constant(ConstantTypes::SixthPI)
-                    | BucketTypes::Constant(ConstantTypes::EighthPI) => {
+                    | BucketTypes::Constant(ConstantTypes::EighthPI)
+                    | BucketTypes::Constant(ConstantTypes::PHI) => {
                         Decimal::from_str_exact(&operand.value.unwrap()).unwrap()
                     }
                     BucketTypes::String | BucketTypes::Undefined => {

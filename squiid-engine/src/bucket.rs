@@ -1,13 +1,13 @@
 // items on the stack are called Buckets
 
-use std::f64::consts;
+use std::{f64::consts, collections::HashMap};
 
 use rust_decimal::{prelude::FromPrimitive, Decimal, MathematicalOps};
 use rust_decimal_macros::dec;
 use serde::{de::Visitor, Deserialize, Serialize};
 
 /// Types of constants
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ConstantTypes {
     PI,
     HalfPI,
@@ -20,7 +20,50 @@ pub enum ConstantTypes {
     TAU,
     C,
     G,
+    PHI,
 }
+
+// Define the exposed constants
+pub trait ExposedConstant {
+    fn name(&self) -> &'static str;
+}
+
+impl ExposedConstant for ConstantTypes {
+    fn name(&self) -> &'static str {
+        match self {
+            ConstantTypes::PI => "#pi",
+            ConstantTypes::E => "#e",
+            ConstantTypes::TAU => "#tau",
+            ConstantTypes::C => "#c",
+            ConstantTypes::G => "#G",
+            ConstantTypes::PHI => "#phi",
+            ConstantTypes::HalfPI => "#halfpi",
+            ConstantTypes::ThirdPI => "#thirdpi",
+            ConstantTypes::QuarterPI => "#quarterpi",
+            ConstantTypes::SixthPI => "#sixthpi",
+            ConstantTypes::EighthPI => "#eighthpi",
+            ConstantTypes::TwoPI => "#twopi",
+        }
+    }
+}
+
+// TODO: extrapolate constants things into constants file
+/// Build a hashmap of exposed constants
+pub fn build_exposed_constants() -> HashMap<&'static str, ConstantTypes> {
+    let mut exposed_constants = HashMap::new();
+
+    // Add each constant to the hashmap
+    exposed_constants.insert(ConstantTypes::PI.name(), ConstantTypes::PI);
+    exposed_constants.insert(ConstantTypes::E.name(), ConstantTypes::E);
+    exposed_constants.insert(ConstantTypes::TAU.name(), ConstantTypes::TAU);
+    exposed_constants.insert(ConstantTypes::C.name(), ConstantTypes::C);
+    exposed_constants.insert(ConstantTypes::G.name(), ConstantTypes::G);
+    exposed_constants.insert(ConstantTypes::PHI.name(), ConstantTypes::PHI);
+
+    exposed_constants
+}
+
+
 
 /// Types of Buckets
 #[derive(Debug, Clone, PartialEq)]
@@ -64,6 +107,7 @@ impl Bucket {
             ConstantTypes::TAU => consts::TAU,
             ConstantTypes::C => 299792458_f64,
             ConstantTypes::G => 6.67430 * 10_f64.powf(-11_f64),
+            ConstantTypes::PHI => 1.6180339887498948482045868343656381,
         }
         .to_string();
 
@@ -77,7 +121,7 @@ impl Bucket {
     pub fn sin(&self) -> Option<Self> {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
-                ConstantTypes::E | ConstantTypes::TAU | ConstantTypes::C | ConstantTypes::G => {
+                ConstantTypes::E | ConstantTypes::TAU | ConstantTypes::C | ConstantTypes::G | ConstantTypes::PHI => {
                     Some(Self::from(
                         self.value.clone()?.parse::<f64>().unwrap().sin(),
                     ))
@@ -101,7 +145,7 @@ impl Bucket {
     pub fn cos(&self) -> Option<Self> {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
-                ConstantTypes::E | ConstantTypes::TAU | ConstantTypes::C | ConstantTypes::G => {
+                ConstantTypes::E | ConstantTypes::TAU | ConstantTypes::C | ConstantTypes::G | ConstantTypes::PHI => {
                     Some(Self::from(
                         self.value.clone()?.parse::<f64>().unwrap().cos(),
                     ))
@@ -125,7 +169,7 @@ impl Bucket {
     pub fn tan(&self) -> Option<Self> {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
-                ConstantTypes::E | ConstantTypes::TAU | ConstantTypes::C | ConstantTypes::G => {
+                ConstantTypes::E | ConstantTypes::TAU | ConstantTypes::C | ConstantTypes::G | ConstantTypes::PHI => {
                     Some(Self::from(
                         self.value.clone()?.parse::<f64>().unwrap().tan(),
                     ))
@@ -151,7 +195,7 @@ impl Bucket {
             BucketTypes::Constant(constant_type) => match constant_type {
                 // Compute:
                 // 1 / sin(value)
-                ConstantTypes::E | ConstantTypes::TAU | ConstantTypes::C | ConstantTypes::G => {
+                ConstantTypes::E | ConstantTypes::TAU | ConstantTypes::C | ConstantTypes::G | ConstantTypes::PHI => {
                     Some(Self::from(
                         dec!(1.0)
                             / Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?
@@ -192,7 +236,7 @@ impl Bucket {
             BucketTypes::Constant(constant_type) => match constant_type {
                 // Compute:
                 // 1 / cos(value)
-                ConstantTypes::E | ConstantTypes::TAU | ConstantTypes::C | ConstantTypes::G => {
+                ConstantTypes::E | ConstantTypes::TAU | ConstantTypes::C | ConstantTypes::G | ConstantTypes::PHI => {
                     Some(Self::from(
                         dec!(1.0)
                             / Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?
@@ -235,7 +279,7 @@ impl Bucket {
             BucketTypes::Constant(constant_type) => match constant_type {
                 // Compute:
                 // 1 / tan(value)
-                ConstantTypes::E | ConstantTypes::TAU | ConstantTypes::C | ConstantTypes::G => {
+                ConstantTypes::E | ConstantTypes::TAU | ConstantTypes::C | ConstantTypes::G | ConstantTypes::PHI => {
                     Some(Self::from(
                         dec!(1.0)
                             / Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?

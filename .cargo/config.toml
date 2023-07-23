@@ -6,3 +6,6 @@ linker = "arm-linux-gnueabihf-g++"
 
 [target.aarch64-unknown-linux-musl]
 linker = "aarch64-linux-musl-gcc"
+
+[target.armv7-linux-androideabi]
+linker = "/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi33-clang"

@@ -160,14 +160,16 @@ endif
 
 android-armv8: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android-armv8: android-require ## Build the Android ARMv8 release
+	@echo "Android armv8 building is currently broken"; exit 1
 	RUST_LOG=debug cargo ndk --platform $(platform) --target arm64-v8a build --release
 
 android-armv7: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
-android-armv7: android-require ## Build the Android ARMv7 release
-	cargo ndk --platform $(platform) --target armeabi-v7a build --release
+android-armv7: ## Build the Android ARMv7 release
+	cargo build --target armv7-linux-androideabi --release
 
 android-x86_64: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android-x86_64: android-require ## Build the Android x86_64 release
+	@echo "Android x86_64 building is currently broken"; exit 1
 	cargo ndk --platform $(platform) --target x86_64 build --release
 
 android: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake

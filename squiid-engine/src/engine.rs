@@ -40,7 +40,6 @@ impl Engine {
     pub fn add_item_to_stack(
         &mut self,
         item: Bucket,
-        set_prev_ans: bool,
     ) -> Result<MessageAction, String> {
         // Convert item to string
         let mut item_string = item.to_string();
@@ -92,11 +91,6 @@ impl Engine {
                 }
             }
         };
-
-        // set previous answer if flag is set in function arguments
-        if set_prev_ans {
-            self.previous_answer = item_pushable.clone();
-        }
 
         // push the new item to the stack
         self.stack.push(item_pushable);
@@ -243,7 +237,7 @@ impl Engine {
 
         // Put result on stack
         let result = operands[0] + operands[1];
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -257,7 +251,7 @@ impl Engine {
 
         // Put result on stack
         let result = operands[0] - operands[1];
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -286,7 +280,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(result, true);
+        let _ = self.add_item_to_stack(result);
         Ok(MessageAction::SendStack)
     }
 
@@ -329,7 +323,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(result, true);
+        let _ = self.add_item_to_stack(result);
         Ok(MessageAction::SendStack)
     }
 
@@ -358,7 +352,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -375,7 +369,7 @@ impl Engine {
             Some(value) => value,
             None => return Err("Error calculating sqrt".to_string()),
         };
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -389,7 +383,7 @@ impl Engine {
 
         // Put result on stack
         let result = operands[0] % operands[1];
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -406,7 +400,7 @@ impl Engine {
             Some(value) => value,
             None => return Err("could not sin operand".to_string()),
         };
-        let _ = self.add_item_to_stack(result, true);
+        let _ = self.add_item_to_stack(result);
         Ok(MessageAction::SendStack)
     }
 
@@ -423,7 +417,7 @@ impl Engine {
             Some(value) => value,
             None => return Err("could not cos operand".to_string()),
         };
-        let _ = self.add_item_to_stack(result, true);
+        let _ = self.add_item_to_stack(result);
         Ok(MessageAction::SendStack)
     }
 
@@ -440,7 +434,7 @@ impl Engine {
             Some(value) => value,
             None => return Err("could not tan operand".to_string()),
         };
-        let _ = self.add_item_to_stack(result, true);
+        let _ = self.add_item_to_stack(result);
         Ok(MessageAction::SendStack)
     }
 
@@ -457,7 +451,7 @@ impl Engine {
             Some(value) => value,
             None => return Err("could not sec operand".to_string()),
         };
-        let _ = self.add_item_to_stack(result, true);
+        let _ = self.add_item_to_stack(result);
         Ok(MessageAction::SendStack)
     }
 
@@ -474,7 +468,7 @@ impl Engine {
             Some(value) => value,
             None => return Err("could not csc operand".to_string()),
         };
-        let _ = self.add_item_to_stack(result, true);
+        let _ = self.add_item_to_stack(result);
         Ok(MessageAction::SendStack)
     }
 
@@ -491,7 +485,7 @@ impl Engine {
             Some(value) => value,
             None => return Err("could not sine operand".to_string()),
         };
-        let _ = self.add_item_to_stack(result, true);
+        let _ = self.add_item_to_stack(result);
         Ok(MessageAction::SendStack)
     }
 
@@ -504,7 +498,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].asin().into(), true);
+        let _ = self.add_item_to_stack(operands[0].asin().into());
         Ok(MessageAction::SendStack)
     }
 
@@ -517,7 +511,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].acos().into(), true);
+        let _ = self.add_item_to_stack(operands[0].acos().into());
         Ok(MessageAction::SendStack)
     }
 
@@ -530,7 +524,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].atan().into(), true);
+        let _ = self.add_item_to_stack(operands[0].atan().into());
         Ok(MessageAction::SendStack)
     }
 
@@ -544,7 +538,7 @@ impl Engine {
 
         // Put result on stack
         let result = operands[0] * -1.0;
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -561,7 +555,7 @@ impl Engine {
             Some(value) => value,
             None => return Err("cannot take log10 of 0 or negative numbers".to_string()),
         };
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -588,7 +582,7 @@ impl Engine {
         let result = top_log / bottom_log;
 
         // Put result on stack
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -605,7 +599,7 @@ impl Engine {
             Some(value) => value,
             None => return Err("cannot take log10 of 0 or negative numbers".to_string()),
         };
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -618,7 +612,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].abs().into(), true);
+        let _ = self.add_item_to_stack(operands[0].abs().into());
         Ok(MessageAction::SendStack)
     }
 
@@ -633,7 +627,7 @@ impl Engine {
 
         // Put result on stack
         let result = (operands[0] == operands[1]) as u32;
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -647,7 +641,7 @@ impl Engine {
 
         // Put result on stack
         let result = (operands[0] > operands[1]) as u32;
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -661,7 +655,7 @@ impl Engine {
 
         // Put result on stack
         let result = (operands[0] < operands[1]) as u32;
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -675,7 +669,7 @@ impl Engine {
 
         // Put result on stack
         let result = (operands[0] >= operands[1]) as u32;
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -689,7 +683,7 @@ impl Engine {
 
         // Put result on stack
         let result = (operands[0] <= operands[1]) as u32;
-        let _ = self.add_item_to_stack(result.into(), true);
+        let _ = self.add_item_to_stack(result.into());
         Ok(MessageAction::SendStack)
     }
 
@@ -702,7 +696,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].round().into(), true);
+        let _ = self.add_item_to_stack(operands[0].round().into());
         Ok(MessageAction::SendStack)
     }
 
@@ -715,7 +709,7 @@ impl Engine {
         };
 
         // Put result on stack
-        let _ = self.add_item_to_stack((1_f64 / operands[0]).into(), true);
+        let _ = self.add_item_to_stack((1_f64 / operands[0]).into());
         Ok(MessageAction::SendStack)
     }
 
@@ -735,8 +729,8 @@ impl Engine {
         };
 
         // Insert in reverse order
-        let _ = self.add_item_to_stack(operands[1].clone(), false);
-        let _ = self.add_item_to_stack(operands[0].clone(), false);
+        let _ = self.add_item_to_stack(operands[1].clone());
+        let _ = self.add_item_to_stack(operands[0].clone());
         Ok(MessageAction::SendStack)
     }
 
@@ -749,8 +743,8 @@ impl Engine {
         };
 
         // Insert twice
-        let _ = self.add_item_to_stack(operands[0].clone(), false);
-        let _ = self.add_item_to_stack(operands[0].clone(), false);
+        let _ = self.add_item_to_stack(operands[0].clone());
+        let _ = self.add_item_to_stack(operands[0].clone());
         Ok(MessageAction::SendStack)
     }
 

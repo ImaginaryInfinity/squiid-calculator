@@ -72,6 +72,11 @@ pub fn start_server(address: Option<&str>) {
 
         let result = handle_data(&mut engine, &commands, recieved);
 
+        // set previous answer
+        if !engine.stack.is_empty() {
+            engine.previous_answer = engine.stack.last().unwrap().clone();
+        }
+
         match result {
             Ok(MessageAction::SendStack) => {
                 let _ = send_response(
@@ -130,14 +135,11 @@ pub fn handle_data(
         engine.variable_history.push_back(engine.variables.clone());
     }
 
-    // TODO: protocol implementation of setting the previous answer variable
-    // unless theres a better way, this should add support for just typing in
-    // a variable or number and having that be the previous answer
     let result = match commands.get(data) {
         Some(func) => func(engine.borrow_mut()),
         None => {
             // return result value of adding item to stack
-            engine.add_item_to_stack(Bucket::from(data.to_string()), false)
+            engine.add_item_to_stack(Bucket::from(data.to_string()))
         }
     };
 

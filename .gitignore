@@ -14,3 +14,4 @@ flatpak-cargo-generator.py
 *.tar.gz
 .gitlab-ci-local-variables.yml
 .vscode
+site/

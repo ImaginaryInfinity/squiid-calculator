@@ -73,9 +73,7 @@ pub fn start_server(address: Option<&str>) {
         let result = handle_data(&mut engine, &commands, recieved);
 
         // set previous answer
-        if !engine.stack.is_empty() {
-            engine.previous_answer = engine.stack.last().unwrap().clone();
-        }
+        let _ = engine.update_previous_answer();
 
         match result {
             Ok(MessageAction::SendStack) => {

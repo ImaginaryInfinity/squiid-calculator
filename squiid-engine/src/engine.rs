@@ -50,7 +50,7 @@ impl Engine {
         }
 
         // Replace with value if item is a variable
-        if item_string.chars().next().unwrap() == '$' {
+        if item_string.starts_with('$') {
             // Remove $ prefix from name
             item_string.remove(0);
             // Get variable from hashmap
@@ -274,7 +274,6 @@ impl Engine {
         let operands_set: HashSet<Decimal> = operands.clone().into_iter().collect();
         let non_matching_operands = check_pi
             .symmetric_difference(&operands_set)
-            .into_iter()
             .collect::<Vec<_>>();
 
         let result = if non_matching_operands.is_empty() {
@@ -756,7 +755,7 @@ impl Engine {
 
     /// Roll down
     pub fn roll_down(&mut self) -> Result<MessageAction, String> {
-        if self.stack.len() > 0 {
+        if !self.stack.is_empty() {
             // Rotate stack right
             self.stack.rotate_right(1);
             Ok(MessageAction::SendStack)
@@ -767,7 +766,7 @@ impl Engine {
 
     /// Roll up
     pub fn roll_up(&mut self) -> Result<MessageAction, String> {
-        if self.stack.len() > 0 {
+        if !self.stack.is_empty() {
             // Rotate stack left
             self.stack.rotate_left(1);
             Ok(MessageAction::SendStack)
@@ -859,5 +858,11 @@ impl Engine {
     // send quit code
     pub fn quit(&mut self) -> Result<MessageAction, String> {
         Ok(MessageAction::Quit)
+    }
+}
+
+impl Default for Engine {
+    fn default() -> Self {
+        Self::new()
     }
 }

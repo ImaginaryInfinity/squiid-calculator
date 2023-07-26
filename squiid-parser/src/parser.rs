@@ -39,7 +39,7 @@ const RIGHT_SIDE_IMPLICIT: [Token; 8] = [
 /// - after another operator (3+-5, 3*-5, 3^-5)
 ///
 /// - as an argument in a function, so after a comma (function(3, -3))
-pub fn parse_subtract_sign(tokens: &mut Vec<Token>) {
+pub fn parse_subtract_sign(tokens: &mut [Token]) {
     let mut negative_replacements: Vec<usize> = Vec::new();
 
     for (index, token) in tokens.iter().enumerate() {
@@ -85,7 +85,7 @@ pub fn parse_implicit_multiplication(tokens: &mut Vec<Token>) {
     let mut multiply_insertions = Vec::new();
 
     for (index, token) in tokens.iter().enumerate() {
-        if LEFT_SIDE_IMPLICIT.contains(&token) {
+        if LEFT_SIDE_IMPLICIT.contains(token) {
             // make sure that we aren't on the last token
             if index + 1 != tokens.len() {
                 // there is a next token that is not an error, test if in right side multiplication table

@@ -25,7 +25,7 @@ use crate::{
 
 #[cfg(feature = "ipc")]
 /// The default address to start the server on
-const DEFAULT_ADDRESS: &'static str = "tcp://*:33242";
+const DEFAULT_ADDRESS: &str = "tcp://*:33242";
 
 #[cfg(feature = "ipc")]
 /// Start the server at the given address (default is DEFAULT_ADDRESS)

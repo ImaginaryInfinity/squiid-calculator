@@ -23,7 +23,7 @@ build() {
 
 check() {
 	export RUSTUP_TOOLCHAIN=stable
-	cargo test --frozen --all-features
+	cargo test --frozen --all-features -p squiid -p squiid-engine -p squiid-parser
 }
 
 package() {

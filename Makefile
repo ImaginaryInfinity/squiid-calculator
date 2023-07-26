@@ -33,7 +33,7 @@ help: ## Shows this help message
 
 clean: ## Clean the build environment
 	rm -rf package-build \
-		org.imaginaryinfinity.Squiid.json \
+		net.imaginaryinfinity.Squiid.json \
 		generated-sources.json \
 		.flatpak-builder \
 		flatpak-cargo-generator.py \
@@ -71,11 +71,11 @@ flatpak: require clean ## Build the flatpak in package-build/
 
 	python3 flatpak-cargo-generator.py ./Cargo.lock -o generated-sources.json
 
-	cp packages/flatpak/org.imaginaryinfinity.Squiid.json ./
+	cp packages/flatpak/net.imaginaryinfinity.Squiid.json ./
 
-	flatpak-builder package-build org.imaginaryinfinity.Squiid.json
+	flatpak-builder package-build net.imaginaryinfinity.Squiid.json
 
-	rm -f org.imaginaryinfinity.Squiid.json generated-sources.json flatpak-cargo-generator.py
+	rm -f net.imaginaryinfinity.Squiid.json generated-sources.json flatpak-cargo-generator.py
 
 snap: require clean ## Build the snap
 	@snapcraft --version >/dev/null 2>&1 || (echo "ERROR: snapcraft is required."; exit 1)

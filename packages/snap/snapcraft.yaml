@@ -9,6 +9,8 @@ description: |
 grade: stable
 base: core18
 confinement: strict
+build-packages:
+  - cmake
 
 parts:
   squiid:

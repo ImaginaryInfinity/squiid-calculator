@@ -6,8 +6,10 @@ description: |
   in development but it is intended to be the successor to
   ImaginaryInfinity Calculator
 
+license: GPL-3.0
+
 grade: stable
-base: core18
+base: core20
 confinement: strict
 build-packages:
   - cmake
@@ -19,4 +21,4 @@ parts:
 
 apps:
   squiid:
-    command: squiid
+    command: bin/squiid

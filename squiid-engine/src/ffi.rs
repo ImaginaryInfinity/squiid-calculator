@@ -3,7 +3,7 @@ use std::{ffi::CStr, os::raw::c_char, thread};
 use crate::{start_server, DEFAULT_ADDRESS};
 
 #[no_mangle]
-pub extern "C-unwind" fn start_server_exposed(address: *const c_char, blocking: bool) {
+pub extern "C" fn start_server_exposed(address: *const c_char, blocking: bool) {
     let address_to_bind = if address.is_null() {
         DEFAULT_ADDRESS
     } else {

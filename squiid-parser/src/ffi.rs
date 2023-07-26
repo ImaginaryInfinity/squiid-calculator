@@ -8,7 +8,7 @@ use std::{
 use crate::parse;
 
 #[no_mangle]
-extern "C-unwind" fn parse_exposed(input: *const c_char, outlen: *mut c_int) -> *mut *mut c_char {
+extern "C" fn parse_exposed(input: *const c_char, outlen: *mut c_int) -> *mut *mut c_char {
     let c_str = unsafe { CStr::from_ptr(input) };
     let input_string = c_str.to_str().expect("Invalid UTF-8 string");
 
@@ -41,7 +41,7 @@ extern "C-unwind" fn parse_exposed(input: *const c_char, outlen: *mut c_int) -> 
 }
 
 #[no_mangle]
-extern "C-unwind" fn free_string_array(ptr: *mut *mut c_char, len: c_int) {
+extern "C" fn free_string_array(ptr: *mut *mut c_char, len: c_int) {
     let len = len as usize;
 
     // Get back our vector.

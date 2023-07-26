@@ -81,8 +81,4 @@ impl<'a> PartialEq for Token<'a> {
     fn eq(&self, other: &Self) -> bool {
         std::mem::discriminant(self) == std::mem::discriminant(other)
     }
-
-    fn ne(&self, other: &Self) -> bool {
-        std::mem::discriminant(self) != std::mem::discriminant(other)
-    }
 }

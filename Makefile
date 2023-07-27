@@ -33,7 +33,7 @@ help: ## Shows this help message
 
 clean: ## Clean the build environment
 	rm -rf package-build \
-		net.imaginaryinfinity.Squiid.json \
+		org.imaginaryinfinity.Squiid.json \
 		generated-sources.json \
 		.flatpak-builder \
 		flatpak-cargo-generator.py \
@@ -71,11 +71,11 @@ flatpak: require clean ## Build the flatpak in package-build/
 
 	python3 flatpak-cargo-generator.py ./Cargo.lock -o generated-sources.json
 
-	cp packages/flatpak/net.imaginaryinfinity.Squiid.json ./
+	cp packages/flatpak/org.imaginaryinfinity.Squiid.json ./
 
-	flatpak-builder package-build net.imaginaryinfinity.Squiid.json
+	flatpak-builder package-build org.imaginaryinfinity.Squiid.json
 
-	rm -f net.imaginaryinfinity.Squiid.json generated-sources.json flatpak-cargo-generator.py
+	rm -f org.imaginaryinfinity.Squiid.json generated-sources.json flatpak-cargo-generator.py
 
 snap: require clean ## Build the snap
 	@snapcraft --version >/dev/null 2>&1 || (echo "ERROR: snapcraft is required."; exit 1)
@@ -152,7 +152,7 @@ windows-installer: windows-build ## Build the Windows installer
 android-require: require
 ifndef platform
 	# check if platform= argument is defined
-	@echo "ERROR: platform is not defined. please specify an android ndk version with `platform=xx` (for example, 33)"
+	@echo "ERROR: platform is not defined. please specify an android ndk version with platform=xx (for example, 33)"
 	exit 1
 endif
 	# check if cargo ndk is installed
@@ -218,3 +218,15 @@ rpm: require clean
 	mkdir -p package-build
 
 	@envsubst '$${VERSION}' < packages/fedora/squiid.spec > package-build/squiid.spec
+
+winget:
+ifndef forkpath
+	# check if forkpath= argument is defined
+	@echo "ERROR: forkpath is not defined. please specify a path to your winget-pkgs fork with forkpath=xx"
+	exit 1
+endif
+	mkdir -p "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/"
+	cp packages/winget/* "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/"
+	cd "$(forkpath)"; \
+	git add .; \
+	git commit -m 'Submitting Squiid version ${VERSION}'

@@ -2,7 +2,7 @@
 #   stage: build
 #   image: fedora:latest
 #   before_script:
-#     - dnf -y install rust cargo make flatpak flatpak-builder python3-aiohttp python3-toml
+#     - dnf -y install rust cargo cmake make flatpak flatpak-builder python3-aiohttp python3-toml
 #     - flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 #     - flatpak install -y flathub org.freedesktop.Platform//22.08 org.freedesktop.Sdk//22.08 org.freedesktop.Sdk.Extension.rust-stable/x86_64/22.08
 #   script:
@@ -19,7 +19,7 @@ build-snap:
     - echo $SNAPCRAFT_LOGIN_FILE | base64 --decode --ignore-garbage > snapcraft.login
     - snapcraft login --with snapcraft.login
     - apt update
-    - apt install cargo gettext-base -y
+    - apt install cargo gettext-base cmake -y
   script:
     - make snap
     - snapcraft upload --release=stable squiid*.snap
@@ -32,7 +32,7 @@ build-appimage:
   stage: build
   image: archlinux:latest
   before_script:
-    - pacman --noconfirm -Syu curl make rust
+    - pacman --noconfirm -Syu curl make rust cmake
     - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o /usr/local/bin/appimagetool
     - chmod a+rx /usr/local/bin/appimagetool
     - previous_dir=`pwd`
@@ -53,7 +53,7 @@ build-appimage:
 #   image: ubuntu:focal
 #   before_script:
 #     - DEBIAN_FRONTEND=noninteractive apt update
-#     - DEBIAN_FRONTEND=noninteractive apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git cargo cmake gnupg
+#     - DEBIAN_FRONTEND=noninteractive apt install -y build-essential binutils lintian debhelper dh-make devscripts cmake fakeroot git cargo cmake gnupg
 #     - echo "$GPG_PRIVATE_KEY_B64" | base64 --decode | gpg --batch --import
 #     - gpg --list-keys --fingerprint --with-colons | sed -E -n -e 's/^fpr:::::::::([0-9A-F]+):$/\1:6:/p' | gpg --import-ownertrust
 #   script:

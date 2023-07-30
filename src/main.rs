@@ -1,5 +1,6 @@
 use std::{error::Error, io, thread, time::Duration};
 
+use clap::arg;
 use nng::{Protocol, Socket};
 use ratatui::{backend::CrosstermBackend, Terminal};
 
@@ -16,8 +17,20 @@ use crossterm::{
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let matches = clap::command!()
+        .args(&[arg!(-p --port [PORT] "an optional port number to use")])
+        .get_matches();
+
+    let specified_port = matches.get_one::<String>("port");
+
     // determine open TCP port
-    let possible_port_num = utils::get_available_port(20000..30000);
+    let possible_port_num = match specified_port {
+        Some(port) => Some(
+            port.parse::<u16>()
+                .expect("port argument must be an integer"),
+        ),
+        None => utils::get_available_port(20000..30000),
+    };
 
     let port_num = match possible_port_num {
         Some(value) => value,

@@ -22,12 +22,23 @@
         "build-commands": [
             "cargo --offline fetch --manifest-path Cargo.toml --verbose",
             "cargo --offline build --release --verbose",
-            "install -Dm755 ./target/release/squiid -t /app/bin/"
+            "install -Dm755 ./target/release/squiid -t /app/bin/",
+            "install -D ./branding/squiidsquare.svg /app/share/icons/hicolor/scalable/apps/net.imaginaryinfinity.Squiid.svg",
+            "install -D ./net.imaginaryinfinity.Squiid.metainfo.xml /app/share/metainfo/net.imaginaryinfinity.Squiid.metainfo.xml",
+            "install -D ./net.imaginaryinfinity.Squiid.desktop /app/share/applications/net.imaginaryinfinity.Squiid.desktop"
         ],
         "sources": [{
                 "type": "archive",
                 "url": "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/archive/$VERSION/squiid-$VERSION.tar.gz",
                 "sha256": "$HASH"
+            },
+            {
+                "type": "file",
+                "path": "net.imaginaryinfinity.Squiid.desktop"
+            },
+            {
+                "type": "file",
+                "path": "packages/flatpak/net.imaginaryinfinity.Squiid.metainfo.xml"
             },
             "generated-sources.json"
         ]

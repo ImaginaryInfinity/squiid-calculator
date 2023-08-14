@@ -86,9 +86,9 @@ flatpak: require clean ## Build the flatpak in package-build/
 
 	cp packages/flatpak/net.imaginaryinfinity.Squiid.metainfo.xml ./
 
-	# flatpak-builder package-build net.imaginaryinfinity.Squiid.json
+	flatpak-builder --install --user package-build net.imaginaryinfinity.Squiid.json
 
-	# rm -f net.imaginaryinfinity.Squiid* generated-sources.json flatpak-cargo-generator.py
+	rm -f net.imaginaryinfinity.Squiid* generated-sources.json flatpak-cargo-generator.py
 
 snap: require clean ## Build the snap
 	@snapcraft --version >/dev/null 2>&1 || (echo "ERROR: snapcraft is required."; exit 1)
@@ -121,8 +121,8 @@ appimage: require clean build ## Build the AppImage
 	# Copy and format desktop file
 	@envsubst '$${VERSION}' < packages/appimage/squiid.desktop > package-build/squiid.AppDir/squiid.desktop
 	# Copy icon
-	cp branding/squiidsquare.png package-build/squiid.AppDir/squiid.png
-	cp branding/squiidsquare.png package-build/squiid.AppDir/usr/share/icons/squiid.png
+	cp branding/squiid512.png package-build/squiid.AppDir/squiid.png
+	cp branding/squiid512.png package-build/squiid.AppDir/usr/share/icons/squiid.png
 	# Download and add kitty terminal to appimage
 	curl -L https://github.com/kovidgoyal/kitty/releases/download/v0.27.1/kitty-0.27.1-x86_64.txz -o package-build/kitty.txz
 	# Untar kitty

@@ -20,10 +20,16 @@
             }
         },
         "build-commands": [
+            "convert --help",
             "cargo --offline fetch --manifest-path Cargo.toml --verbose",
             "cargo --offline build --release --verbose",
             "install -Dm755 ./target/release/squiid -t /app/bin/",
-            "install -D ./branding/squiidsquare.svg /app/share/icons/hicolor/scalable/apps/net.imaginaryinfinity.Squiid.svg",
+            "install -D ./branding/icons/squiid512.png /app/share/icons/hicolor/512/apps/net.imaginaryinfinity.Squiid.png",
+            "install -D ./branding/icons/squiid256.png /app/share/icons/hicolor/256/apps/net.imaginaryinfinity.Squiid.png",
+            "install -D ./branding/icons/squiid128.png /app/share/icons/hicolor/128/apps/net.imaginaryinfinity.Squiid.png",
+            "install -D ./branding/icons/squiid64.png /app/share/icons/hicolor/64/apps/net.imaginaryinfinity.Squiid.png",
+            "install -D ./branding/icons/squiid32.png /app/share/icons/hicolor/32/apps/net.imaginaryinfinity.Squiid.png",
+            "install -D ./branding/icons/squiid16.png /app/share/icons/hicolor/16/apps/net.imaginaryinfinity.Squiid.png",
             "install -D ./net.imaginaryinfinity.Squiid.metainfo.xml /app/share/metainfo/net.imaginaryinfinity.Squiid.metainfo.xml",
             "install -D ./net.imaginaryinfinity.Squiid.desktop /app/share/applications/net.imaginaryinfinity.Squiid.desktop"
         ],

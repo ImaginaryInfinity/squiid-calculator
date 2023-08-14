@@ -33,7 +33,7 @@ help: ## Shows this help message
 
 clean: ## Clean the build environment
 	rm -rf package-build \
-		org.imaginaryinfinity.Squiid.json \
+		net.imaginaryinfinity.Squiid* \
 		generated-sources.json \
 		.flatpak-builder \
 		flatpak-cargo-generator.py \
@@ -64,6 +64,8 @@ flatpak: require clean ## Build the flatpak in package-build/
 	@python3 --version >/dev/null 2>&1 || (echo "ERROR: python3 is required."; exit 1)
 	@flatpak-builder --version >/dev/null 2>&1 || (echo "ERROR: flatpak-builder is required."; exit 1)
 	@curl --version >/dev/null 2>&1 || (echo "ERROR: curl is required."; exit 1)
+	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
+	@jq --version >/dev/null 2>&1 || (echo "ERROR: jq is required."; exit 1)
 
 	mkdir -p package-build
 
@@ -71,11 +73,22 @@ flatpak: require clean ## Build the flatpak in package-build/
 
 	python3 flatpak-cargo-generator.py ./Cargo.lock -o generated-sources.json
 
-	cp packages/flatpak/org.imaginaryinfinity.Squiid.json ./
+	@echo "Replacing VERSION with ${VERSION} in flatpak manifest"
+	@envsubst '$${VERSION}' < packages/flatpak/net.imaginaryinfinity.Squiid.json > net.imaginaryinfinity.Squiid.json.tmp
 
-	flatpak-builder package-build org.imaginaryinfinity.Squiid.json
+	@echo "Substituting hash in flatpak manifest"
+	URL=$$(cat net.imaginaryinfinity.Squiid.json.tmp | jq -r ".modules[].sources[0].url"); \
+	export HASH=$$(curl -sL $$URL | sha256sum | cut -d ' ' -f1); \
+	envsubst '$${HASH}' < net.imaginaryinfinity.Squiid.json.tmp > net.imaginaryinfinity.Squiid.json
+	rm net.imaginaryinfinity.Squiid.json.tmp
 
-	rm -f org.imaginaryinfinity.Squiid.json generated-sources.json flatpak-cargo-generator.py
+	ICON=net.imaginaryinfinity.Squiid envsubst < packages/squiid.desktop > net.imaginaryinfinity.Squiid.desktop
+
+	cp packages/flatpak/net.imaginaryinfinity.Squiid.metainfo.xml ./
+
+	flatpak-builder --install --user package-build net.imaginaryinfinity.Squiid.json
+
+	rm -f net.imaginaryinfinity.Squiid* generated-sources.json flatpak-cargo-generator.py
 
 snap: require clean ## Build the snap
 	@snapcraft --version >/dev/null 2>&1 || (echo "ERROR: snapcraft is required."; exit 1)
@@ -108,8 +121,8 @@ appimage: require clean build ## Build the AppImage
 	# Copy and format desktop file
 	@envsubst '$${VERSION}' < packages/appimage/squiid.desktop > package-build/squiid.AppDir/squiid.desktop
 	# Copy icon
-	cp branding/squiidsquare.png package-build/squiid.AppDir/squiid.png
-	cp branding/squiidsquare.png package-build/squiid.AppDir/usr/share/icons/squiid.png
+	cp branding/icons/squiid512.png package-build/squiid.AppDir/squiid.png
+	cp branding/icons/squiid512.png package-build/squiid.AppDir/usr/share/icons/squiid.png
 	# Download and add kitty terminal to appimage
 	curl -L https://github.com/kovidgoyal/kitty/releases/download/v0.27.1/kitty-0.27.1-x86_64.txz -o package-build/kitty.txz
 	# Untar kitty

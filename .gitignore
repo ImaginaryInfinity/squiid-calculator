@@ -1,6 +1,6 @@
 /target
 /package-build
-/org.imaginaryinfinity.Squiid.json
+/net.imaginaryinfinity.Squiid*
 generated-sources.json
 .flatpak-builder/
 /snapcraft.yaml

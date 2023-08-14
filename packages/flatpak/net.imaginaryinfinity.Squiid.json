@@ -38,7 +38,7 @@
             },
             {
                 "type": "file",
-                "path": "packages/flatpak/net.imaginaryinfinity.Squiid.metainfo.xml"
+                "path": "net.imaginaryinfinity.Squiid.metainfo.xml"
             },
             "generated-sources.json"
         ]

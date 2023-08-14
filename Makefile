@@ -84,9 +84,11 @@ flatpak: require clean ## Build the flatpak in package-build/
 
 	ICON=net.imaginaryinfinity.Squiid envsubst < packages/squiid.desktop > net.imaginaryinfinity.Squiid.desktop
 
-	flatpak-builder package-build net.imaginaryinfinity.Squiid.json
+	cp packages/flatpak/net.imaginaryinfinity.Squiid.metainfo.xml ./
 
-	rm -f net.imaginaryinfinity.Squiid* generated-sources.json flatpak-cargo-generator.py
+	# flatpak-builder package-build net.imaginaryinfinity.Squiid.json
+
+	# rm -f net.imaginaryinfinity.Squiid* generated-sources.json flatpak-cargo-generator.py
 
 snap: require clean ## Build the snap
 	@snapcraft --version >/dev/null 2>&1 || (echo "ERROR: snapcraft is required."; exit 1)

@@ -3,18 +3,42 @@
   <id>net.imaginaryinfinity.Squiid</id>
   
   <name>Squiid</name>
-  <summary>Squiid is a modular calculator written in Rust.</summary>
+  <summary>Squiid is a modular calculator.</summary>
+
+  <url type="homepage">https://imaginaryinfinity.net</url>
+  <url type="contribute">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid</url>
+  <url type="bugtracker">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/issues</url>
+  <url type="help">https://imaginaryinfinity.net/docs/squiid</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Algebraic Mode.</caption>
+      <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-1.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>RPN Mode.</caption>
+      <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-2.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Squiid information display page.</caption>
+      <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-3.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Previous answer selector mode.</caption>
+      <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-4.png</image>
+    </screenshot>
+  </screenshots>
+
+  <releases type="external" url="https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/raw/trunk/packages/flatpak/net.imaginaryinfinity.Squiid.releases.xml" />
   
   <metadata_license>MIT</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   
   <description>
     <p>
-      Squiid is a modular calculator written in Rust. It is currently very early in development but it is intended to be the successor to ImaginaryInfinity Calculator.
+      Squiid is a modular calculator. It is currently very early in development but it is intended to be the successor to ImaginaryInfinity Calculator.
     </p>
   </description>
-  
-  <!-- <icon type="stock">Squiid</icon> -->
   
   <categories>
     <category>Utility</category>

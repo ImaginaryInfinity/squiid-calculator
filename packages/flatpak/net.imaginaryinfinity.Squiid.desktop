@@ -1,10 +1,10 @@
 [Desktop Entry]
-Version=$VERSION
+Version=1.5
 Type=Application
 Name=Squiid
 Comment=Versitile Calculator
 Exec=squiid %u
 Terminal=true
-Icon=$ICON
+Icon=net.imaginaryinfinity.Squiid
 Categories=Utility;Education;Office;Math;
 Keywords=calculator;math;squiid;imaginaryinfinity

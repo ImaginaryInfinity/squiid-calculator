@@ -60,6 +60,10 @@ install: build ## Install Squiid to the system
 uninstall: ## Uninstall the version of Squiid installed with the Makefile
 	rm $(DESTDIR)$(BINDIR)/$(BINARY_NAME)
 
+xmlreleases:
+	@curl --version >/dev/null 2>&1 || (echo "ERROR: curl is required."; exit 1)
+	@jq --version >/dev/null 2>&1 || (echo "ERROR: jq is required."; exit 1)
+
 flatpak: require clean ## Build the flatpak in package-build/
 	@python3 --version >/dev/null 2>&1 || (echo "ERROR: python3 is required."; exit 1)
 	@flatpak-builder --version >/dev/null 2>&1 || (echo "ERROR: flatpak-builder is required."; exit 1)
@@ -82,13 +86,9 @@ flatpak: require clean ## Build the flatpak in package-build/
 	envsubst '$${HASH}' < net.imaginaryinfinity.Squiid.json.tmp > net.imaginaryinfinity.Squiid.json
 	rm net.imaginaryinfinity.Squiid.json.tmp
 
-	ICON=net.imaginaryinfinity.Squiid envsubst < packages/squiid.desktop > net.imaginaryinfinity.Squiid.desktop
+	flatpak-builder --install --user package-build net.imaginaryinfinity.Squiid.json
 
-	cp packages/flatpak/net.imaginaryinfinity.Squiid.metainfo.xml ./
-
-	# flatpak-builder --install --user package-build net.imaginaryinfinity.Squiid.json
-
-	# rm -f net.imaginaryinfinity.Squiid* generated-sources.json flatpak-cargo-generator.py
+	rm -f net.imaginaryinfinity.Squiid* generated-sources.json flatpak-cargo-generator.py
 
 snap: require clean ## Build the snap
 	@snapcraft --version >/dev/null 2>&1 || (echo "ERROR: snapcraft is required."; exit 1)

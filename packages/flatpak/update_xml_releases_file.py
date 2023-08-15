@@ -28,8 +28,16 @@ def main():
 	for release in releases_data:
 		add_release(release, root)
 
-	tree = ET.ElementTree(root)
-	tree.write("net.imaginaryinfinity.Squiid.releases.xml", encoding="utf-8")
+	tree = ET.parse('net.imaginaryinfinity.Squiid.metainfo.xml')
+	new_root = tree.getroot()
+	for i, element in enumerate(new_root):
+		if element.tag == 'releases':
+			new_root.remove(element)
+			new_root.insert(i, root)
+
+	new_tree = ET.ElementTree(new_root)
+	ET.indent(new_tree, space='  ', level=0)
+	new_tree.write("net.imaginaryinfinity.Squiid.metainfo.xml", encoding="utf-8", xml_declaration=True)
 
 
 if __name__ == '__main__':

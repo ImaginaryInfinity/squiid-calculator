@@ -2,12 +2,20 @@
 
 PREFIX ?= /usr
 BINDIR ?= $(PREFIX)/bin
+APPLICATIONSDIR ?= $(PREFIX)/share/applications
+ICONSDIR ?= $(PREFIX)/share/icons/hicolor
+
 BINARY_NAME := squiid
 BINARY_PATH ?= target/release/$(BINARY_NAME)
+DESKTOP_FILE_NAME := squiid.desktop
+DESKTOP_FILE_PATH ?= packages/$(DESKTOP_FILE_NAME)
+ICON_FILE_NAME := squiidsquare.svg
+ICON_FILE_PATH ?= branding/$(ICON_FILE_NAME)
 
 DEBUILD_OPTIONS ?= -us -uc
 
 APPIMAGETOOL ?= appimagetool
+ELEVATE ?= sudo
 
 VERSION := $(shell awk 'sub(/^[[:space:]]*version[[:space:]]*=[[:space:]]*/, "") {sub(/^"/, ""); sub(/".*$$/, ""); print}' Cargo.toml)
 export VERSION
@@ -54,11 +62,14 @@ build-musl: require ## Build the Linux MUSL version
 	cargo build --release --target=x86_64-unknown-linux-musl
 
 install: build ## Install Squiid to the system
-	mkdir -p $(DESTDIR)$(BINDIR)
-	install -v -m755 $(BINARY_PATH) $(DESTDIR)$(BINDIR)
+	$(ELEVATE) install -D -v -m755 $(BINARY_PATH) $(DESTDIR)$(BINDIR)
+	$(ELEVATE) install -D -v -m644 $(DESKTOP_FILE_PATH) $(DESTDIR)$(APPLICATIONSDIR)
+	$(ELEVATE) install -D -v -m644 $(ICON_FILE_PATH) $(DESTDIR)$(ICONSDIR)
 
 uninstall: ## Uninstall the version of Squiid installed with the Makefile
-	rm $(DESTDIR)$(BINDIR)/$(BINARY_NAME)
+	$(ELEVATE) rm $(DESTDIR)$(BINDIR)/$(BINARY_NAME)
+	$(ELEVATE) rm $(DESTDIR)$(APPLICATIONSDIR)/$(DESKTOP_FILE_NAME)
+	$(ELEVATE) rm $(DESTDIR)$(ICONSDIR)/$(ICON_FILE_NAME)
 
 flatpak: require clean ## Build the flatpak in package-build/
 	@python3 --version >/dev/null 2>&1 || (echo "ERROR: python3 is required."; exit 1)

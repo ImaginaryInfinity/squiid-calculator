@@ -160,6 +160,7 @@ windows-installer: windows-build ## Build the Windows installer
 	mkdir package-build
 	cp packages/windows/squiid.iss package-build/
 	@envsubst '$${VERSION}' < packages/windows/squiid.iss > package-build/squiid.iss
+	cp packages/windows/modpath.iss package-build/
 	cp branding/squiidsquare.ico package-build/
 	cp LICENSE package-build/LICENSE.txt
 	cp target/x86_64-pc-windows-gnu/release/squiid.exe package-build

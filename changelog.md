@@ -1,3 +1,6 @@
+# 1.0.6 (Unreleased)
+ - Update Windows installer to add desktop shortcut by default for winget
+ - WIndows installer adds the binary to the PATH variable
 # 1.0.5
  - Patch release for flatpak
 

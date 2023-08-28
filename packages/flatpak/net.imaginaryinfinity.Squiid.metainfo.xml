@@ -2,31 +2,35 @@
 <component type="console-application">
   <id>net.imaginaryinfinity.Squiid</id>
   <name>Squiid</name>
-  <summary>Squiid is a modular calculator.</summary>
+  <summary>Squiid is a modular calculator</summary>
   <url type="homepage">https://imaginaryinfinity.net</url>
   <url type="contribute">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid</url>
   <url type="bugtracker">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/issues</url>
   <url type="help">https://imaginaryinfinity.net/docs/squiid</url>
+  <content_rating />
   <screenshots>
     <screenshot type="default">
-      <caption>Algebraic Mode.</caption>
+      <caption>Algebraic Mode</caption>
       <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-1.png</image>
     </screenshot>
     <screenshot>
-      <caption>RPN Mode.</caption>
+      <caption>RPN Mode</caption>
       <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-2.png</image>
     </screenshot>
     <screenshot>
-      <caption>Squiid information display page.</caption>
+      <caption>Squiid information display page</caption>
       <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-3.png</image>
     </screenshot>
     <screenshot>
-      <caption>Previous answer selector mode.</caption>
+      <caption>Previous answer selector mode</caption>
       <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-4.png</image>
     </screenshot>
   </screenshots>
   <releases>
-    <release version="1.0.4" date="2023-08-15">
+    <release version="1.0.5" date="2023-08-28">
+      <url>https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/releases/1.0.5</url>
+    </release>
+    <release version="1.0.4" date="2023-08-16">
       <url>https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/releases/1.0.4</url>
     </release>
     <release version="1.0.3" date="2023-08-15">

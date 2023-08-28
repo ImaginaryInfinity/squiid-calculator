@@ -1,3 +1,6 @@
+# 1.0.5
+ - Patch release for flatpak
+
 # 1.0.4
  - Patch release for flatpak
 

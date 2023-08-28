@@ -55,7 +55,8 @@ var
 begin
 	// Get constants from main script and adjust behavior accordingly
 	// ModPathType MUST be 'system' or 'user'; force 'user' if invalid
-	if ModPathType = 'system' then begin
+	// NOTICE: I've changed this to automatically detect if it's running with admin or not
+	if IsAdmin() then begin
 		regroot := HKEY_LOCAL_MACHINE;
 		regpath := 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment';
 	end else begin

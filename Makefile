@@ -253,4 +253,4 @@ endif
 	@echo "PLEASE UPDATE THE INSTALLER URL AND HASH IN THE FORK PATH"
 	cd "$(forkpath)"; \
 	git add .; \
-	git commit -m 'Submitting Squiid version ${VERSION}'
+	git commit -m 'New version: Squiid version ${VERSION}'

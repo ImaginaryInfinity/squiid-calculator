@@ -4,10 +4,10 @@
 PackageIdentifier: ImaginaryInfinity.Squiid
 PackageVersion: ${VERSION}
 Installers:
-- InstallerUrl: https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/uploads/9d93a58775d4d0d19b7a753b25081e0f/squiid-installer.exe
+- InstallerUrl: https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/uploads/5c783dad02451e255ee7bce9c3f0b1c4/squiid-installer.exe
   Architecture: x64
   InstallerType: inno
-  InstallerSha256: 2BF23E91812718A84D885313A1FA506A9FED7AA56F75AF63F7B1BEA2543937D7
+  InstallerSha256: 185EE90A0AB2AC848BC2D5CB3742A8AE341F7F1C68F4D0C084ABB43DEEF0B207
   InstallerSwitches:
     Custom: /ALLUSERS
 ManifestType: installer

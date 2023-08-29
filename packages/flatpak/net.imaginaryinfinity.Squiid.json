@@ -20,6 +20,7 @@
             }
         },
         "build-commands": [
+            "mkdir -p /app/bin",
             "ln -sf /usr/bin/gcc /app/bin/aarch64-linux-gnu-gcc",
             "cargo --offline fetch --manifest-path Cargo.toml --verbose",
             "cargo --offline build --release --verbose",

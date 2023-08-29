@@ -1,6 +1,6 @@
 [package]
 name = "squiid"
-version = "1.0.5"
+version = "1.0.6"
 edition = "2021"
 description = "Squiid is a modular calculator written in Rust. It is currently very early in development but it is intended to be the successor to ImaginaryInfinity Calculator"
 repository = "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid"

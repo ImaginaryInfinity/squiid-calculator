@@ -160,6 +160,7 @@ windows-installer: windows-build ## Build the Windows installer
 	mkdir package-build
 	cp packages/windows/squiid.iss package-build/
 	@envsubst '$${VERSION}' < packages/windows/squiid.iss > package-build/squiid.iss
+	cp packages/windows/modpath.iss package-build/
 	cp branding/squiidsquare.ico package-build/
 	cp LICENSE package-build/LICENSE.txt
 	cp target/x86_64-pc-windows-gnu/release/squiid.exe package-build
@@ -246,7 +247,10 @@ ifndef forkpath
 	exit 1
 endif
 	mkdir -p "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/"
-	cp packages/winget/* "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/"
+	@envsubst '$${VERSION}' < packages/winget/ImaginaryInfinity.Squiid.installer.yaml > "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/ImaginaryInfinity.Squiid.installer.yaml"
+	@envsubst '$${VERSION}' < packages/winget/ImaginaryInfinity.Squiid.locale.en-US.yaml > "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/ImaginaryInfinity.Squiid.locale.en-US.yaml"
+	@envsubst '$${VERSION}' < packages/winget/ImaginaryInfinity.Squiid.yaml > "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/ImaginaryInfinity.Squiid.yaml"
+	@echo "PLEASE UPDATE THE INSTALLER URL AND HASH IN THE FORK PATH"
 	cd "$(forkpath)"; \
 	git add .; \
 	git commit -m 'Submitting Squiid version ${VERSION}'

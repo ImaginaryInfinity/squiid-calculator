@@ -2,7 +2,7 @@
 # yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.4.0.schema.json
 
 PackageIdentifier: ImaginaryInfinity.Squiid
-PackageVersion: 1.0.0
+PackageVersion: ${VERSION}
 Installers:
 - InstallerUrl: https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/uploads/9d93a58775d4d0d19b7a753b25081e0f/squiid-installer.exe
   Architecture: x64

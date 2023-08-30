@@ -151,13 +151,14 @@ windows-build: require clean ## Cross compile the Windows release
 	# cross compile windows version
 	cargo build --release --target=x86_64-pc-windows-gnu
 
-windows-installer: windows-build ## Build the Windows installer
-	# Check for docker
-	@docker --version > /dev/null 2>&1 || (echo "ERROR: docker is required"; exit 1)
+ifndef skip_build
+windows-installer: windows-build
+endif
+windows-installer: clean ## Build the Windows installer
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 
 	# bundle assets
-	mkdir package-build
+	mkdir -p package-build
 	cp packages/windows/squiid.iss package-build/
 	@envsubst '$${VERSION}' < packages/windows/squiid.iss > package-build/squiid.iss
 	cp packages/windows/modpath.iss package-build/
@@ -166,7 +167,10 @@ windows-installer: windows-build ## Build the Windows installer
 	cp target/x86_64-pc-windows-gnu/release/squiid.exe package-build
 
 	# build the windows installer with an output directory of the current directory
-	docker run --rm -i -v "$$PWD/package-build:/work" amake/innosetup squiid.iss /O.\\
+	if [ "$(skip_build)" != "1" ]; then \
+		@docker --version > /dev/null 2>&1 || (echo "ERROR: docker is required"; exit 1); \
+		docker run --rm -i -v "$$PWD/package-build:/work" amake/innosetup squiid.iss /O.\\; \
+	fi
 
 # ANDROID
 # TODO: fix android building

@@ -17,7 +17,7 @@ DEBUILD_OPTIONS ?= -us -uc
 APPIMAGETOOL ?= appimagetool
 ELEVATE ?= sudo
 
-VERSION := $(shell awk 'sub(/^[[:space:]]*version[[:space:]]*=[[:space:]]*/, "") {sub(/^"/, ""); sub(/".*$$/, ""); print}' Cargo.toml)
+VERSION := $(shell awk -F ' = ' '$$1 ~ /version/ { gsub(/[\"]/, "", $$2); printf("%s",$$2) }' Cargo.toml)
 export VERSION
 
 .PHONY: help

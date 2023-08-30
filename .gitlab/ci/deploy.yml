@@ -43,6 +43,46 @@ build-musl:
     paths:
       - squiid
 
+build-windows:
+  stage: build
+  image: alpine:latest
+  before_script:
+    - apk update
+    - apk add curl make cmake gcc mingw-w64-gcc musl-dev
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -t x86_64-pc-windows-gnu -y
+  script:
+    - source "$HOME/.cargo/env"
+    - make windows-build
+    - mv target/x86_64-pc-windows-gnu/release/squiid.exe squiid.exe
+  artifacts:
+    paths:
+      - squiid.exe
+
+build-windows-installer:
+  stage: build
+  needs: 
+    - job: build-windows
+      artifacts: true
+  image:
+    name: amake/innosetup
+    entrypoint: [""]
+  before_script:
+    - chown -R root:root /home/xclient/.wine
+    - apt update -y
+    - apt install make gettext-base -y
+    - mkdir -p target/x86_64-pc-windows-gnu/release/
+    - cp squiid.exe target/x86_64-pc-windows-gnu/release/
+  script:
+    - make windows-installer skip_build=1
+    - cd package-build/
+    - iscc squiid.iss
+    - mv Output/squiid-installer.exe ../
+    - cd ..
+  artifacts:
+    paths:
+      - squiid-installer.exe
+
+
 # build-deb:
 #   stage: build
 #   image: ubuntu:focal

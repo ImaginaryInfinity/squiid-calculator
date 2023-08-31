@@ -76,7 +76,7 @@ impl Engine {
                 // test all other options
                 if exposed_constants.contains_key(item_string.as_str()) {
                     Bucket::from_constant(
-                        exposed_constants.get(item_string.as_str()).unwrap().clone(),
+                        *exposed_constants.get(item_string.as_str()).unwrap(),
                     )
                 } else if NUMERIC_REGEX.is_match(&item_string) {
                     Bucket::from(item_string.parse::<f64>().unwrap())

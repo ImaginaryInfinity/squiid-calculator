@@ -67,13 +67,41 @@ nav:
         - Squiid Parser: dev/parser.md
         - Squiid Engine: dev/engine.md
 
+theme:
+    name: material
+    language: en
+    palette:
+        scheme: slate
+        primary: indigo
+        accent: indigo
+    font:
+        #text: Ubuntu
+        text: Hack
+        #code: Ubuntu Mono
+        code: Hack Mono
+    logo: img/favicon.ico
+    features:
+        content.code.annotate
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
 plugins:
     - search
     - mermaid2
 
-theme:
-    name: readthedocs
-    highlightjs: true
+extra_css:
+  - style.css
 
 extra_javascript:
     - https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js

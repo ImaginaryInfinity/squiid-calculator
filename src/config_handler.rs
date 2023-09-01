@@ -70,7 +70,7 @@ pub fn init_config() -> Config {
 fn determine_config_path() -> PathBuf {
     // try to determine correct config path
     let config_directory =
-        if let Some(proj_dirs) = ProjectDirs::from("org", "ImaginaryInfinity", "Squiid") {
+        if let Some(proj_dirs) = ProjectDirs::from("net", "ImaginaryInfinity", "Squiid") {
             let mut config_directory = proj_dirs.config_dir().to_path_buf();
             config_directory.push("config.toml");
             config_directory

@@ -80,8 +80,12 @@ theme:
         #code: Ubuntu Mono
         code: Hack Mono
     logo: img/favicon.ico
+    favicon: img/favicon.ico
+    icon:
+        annotation: material/arrow-right-circle
     features:
-        content.code.annotate
+        - content.code.annotate
+        - content.code.copy
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -95,6 +99,8 @@ markdown_extensions:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true 
 
 plugins:
     - search

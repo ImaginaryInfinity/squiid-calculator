@@ -61,9 +61,67 @@ Something that you might get back from the server could look like this:
 }
 ```
 
+----
+
+### Sending data to the server
+
+
+
+----
+
+### Receiving data from the server
+
+There are a few types of messages that you can receive from the server. They are documented below.
+
 | Response Type | Payload                                                            |
 | ------------- | ------------------------------------------------------------------ |
-| stack         | A list of every item in the stack                                  |
-| error         | A string containing an error message                               |
-| commands      | A list of every command                                            |
-| quitsig       | None. This is a confirmation that the server has successfully quit |
+| `stack`       | A list of every item in the stack                                  |
+| `error`       | A string containing an error message                               |
+| `commands`    | A list of every command                                            |
+| `quitsig`     | None. This is a confirmation that the server has successfully quit |
+
+=== "stack"
+
+    ```json
+    {
+        "response_type": "stack",
+        "payload": [
+            "1",
+            "2",
+            "3"
+        ]
+    }
+    ```
+
+=== "error"
+
+    ```json
+    {
+        "response_type": "error",
+        "payload": "Not enough items on stack for operation"
+    }
+    ```
+
+=== "commands"
+
+    ```json
+    {
+        "response_type": "commands",
+        "payload": [
+            "add",
+            "subtract",
+            "divide",
+            "multiply",
+            ...
+        ]
+    }
+    ```
+
+=== "quitsig"
+
+    ```json
+    {
+        "response_type": "quitsig",
+        "payload": null
+    }
+    ```

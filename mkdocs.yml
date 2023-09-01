@@ -67,11 +67,7 @@ nav:
         - Squiid Parser: dev/parser.md
         - Squiid Engine: dev/engine.md
 
-# theme:
-#     name: readthedocs
-#     highlightjs: true
 theme:
-    #https://github.com/squidfunk/mkdocs-material
     name: material
     language: en
     palette:
@@ -100,12 +96,12 @@ markdown_extensions:
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
 
-extra_css:
-  - style.css
-
 plugins:
     - search
     - mermaid2
+
+extra_css:
+  - style.css
 
 extra_javascript:
     - https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js

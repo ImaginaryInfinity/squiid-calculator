@@ -44,6 +44,7 @@ The transmission protocol for sending and receiving data to and from the engine 
 
 ```json
 {
+    "request_type": "command",
     "payload": "add"
 }
 ```
@@ -64,8 +65,47 @@ Something that you might get back from the server could look like this:
 ----
 
 ### Sending data to the server
+In order to send data to the server, you must specify the type of request that you are making, along with the payload that goes along with your request. A table and examples of available request types are provided below.
 
+<!--TODO: talk about 1 at a time on input type -->
 
+| Request Type    | Payload                                                                                                                                         |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `input`         | The input as a string to be processed by Squiid's backend. Can be a command, number, or anything else to be evaluated by the engine             |
+| `configuration` | A set of options (detailed below) that deal with modifying Squiid's configuration file. See the page on [Configuring Squiid]() for more details |
+
+=== "input"
+
+    ```json
+    {
+        "request_type": "input",
+        "payload": "1"
+    }
+
+    {
+        "request_type": "input",
+        "payload": "2"
+    }
+
+    {
+        "request_type": "input",
+        "payload": "add"
+    }
+    ```
+
+=== "configuration"
+
+    ```json
+    {
+        "request_type": "configuration",
+        "payload": {
+            "action_type": "set",
+            "section": "system",
+            "key": "start_mode",
+            "value": "rpn"
+        }
+    }
+    ```
 
 ----
 

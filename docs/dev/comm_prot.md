@@ -72,7 +72,7 @@ In order to send data to the server, you must specify the type of request that y
 | Request Type    | Payload                                                                                                                                         |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `input`         | The input as a string to be processed by Squiid's backend. Can be a command, number, or anything else to be evaluated by the engine             |
-| `configuration` | A set of options (detailed below) that deal with modifying Squiid's configuration file. See the page on [Configuring Squiid]() for more details |
+| `configuration` | A set of options (detailed below) that deal with modifying Squiid's configuration file. See the page on [Configuration Protocol](./configuration_protocol.md) for more details |
 
 === "input"
 
@@ -106,7 +106,7 @@ In order to send data to the server, you must specify the type of request that y
         }
     }
     ```
-
+    See [Configuration Protocol](./configuration_protocol.md) for more examples
 ----
 
 ### Receiving data from the server

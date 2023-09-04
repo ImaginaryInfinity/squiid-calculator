@@ -67,7 +67,7 @@ build-windows-installer:
     name: amake/innosetup
     entrypoint: [""]
   before_script:
-    - chown -R root:root /home/xclient/.wine
+    # - chown -R root:root /home/xclient/.wine
     - apt update -y
     - apt install make gettext-base -y
     - mkdir -p target/x86_64-pc-windows-gnu/release/

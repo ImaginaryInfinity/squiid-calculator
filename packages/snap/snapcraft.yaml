@@ -21,6 +21,12 @@ parts:
     plugin: rust
     source: .
 
+plugs:
+  squiid-network:
+    interface: network-bind
+    listen: [20000]
+    auto-connect: true
+
 apps:
   squiid:
     command: bin/squiid

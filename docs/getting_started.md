@@ -36,7 +36,7 @@ snap install squiid
 ----
 
 ### Windows Users
-If Windows users would like to install Squiid without the use of `winget`, we provide an installer which can be found as an exe file attached to our [latest release](https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/releases/permalink/latest).
+If Windows users would like to install Squiid without the use of `winget`, we provide both an installer and a portable release which can be found attached to our [latest release](https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/releases/permalink/latest).
 
 ----
 

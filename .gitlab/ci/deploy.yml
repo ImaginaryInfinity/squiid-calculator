@@ -36,8 +36,6 @@ build-musl:
   image: clux/muslrust:stable
   script:
     - make build
-    - ls
-    - ls target
     - mv target/x86_64-unknown-linux-musl/release/squiid squiid
   artifacts:
     paths:
@@ -48,15 +46,17 @@ build-windows:
   image: alpine:latest
   before_script:
     - apk update
-    - apk add curl make cmake gcc mingw-w64-gcc musl-dev
+    - apk add curl make cmake gcc mingw-w64-gcc musl-dev gettext
     - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -t x86_64-pc-windows-gnu -y
   script:
     - source "$HOME/.cargo/env"
     - make windows-build
-    - mv target/x86_64-pc-windows-gnu/release/squiid.exe squiid.exe
+    - cp target/x86_64-pc-windows-gnu/release/squiid.exe squiid.exe
+    - make windows-installer skip_build=1
   artifacts:
     paths:
-      - squiid.exe
+      - ./squiid.exe
+      - package-build/
 
 build-windows-installer:
   stage: build
@@ -66,14 +66,7 @@ build-windows-installer:
   image:
     name: amake/innosetup
     entrypoint: [""]
-  before_script:
-    # - chown -R root:root /home/xclient/.wine
-    - apt update -y
-    - apt install make gettext-base -y
-    - mkdir -p target/x86_64-pc-windows-gnu/release/
-    - cp squiid.exe target/x86_64-pc-windows-gnu/release/
   script:
-    - make windows-installer skip_build=1
     - cd package-build/
     - iscc squiid.iss
     - mv Output/squiid-installer.exe ../

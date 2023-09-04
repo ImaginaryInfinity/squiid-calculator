@@ -4,7 +4,8 @@ This page contains special cross compiling instructions from Linux to other plat
 
 ## Android
 
-## Android compilation does not work at the moment
+!!! note
+    Android compilation does not work at the moment
 
 1. Install the Android NDK. On Arch this can be installed via the [android-ndk](https://aur.archlinux.org/packages/android-ndk) AUR package. 
 2. Install [cargo-ndk](https://github.com/bbqsrc/cargo-ndk) with `cargo install cargo-ndk`.
@@ -28,7 +29,7 @@ TARGET_CMAKE_TOOLCHAIN_FILE="/opt/android-ndk/build/cmake/android.toolchain.cmak
 Please check the [cargo-ndk documentation](https://github.com/bbqsrc/cargo-ndk#usage) for more examples.
 
 ## AArch64 MUSL
-When compiling to the target `aarch64-unknown-linux-musl` you need to use special compiler flags to get it to compile successfully. After installing the AArch64 MUSL C toolchain (gives you files like `aarch64-linux-musl-gcc`), compile the project by running:
+When compiling to the target `aarch64-unknown-linux-musl` you may need to use special compiler flags to get it to compile successfully if you get an error when compiling normally. After installing the AArch64 MUSL C toolchain (gives you files like `aarch64-linux-musl-gcc`), compile the project by running:
 ```sh
 RUSTFLAGS="-Clinker=rust-lld" cargo build --release --target=aarch64-unknown-linux-musl
 ```

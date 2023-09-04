@@ -1,5 +1,5 @@
 # Drop (RPN Only)
-`drop` / `\`
+`drop` / ++backslash++
 
 The `drop` command will remove the last item from the stack. This command is rebindable
 

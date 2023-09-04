@@ -173,7 +173,7 @@ mode_algebraic = "a"
 
 ## Writing the config file
 
-If there is an error, you will get a `response_type` of `error` instead of `configuration`. More details [here](/dev/comm_prot/#receiving-data-from-the-server).
+If there is an error, you will get a `response_type` of `error` instead of `configuration`. More details [here](comm_prot.md#receiving-data-from-the-server).
 
 ### Set a specific key
 

@@ -1,5 +1,5 @@
 # Change Sign (RPN Only)
-`chs` / `_`
+`chs` / ++underscore++
 
 The `chs` command will invert the sign of a number. This command is rebindable
 

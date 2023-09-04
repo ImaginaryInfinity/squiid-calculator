@@ -1,5 +1,5 @@
 # Divide
-`divide` / `/` 
+`divide` / ++slash++
 
 The divide command will divide two numbers
 

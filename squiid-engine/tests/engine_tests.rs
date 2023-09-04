@@ -545,7 +545,6 @@ fn test_blog() {
 fn test_ln() {
     let mut engine = Engine::new();
 
-    // TODO: fix variable storing as decimals
     let _ = engine.add_item_to_stack("#e".into());
 
     // evaluate from last stack entries to first

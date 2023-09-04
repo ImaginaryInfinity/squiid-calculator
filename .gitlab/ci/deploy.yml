@@ -67,7 +67,9 @@ build-windows-installer:
     name: amake/innosetup
     entrypoint: [""]
   before_script:
-    - chmod -R 777 package-build/
+    - ls -l package-build/
+    - whoami
+    - groups
   script:
     - cd package-build/
     - iscc squiid.iss

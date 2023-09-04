@@ -71,7 +71,9 @@ build-windows-installer:
     - whoami
     - groups
   script:
-    - cd package-build/
+    - cp -r --no-preserve=mode,ownership package-build/ new-package-build/
+    - ls -l new-package-build
+    - cd new-package-build/
     - iscc squiid.iss
     - mv Output/squiid-installer.exe ../
     - cd ..

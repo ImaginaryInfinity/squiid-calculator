@@ -210,10 +210,8 @@ fn update_stack_or_error(msg: ServerMessage, app: &mut App) {
                 .collect();
         }
         MessageType::Error => {
-            app.error = format!(
-                "Error: {}",
-                extract_data!(msg.payload, MessagePayload::Error)
-            );
+            let error_message = extract_data!(msg.payload, MessagePayload::Error);
+            app.error = format!("Error: {}", error_message);
         }
         MessageType::Commands => todo!(),
         // quit doesn't need any special behavior. the frontend quits when

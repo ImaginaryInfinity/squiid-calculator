@@ -4,7 +4,7 @@ use rust_decimal::{prelude::ToPrimitive, Decimal, MathematicalOps};
 use rust_decimal_macros::dec;
 
 use crate::{
-    bucket::{Bucket, BucketTypes, ConstantTypes, build_exposed_constants},
+    bucket::{build_exposed_constants, Bucket, BucketTypes, ConstantTypes},
     utils::{ID_REGEX, NUMERIC_REGEX},
     MessageAction,
 };
@@ -37,10 +37,7 @@ impl Engine {
     }
 
     /// Add item to stack
-    pub fn add_item_to_stack(
-        &mut self,
-        item: Bucket,
-    ) -> Result<MessageAction, String> {
+    pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<MessageAction, String> {
         // Convert item to string
         let mut item_string = item.to_string();
 
@@ -75,9 +72,7 @@ impl Engine {
             _ => {
                 // test all other options
                 if exposed_constants.contains_key(item_string.as_str()) {
-                    Bucket::from_constant(
-                        *exposed_constants.get(item_string.as_str()).unwrap(),
-                    )
+                    Bucket::from_constant(*exposed_constants.get(item_string.as_str()).unwrap())
                 } else if NUMERIC_REGEX.is_match(&item_string) {
                     Bucket::from(item_string.parse::<f64>().unwrap())
                 } else {

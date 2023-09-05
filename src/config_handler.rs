@@ -108,17 +108,15 @@ impl Config {
     }
 }
 
-/// Initialize config handler
-pub fn init_config() -> Config {
+/// Initialize the user config
+/// Tests if the user config exists, and if not, it is created
+pub fn init_config() {
     let config_path = determine_config_path();
     let config_exists = config_path.exists();
 
     if !config_exists {
         copy_default_config(config_path.clone());
     }
-
-    let config = read_config(config_path);
-    config.unwrap()
 }
 
 /// Determine the path of the config file and make directories if required

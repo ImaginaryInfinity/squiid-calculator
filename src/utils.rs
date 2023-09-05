@@ -1,7 +1,7 @@
 use std::{net::TcpListener, ops::Range};
 
 use nng::{Message, Socket};
-use squiid_engine::protocol::{ClientMessage, ServerResponseMessage, RequestType};
+use squiid_engine::protocol::{ClientMessage, RequestType, ServerResponseMessage};
 use squiid_parser::{lexer::lex, tokens::Token};
 
 /// Send data to backend

@@ -27,6 +27,7 @@ impl Config {
     }
 
     /// List sections in the config
+    #[allow(dead_code)]
     pub fn list_sections(&self) -> Vec<&String> {
         match self.config.as_table() {
             Some(table) => table.keys().collect::<Vec<&String>>(),
@@ -67,9 +68,9 @@ impl Config {
                 .zip(value_list.iter())
                 .map(|(k, v)| (&**k, *v))
                 .collect();
-            return Some(pairs);
+            Some(pairs)
         } else {
-            return None;
+            None
         }
     }
 
@@ -99,10 +100,8 @@ impl Config {
     /// delete a key in a section of the config
     pub fn delete_key(&mut self, section: &str, key: &str) {
         if let Value::Table(config) = &mut self.config {
-            if let Some(section_table) = config.get_mut(section) {
-                if let Value::Table(section_data) = section_table {
-                    section_data.remove(key);
-                }
+            if let Some(Value::Table(section_data)) = config.get_mut(section) {
+                section_data.remove(key);
             }
         }
     }

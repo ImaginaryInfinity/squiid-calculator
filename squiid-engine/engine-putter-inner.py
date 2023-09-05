@@ -6,6 +6,7 @@ socket.dial("tcp://127.0.0.1:33242")
 
 while True:
 	payload = {
+		'request_type': 'input',
 		"payload": input('> ')
 	}
 

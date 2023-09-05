@@ -13,14 +13,18 @@ pub enum MessageAction {
 }
 
 /// Client message datatype
+/// this is what we recieve from the client
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ClientMessage {
+    pub request_type: RequestType,
+    // TODO: be able to send other data structs
     pub payload: String,
 }
 
 impl ClientMessage {
-    pub fn new(message_payload: String) -> Self {
+    pub fn new(request_type: RequestType, message_payload: String) -> Self {
         Self {
+            request_type,
             payload: message_payload,
         }
     }
@@ -28,23 +32,32 @@ impl ClientMessage {
 
 /// Response struct
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct ServerMessage {
-    pub message_type: MessageType,
-    pub payload: MessagePayload,
+pub struct ServerResponseMessage {
+    pub response_type: ResponseType,
+    pub payload: ResponsePayload,
 }
 
-impl ServerMessage {
-    pub fn new(message_type: MessageType, message_payload: MessagePayload) -> Self {
+impl ServerResponseMessage {
+    pub fn new(response_type: ResponseType, message_payload: ResponsePayload) -> Self {
         Self {
-            message_type,
+            response_type,
             payload: message_payload,
         }
     }
 }
 
+/// Types of messages to be received from the client
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub enum RequestType {
+    #[serde(rename = "input")]
+    Input,
+    #[serde(rename = "configuration")]
+    Configuration,
+}
+
 /// Types of messages to send back to the client
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub enum MessageType {
+pub enum ResponseType {
     #[serde(rename = "stack")]
     Stack,
     #[serde(rename = "error")]
@@ -57,7 +70,7 @@ pub enum MessageType {
 
 /// Types of message payloads to send to the client
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub enum MessagePayload {
+pub enum ResponsePayload {
     #[serde(rename = "stack")]
     Stack(Vec<Bucket>),
     #[serde(rename = "commands")]

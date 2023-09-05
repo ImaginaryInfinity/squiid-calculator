@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 #[cfg(feature = "ipc")]
-use crate::protocol::{ClientMessage, MessagePayload, MessageType, ServerMessage};
+use crate::protocol::{ClientMessage, ResponsePayload, ResponseType, ServerResponseMessage};
 #[cfg(feature = "ipc")]
 use nng::Socket;
 
@@ -18,10 +18,10 @@ lazy_static! {
 /// Send a response to the client
 pub fn send_response(
     socket: &Socket,
-    response_type: MessageType,
-    response_payload: MessagePayload,
+    response_type: ResponseType,
+    response_payload: ResponsePayload,
 ) -> Result<(), serde_json::Error> {
-    let server_response = ServerMessage::new(response_type, response_payload);
+    let server_response = ServerResponseMessage::new(response_type, response_payload);
 
     let json = serde_json::to_string(&server_response)?;
 

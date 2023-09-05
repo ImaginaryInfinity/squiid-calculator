@@ -19,7 +19,7 @@ use nng::{Protocol, Socket};
 
 #[cfg(feature = "ipc")]
 use crate::{
-    protocol::{MessagePayload, MessageType},
+    protocol::{ResponsePayload, ResponseType},
     utils::{recv_data, send_response},
 };
 
@@ -31,6 +31,8 @@ const DEFAULT_ADDRESS: &str = "tcp://*:33242";
 /// Start the server at the given address (default is DEFAULT_ADDRESS)
 pub fn start_server(address: Option<&str>) {
     // Use default address unless one was specified from the command line
+
+    use crate::protocol::RequestType;
     let address_to_bind = match address {
         Some(adr) => adr,
         None => DEFAULT_ADDRESS,
@@ -58,19 +60,22 @@ pub fn start_server(address: Option<&str>) {
         let data = recv_data(&responder);
         // check if error was encountered when parsing JSON
         let recieved = match data {
-            Ok(ref value) => &*value.payload,
+            Ok(ref value) => &*value,
             Err(_) => {
                 // send error back to client and continue loop
                 let _ = send_response(
                     &responder,
-                    MessageType::Error,
-                    MessagePayload::Error("invalid JSON data was sent to the server".to_string()),
+                    ResponseType::Error,
+                    ResponsePayload::Error("invalid JSON data was sent to the server".to_string()),
                 );
                 continue;
             }
         };
 
-        let result = handle_data(&mut engine, &commands, recieved);
+        let result = match recieved.request_type {
+            RequestType::Input => handle_data(&mut engine, &commands, &recieved.payload),
+            RequestType::Configuration => todo!(),
+        };
 
         // set previous answer
         let _ = engine.update_previous_answer();
@@ -79,8 +84,8 @@ pub fn start_server(address: Option<&str>) {
             Ok(MessageAction::SendStack) => {
                 let _ = send_response(
                     &responder,
-                    MessageType::Stack,
-                    MessagePayload::Stack(engine.stack.clone()),
+                    ResponseType::Stack,
+                    ResponsePayload::Stack(engine.stack.clone()),
                 );
             }
             Ok(MessageAction::SendCommands) => {
@@ -92,16 +97,16 @@ pub fn start_server(address: Option<&str>) {
 
                 let _ = send_response(
                     &responder,
-                    MessageType::Commands,
-                    MessagePayload::Commands(avaiable_commands),
+                    ResponseType::Commands,
+                    ResponsePayload::Commands(avaiable_commands),
                 );
             }
             Ok(MessageAction::Quit) => break,
             Err(error) => {
                 let _ = send_response(
                     &responder,
-                    MessageType::Error,
-                    MessagePayload::Error(error.to_string()),
+                    ResponseType::Error,
+                    ResponsePayload::Error(error.to_string()),
                 );
             }
         }
@@ -110,8 +115,8 @@ pub fn start_server(address: Option<&str>) {
     // send quit message to client
     let _ = send_response(
         &responder,
-        MessageType::QuitSig,
-        MessagePayload::QuitSig(None),
+        ResponseType::QuitSig,
+        ResponsePayload::QuitSig(None),
     );
 }
 

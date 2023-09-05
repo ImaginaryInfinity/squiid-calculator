@@ -275,8 +275,8 @@ fn algebraic_eval(app: &mut App, socket: &Socket) {
             "==" => "eq",
             ">" => "gt",
             "<" => "lt",
-            ">=" => "egt",
-            "<=" => "elt",
+            ">=" => "geq",
+            "<=" => "leq",
             _ => command_raw,
         };
         // Send command to server

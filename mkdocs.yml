@@ -45,9 +45,9 @@ nav:
             - Logic:
                 - Equals: user/commands/logic/eq.md
                 - Greater Than: user/commands/logic/gt.md
-                - Greater Than or Equal To: user/commands/logic/egt.md
+                - Greater Than or Equal To: user/commands/logic/geq.md
                 - Less Than: user/commands/logic/lt.md
-                - Less Than or Equal To: user/commands/logic/elt.md
+                - Less Than or Equal To: user/commands/logic/leq.md
             - RPN Mode:
                 - Change Sign: user/commands/rpn/chs.md
                 - Clear (RPN): user/commands/rpn/clear.md

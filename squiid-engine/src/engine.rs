@@ -665,7 +665,7 @@ impl Engine {
     }
 
     /// Greater than or equal to
-    pub fn egt(&mut self) -> Result<MessageAction, String> {
+    pub fn geq(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -679,7 +679,7 @@ impl Engine {
     }
 
     /// Less than or equal to
-    pub fn elt(&mut self) -> Result<MessageAction, String> {
+    pub fn leq(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,

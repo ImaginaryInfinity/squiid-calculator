@@ -175,7 +175,7 @@ fn read_config(config_path: PathBuf) -> Option<Config> {
     }
 }
 
-/// Write config file
+/// Write config file to a given path
 fn write_config(config: Config, config_path: PathBuf) {
     let config_string = toml::to_string_pretty(&config.config).unwrap();
 
@@ -189,28 +189,23 @@ fn write_config(config: Config, config_path: PathBuf) {
 /// that may have been added to the system config file
 pub fn read_user_config() -> Option<Config> {
     let config_path = determine_config_path();
-    if !config_path.exists() {
-        return None;
-    }
+    let mut user_config = match read_config(config_path.clone()) {
+        Some(config) => config,
+        None => return None,
+    };
 
     let system_config: Value = toml::from_str(include_str!("config.toml")).unwrap();
 
-    let user_config_string = fs::read_to_string(config_path.clone()).unwrap();
-    let mut user_config: Value = toml::from_str(&user_config_string).unwrap();
-
     // update the system config with the user's currently chosen config setup
-    update_toml_values(&mut user_config, &system_config);
+    update_toml_values(&mut user_config.config, &system_config);
 
-    let new_user_config = Config {
-        config: user_config,
-    };
+    write_config(user_config.clone(), config_path);
 
-    write_config(new_user_config.clone(), config_path);
-
-    Some(new_user_config)
+    Some(user_config)
 }
 
 /// Recursive function to update TOML values
+/// shadows user_config onto system_config
 fn update_toml_values(user_config: &mut Value, system_config: &Value) {
     match (user_config, system_config) {
         (Value::Table(user_table), Value::Table(system_table)) => {

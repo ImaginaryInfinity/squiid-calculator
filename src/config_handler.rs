@@ -6,7 +6,7 @@ use toml::Value;
 #[derive(Debug, Clone)]
 pub struct Config {
     /// The toml config object
-    config: Value,
+    pub config: Value,
 }
 
 impl From<Value> for Config {
@@ -26,8 +26,54 @@ impl Config {
         }
     }
 
+    /// List sections in the config
+    pub fn list_sections(&self) -> Vec<&String> {
+        match self.config.as_table() {
+            Some(table) => table.keys().collect::<Vec<&String>>(),
+            None => Vec::new(),
+        }
+    }
+
+    /// List the keys within a section
+    pub fn list_keys(&self, section: &str) -> Option<Vec<&String>> {
+        let section_value = self.config.get(section);
+        if let Some(Value::Table(section_table)) = section_value {
+            Some(section_table.keys().collect::<Vec<&String>>())
+        } else {
+            None
+        }
+    }
+
+    /// List the values within a section
+    pub fn list_values(&self, section: &str) -> Option<Vec<&Value>> {
+        let section_value = self.config.get(section);
+        if let Some(Value::Table(section_table)) = section_value {
+            Some(section_table.values().collect::<Vec<&Value>>())
+        } else {
+            None
+        }
+    }
+
+    /// List the key, value pairs within a section
+    /// returns a list of tuples
+    /// [(key, value), (key, value)]
+    pub fn list_items(&self, section: &str) -> Option<Vec<(&String, &Value)>> {
+        let keys = self.list_keys(section);
+        let values = self.list_values(section);
+
+        if let (Some(key_list), Some(value_list)) = (keys, values) {
+            let pairs: Vec<(&String, &Value)> = key_list
+                .iter()
+                .zip(value_list.iter())
+                .map(|(k, v)| (&**k, *v))
+                .collect();
+            return Some(pairs);
+        } else {
+            return None;
+        }
+    }
+
     /// Set a specific key in a specific section of the config
-    #[allow(dead_code)]
     pub fn set(&mut self, section: &str, key: &str, value: Value) {
         if let Value::Table(config) = &mut self.config {
             if let Some(Value::Table(section_config)) = config.get_mut(section) {
@@ -37,10 +83,27 @@ impl Config {
     }
 
     /// Create a new section in the config
-    #[allow(dead_code)]
     pub fn create_section(&mut self, section: &str) {
         if let Value::Table(config) = &mut self.config {
             config.insert(section.to_string(), Value::Table(toml::map::Map::new()));
+        }
+    }
+
+    /// delete a section in the config
+    pub fn delete_section(&mut self, section: &str) {
+        if let Value::Table(config) = &mut self.config {
+            config.remove(section);
+        }
+    }
+
+    /// delete a key in a section of the config
+    pub fn delete_key(&mut self, section: &str, key: &str) {
+        if let Value::Table(config) = &mut self.config {
+            if let Some(section_table) = config.get_mut(section) {
+                if let Value::Table(section_data) = section_table {
+                    section_data.remove(key);
+                }
+            }
         }
     }
 }

@@ -1,13 +1,13 @@
 use std::{net::TcpListener, ops::Range};
 
 use nng::{Message, Socket};
-use squiid_engine::protocol::{ClientMessage, ServerMessage};
+use squiid_engine::protocol::{ClientMessage, RequestType, ServerResponseMessage};
 use squiid_parser::{lexer::lex, tokens::Token};
 
 /// Send data to backend
-pub fn send_data(socket: &Socket, command: &str) -> ServerMessage {
+pub fn send_data(socket: &Socket, command: &str) -> ServerResponseMessage {
     let serialized_data: String =
-        serde_json::to_string(&ClientMessage::new(command.to_owned())).unwrap();
+        serde_json::to_string(&ClientMessage::new(RequestType::Input, command.to_owned())).unwrap();
 
     let _ = socket.send(serialized_data.as_bytes());
     let msg = socket.recv().unwrap();
@@ -16,9 +16,9 @@ pub fn send_data(socket: &Socket, command: &str) -> ServerMessage {
 }
 
 /// Deserialize a message from the server
-fn deserialize_message(msg: Message) -> ServerMessage {
+fn deserialize_message(msg: Message) -> ServerResponseMessage {
     let msg_string = String::from_utf8(msg.to_vec()).unwrap();
-    let data: ServerMessage = serde_json::from_str(&msg_string).unwrap();
+    let data: ServerResponseMessage = serde_json::from_str(&msg_string).unwrap();
 
     data
 }

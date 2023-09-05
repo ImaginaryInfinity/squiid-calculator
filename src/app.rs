@@ -3,7 +3,7 @@ use std::{collections::HashMap, io, thread};
 use lazy_static::lazy_static;
 use squiid_engine::{
     extract_data,
-    protocol::{MessagePayload, MessageType, ServerMessage},
+    protocol::{ResponsePayload, ResponseType, ServerResponseMessage},
 };
 use unicode_width::UnicodeWidthStr;
 
@@ -200,23 +200,23 @@ impl App {
 }
 
 /// Update the stack if msg is not an error. If it is an error, display that error
-fn update_stack_or_error(msg: ServerMessage, app: &mut App) {
+fn update_stack_or_error(msg: ServerResponseMessage, app: &mut App) {
     // TODO: make a seperate display for commands
-    match msg.message_type {
-        MessageType::Stack => {
-            app.stack = extract_data!(msg.payload, MessagePayload::Stack)
+    match msg.response_type {
+        ResponseType::Stack => {
+            app.stack = extract_data!(msg.payload, ResponsePayload::Stack)
                 .iter()
                 .map(|item| item.to_string())
                 .collect();
         }
-        MessageType::Error => {
-            let error_message = extract_data!(msg.payload, MessagePayload::Error);
+        ResponseType::Error => {
+            let error_message = extract_data!(msg.payload, ResponsePayload::Error);
             app.error = format!("Error: {}", error_message);
         }
-        MessageType::Commands => todo!(),
+        ResponseType::Commands => todo!(),
         // quit doesn't need any special behavior. the frontend quits when
         // the backend server thread finishes
-        MessageType::QuitSig => (),
+        ResponseType::QuitSig => (),
     }
 }
 
@@ -314,7 +314,7 @@ fn rpn_input(app: &mut App, socket: &Socket, c: char) {
 
     // query engine for available commands
     let binding = send_data(socket, "commands");
-    let commands = extract_data!(binding.payload, MessagePayload::Commands);
+    let commands = extract_data!(binding.payload, ResponsePayload::Commands);
 
     // Check if input box contains a command, if so, automatically execute it
     if commands.contains(&app.input) {
@@ -579,7 +579,7 @@ pub fn run_app<B: Backend>(
         // Update stack if there is currently an error, since the last request will have gotten the error not the stack
         if !app.error.is_empty() {
             let msg = send_data(socket, "refresh");
-            app.stack = extract_data!(msg.payload, MessagePayload::Stack)
+            app.stack = extract_data!(msg.payload, ResponsePayload::Stack)
                 .iter()
                 .map(|item| item.to_string())
                 .collect();

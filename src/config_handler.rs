@@ -187,8 +187,9 @@ fn write_config(config: Config, config_path: PathBuf) {
         .unwrap();
 }
 
-/// Function to update TOML config
-pub fn update_user_config() -> Option<Config> {
+/// Function to read the user config file and update it with any new values
+/// that may have been added to the system config file
+pub fn read_user_config() -> Option<Config> {
     let config_path = determine_config_path();
     if !config_path.exists() {
         return None;

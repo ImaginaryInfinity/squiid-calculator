@@ -159,7 +159,7 @@ impl Default for App {
             error: String::new(),
             left_cursor_offset: 0,
             top_panel_state: StatefulTopPanel::with_items(vec![]),
-            config: config_handler::update_user_config().unwrap(),
+            config: config_handler::read_user_config().unwrap(),
         }
     }
 }

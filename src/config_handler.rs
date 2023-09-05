@@ -119,6 +119,7 @@ pub fn init_config() {
     }
 }
 
+// TODO: document this somewhere
 /// Determine the path of the config file and make directories if required
 ///
 /// Linux: `~/.config/squiid/`

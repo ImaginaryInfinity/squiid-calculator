@@ -54,8 +54,11 @@ int main() {
 
 Additional language bindings and examples can be found at [https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-bindings](https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-bindings).
 
-### `protocol.rs`
-This module defines the JSON protocol used to communicate between the client and the server.
+### `protocol/client_request.rs`
+This module defines the JSON protocol used to communicate from the client to the server.
+
+### `protocol/server_response.rs`
+This module defines the JSON protocol used to communicate from the server to the client.
 
 ### `utils.rs`
 This module contains utility functions for sending and receiving data over the network.

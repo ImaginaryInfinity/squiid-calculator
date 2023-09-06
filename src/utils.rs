@@ -2,7 +2,8 @@ use std::{net::TcpListener, ops::Range};
 
 use nng::{Message, Socket};
 use squiid_engine::protocol::{
-    ClientRequestMessage, RequestPayload, RequestType, ServerResponseMessage,
+    client_request::{ClientRequestMessage, RequestPayload, RequestType},
+    server_response::ServerResponseMessage,
 };
 use squiid_parser::{lexer::lex, tokens::Token};
 

@@ -1,8 +1,12 @@
 pub mod bucket;
 pub mod command_mappings;
 pub mod engine;
-pub mod protocol;
 pub mod utils;
+
+pub mod protocol {
+    pub mod client_request;
+    pub mod server_response;
+}
 
 #[cfg(feature = "ipc")]
 pub mod ffi;
@@ -12,14 +16,17 @@ use std::borrow::BorrowMut;
 use bucket::Bucket;
 use command_mappings::CommandsMap;
 use engine::Engine;
-use protocol::MessageAction;
 
 #[cfg(feature = "ipc")]
 use nng::{Protocol, Socket};
+use protocol::server_response::MessageAction;
 
 #[cfg(feature = "ipc")]
 use crate::{
-    protocol::{ResponsePayload, ResponseType},
+    protocol::{
+        client_request::{RequestPayload, RequestType},
+        server_response::{ResponsePayload, ResponseType},
+    },
     utils::{recv_data, send_response},
 };
 
@@ -32,7 +39,6 @@ const DEFAULT_ADDRESS: &str = "tcp://*:33242";
 pub fn start_server(address: Option<&str>) {
     // Use default address unless one was specified from the command line
 
-    use crate::protocol::{RequestPayload, RequestType};
     let address_to_bind = match address {
         Some(adr) => adr,
         None => DEFAULT_ADDRESS,

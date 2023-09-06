@@ -5,8 +5,8 @@ use rust_decimal_macros::dec;
 
 use crate::{
     bucket::{build_exposed_constants, Bucket, BucketTypes, ConstantTypes},
+    protocol::server_response::MessageAction,
     utils::{ID_REGEX, NUMERIC_REGEX},
-    MessageAction,
 };
 
 /// Evaluation engine struct

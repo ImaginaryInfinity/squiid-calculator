@@ -3,7 +3,7 @@ use std::{collections::HashMap, io, thread};
 use lazy_static::lazy_static;
 use squiid_engine::{
     extract_data,
-    protocol::{ResponsePayload, ResponseType, ServerResponseMessage},
+    protocol::server_response::{ResponsePayload, ResponseType, ServerResponseMessage},
 };
 use unicode_width::UnicodeWidthStr;
 

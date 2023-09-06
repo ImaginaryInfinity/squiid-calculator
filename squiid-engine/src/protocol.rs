@@ -1,6 +1,7 @@
 // contains JSON structs of transmission protocol objects
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
+use serde_json::Value;
 
 use crate::bucket::Bucket;
 
@@ -14,7 +15,7 @@ pub enum MessageAction {
 
 /// Client message datatype
 /// this is what we recieve from the client
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Serialize, Debug)]
 pub struct ClientRequestMessage {
     pub request_type: RequestType,
     #[serde(flatten)]
@@ -26,6 +27,54 @@ impl ClientRequestMessage {
         Self {
             request_type,
             payload: message_payload,
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for ClientRequestMessage {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let json_value: Value = Deserialize::deserialize(deserializer)?;
+
+        match json_value.get("request_type") {
+            Some(request_type_value) => {
+                let request_type: RequestType = serde_json::from_value(request_type_value.clone())
+                    .map_err(serde::de::Error::custom)?;
+
+                match request_type {
+                    RequestType::Input => {
+                        let payload_str = json_value
+                            .get("payload")
+                            .and_then(|v| v.as_str())
+                            .ok_or_else(|| {
+                                serde::de::Error::custom(
+                                    "Missing or invalid payload for RequestType::Input",
+                                )
+                            })?;
+                        Ok(ClientRequestMessage {
+                            request_type: RequestType::Input,
+                            payload: RequestPayload::Input(payload_str.to_string()),
+                        })
+                    }
+                    RequestType::Configuration => {
+                        let payload_value = json_value.get("payload").ok_or_else(|| {
+                            serde::de::Error::custom(
+                                "Missing payload for RequestType::Configuration",
+                            )
+                        })?;
+                        let payload: ConfigurationPayload =
+                            serde_json::from_value(payload_value.clone())
+                                .map_err(serde::de::Error::custom)?;
+                        Ok(ClientRequestMessage {
+                            request_type: RequestType::Configuration,
+                            payload: RequestPayload::Configuration(payload),
+                        })
+                    }
+                }
+            }
+            None => Err(serde::de::Error::custom("Missing request_type field")),
         }
     }
 }

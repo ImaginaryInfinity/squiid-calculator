@@ -33,9 +33,21 @@ pub fn send_response(
 /// Recieve data from the client
 pub fn recv_data(socket: &Socket) -> Result<ClientRequestMessage, serde_json::Error> {
     // recieve data from client
+
+    use crate::protocol::{ConfigurationPayload, RequestPayload, RequestType};
     let msg = socket.recv().unwrap();
+    let test = ClientRequestMessage {
+        request_type: RequestType::Configuration,
+        payload: RequestPayload::Configuration(ConfigurationPayload {
+            action_type: crate::protocol::ConfigurationActionType::ListSections,
+            section: None,
+            key: None,
+        }),
+    };
+    println!("{}", serde_json::to_string(&test).unwrap());
     // Convert received message to a string
     let recieved = std::str::from_utf8(&msg).unwrap();
-    let client_response: ClientRequestMessage = serde_json::from_str(recieved)?;
+    println!("{}", recieved);
+    let client_response: ClientRequestMessage = serde_json::from_str(recieved).unwrap();
     Ok(client_response)
 }

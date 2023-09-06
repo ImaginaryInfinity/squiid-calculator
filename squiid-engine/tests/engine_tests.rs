@@ -747,7 +747,7 @@ fn test_drop() {
     let result = engine.drop();
     assert_eq!(
         result,
-        Ok(squiid_engine::protocol::MessageAction::SendStack)
+        Ok(squiid_engine::protocol::server_response::MessageAction::SendStack)
     );
 }
 
@@ -957,7 +957,7 @@ fn test_list_commands() {
 
     assert!(matches!(
         engine.list_commands().unwrap(),
-        squiid_engine::protocol::MessageAction::SendCommands
+        squiid_engine::protocol::server_response::MessageAction::SendCommands
     ));
 }
 

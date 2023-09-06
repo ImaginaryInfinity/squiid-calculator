@@ -32,7 +32,7 @@ const DEFAULT_ADDRESS: &str = "tcp://*:33242";
 pub fn start_server(address: Option<&str>) {
     // Use default address unless one was specified from the command line
 
-    use crate::protocol::RequestType;
+    use crate::protocol::{RequestPayload, RequestType};
     let address_to_bind = match address {
         Some(adr) => adr,
         None => DEFAULT_ADDRESS,
@@ -60,7 +60,7 @@ pub fn start_server(address: Option<&str>) {
         let data = recv_data(&responder);
         // check if error was encountered when parsing JSON
         let recieved = match data {
-            Ok(ref value) => &*value,
+            Ok(ref value) => value,
             Err(_) => {
                 // send error back to client and continue loop
                 let _ = send_response(
@@ -73,7 +73,11 @@ pub fn start_server(address: Option<&str>) {
         };
 
         let result = match recieved.request_type {
-            RequestType::Input => handle_data(&mut engine, &commands, &recieved.payload),
+            RequestType::Input => handle_data(
+                &mut engine,
+                &commands,
+                extract_data!(&recieved.payload, RequestPayload::Input),
+            ),
             RequestType::Configuration => todo!(),
         };
 

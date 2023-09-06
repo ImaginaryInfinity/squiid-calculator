@@ -15,14 +15,14 @@ pub enum MessageAction {
 /// Client message datatype
 /// this is what we recieve from the client
 #[derive(Deserialize, Serialize, Debug)]
-pub struct ClientMessage {
+pub struct ClientRequestMessage {
     pub request_type: RequestType,
-    // TODO: be able to send other data structs
-    pub payload: String,
+    #[serde(flatten)]
+    pub payload: RequestPayload,
 }
 
-impl ClientMessage {
-    pub fn new(request_type: RequestType, message_payload: String) -> Self {
+impl ClientRequestMessage {
+    pub fn new(request_type: RequestType, message_payload: RequestPayload) -> Self {
         Self {
             request_type,
             payload: message_payload,
@@ -46,6 +46,37 @@ impl ServerResponseMessage {
     }
 }
 
+/// cofniguration request action types
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub enum ConfigurationActionType {
+    #[serde(rename = "get_key")]
+    GetKey,
+    #[serde(rename = "list_sections")]
+    ListSections,
+    #[serde(rename = "list_keys")]
+    ListKeys,
+    #[serde(rename = "list_values")]
+    ListValues,
+    #[serde(rename = "list_items")]
+    ListItems,
+    #[serde(rename = "set_key")]
+    SetKey,
+    #[serde(rename = "create_section")]
+    CreateSection,
+    #[serde(rename = "delete_section")]
+    DeleteSection,
+    #[serde(rename = "delete_key")]
+    DeleteKey,
+}
+
+/// configuration deserialization struct
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct ConfigurationPayload {
+    pub action_type: ConfigurationActionType,
+    pub section: Option<String>,
+    pub key: Option<String>,
+}
+
 /// Types of messages to be received from the client
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub enum RequestType {
@@ -53,6 +84,15 @@ pub enum RequestType {
     Input,
     #[serde(rename = "configuration")]
     Configuration,
+}
+
+/// Types of message payloads to be received from the client
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub enum RequestPayload {
+    #[serde(rename = "payload")]
+    Input(String),
+    #[serde(rename = "payload")]
+    Configuration(ConfigurationPayload),
 }
 
 /// Types of messages to send back to the client

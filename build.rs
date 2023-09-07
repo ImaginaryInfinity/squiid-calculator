@@ -6,6 +6,7 @@ fn main() {
 
     // only build the resource for release builds
     // as calling rc.exe might be slow
+    #[cfg(target_os = "windows")]
     if std::env::var("PROFILE").unwrap() == "release" {
         let mut res = winresource::WindowsResource::new();
         res.set_icon("./branding/squiidsquare.ico");

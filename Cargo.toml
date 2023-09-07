@@ -25,6 +25,7 @@ toml = "0.7.3"
 unicode-width = "0.1.10"
 
 [build-dependencies]
+[target.'cfg(target_os = "windows")']
 winresource = "0.1.15"
 
 [profile.release]

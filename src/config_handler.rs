@@ -6,7 +6,7 @@ use toml::Value;
 #[derive(Debug, Clone)]
 pub struct Config {
     /// The toml config object
-    pub config: Value,
+    config: Value,
 }
 
 impl From<Value> for Config {

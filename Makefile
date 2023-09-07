@@ -108,7 +108,7 @@ snap: require clean ## Build the snap
 
 	rm -f snapcraft.yaml
 
-appimage: require clean build ## Build the AppImage
+appimage: require clean build-musl ## Build the AppImage
 	# Check for appimagetool
 	@$(APPIMAGETOOL) --version > /dev/null 2>&1 || (echo "ERROR: appimagetool is required"; exit 1)
 	# Check for curl
@@ -120,7 +120,7 @@ appimage: require clean build ## Build the AppImage
 	mkdir -p package-build/squiid.AppDir/usr/bin
 	mkdir -p package-build/squiid.AppDir/usr/share/icons
 	# Copy squiid binary
-	cp target/release/squiid package-build/squiid.AppDir/usr/bin/squiid
+	cp target/x86_64-unknown-linux-musl/release/squiid package-build/squiid.AppDir/usr/bin/squiid
 	# Copy AppRun
 	cp packages/appimage/AppRun package-build/squiid.AppDir/AppRun
 	# Make AppRun executable

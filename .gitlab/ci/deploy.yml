@@ -60,7 +60,7 @@ build-windows:
 
 build-windows-installer:
   stage: build
-  needs: 
+  needs:
     - job: build-windows
       artifacts: true
   image:

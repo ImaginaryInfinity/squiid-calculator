@@ -54,7 +54,7 @@ pub fn init_config() -> Config {
         copy_default_config(config_path.clone());
     }
 
-    let config = read_config(config_path.clone());
+    let config = read_config(config_path);
     config.unwrap()
 }
 

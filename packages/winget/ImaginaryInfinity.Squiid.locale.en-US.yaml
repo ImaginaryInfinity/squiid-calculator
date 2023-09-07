@@ -2,7 +2,7 @@
 # yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.4.0.schema.json
 
 PackageIdentifier: ImaginaryInfinity.Squiid
-PackageVersion: 1.0.0
+PackageVersion: ${VERSION}
 PackageLocale: en-US
 Publisher: ImaginaryInfinity
 PackageName: Squiid

@@ -107,7 +107,7 @@ impl Bucket {
             ConstantTypes::TAU => consts::TAU,
             ConstantTypes::C => 299792458_f64,
             ConstantTypes::G => 6.67430 * 10_f64.powf(-11_f64),
-            ConstantTypes::PHI => 1.6180339887498948482045868343656381,
+            ConstantTypes::PHI => 1.618_033_988_749_895_f64,
         }
         .to_string();
 

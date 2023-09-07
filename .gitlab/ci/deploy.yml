@@ -1,17 +1,3 @@
-# build-flatpak:
-#   stage: build
-#   image: fedora:latest
-#   before_script:
-#     - dnf -y install rust cargo cmake make flatpak flatpak-builder python3-aiohttp python3-toml
-#     - flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-#     - flatpak install -y flathub org.freedesktop.Platform//22.08 org.freedesktop.Sdk//22.08 org.freedesktop.Sdk.Extension.rust-stable/x86_64/22.08
-#   script:
-#     - make flatpak
-#   artifacts:
-#     paths:
-#       - package-build/
-#     expire_in: "60 minutes"
-
 build-snap:
   stage: build
   image: ubuntudesktop/gnome-3-38-2004
@@ -23,10 +9,6 @@ build-snap:
   script:
     - make snap
     - snapcraft upload --release=stable squiid*.snap
-  # artifacts:
-  #   paths:
-  #     - squiid*.snap
-  #   expire_in: "60 minutes"
 
 build-appimage:
   stage: build
@@ -44,9 +26,56 @@ build-appimage:
 
   script:
     - make appimage
+    - mv package-build/Squiid_Calculator.AppImage Squiid_Calculator.AppImage
   artifacts:
     paths:
-      - package-build/Squiid_Calculator.AppImage
+      - Squiid_Calculator.AppImage
+
+build-musl:
+  stage: build
+  image: clux/muslrust:stable
+  script:
+    - make build
+    - mv target/x86_64-unknown-linux-musl/release/squiid squiid
+  artifacts:
+    paths:
+      - squiid
+
+build-windows:
+  stage: build
+  image: alpine:latest
+  before_script:
+    - apk update
+    - apk add curl make cmake gcc mingw-w64-gcc musl-dev gettext
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -t x86_64-pc-windows-gnu -y
+  script:
+    - source "$HOME/.cargo/env"
+    - make windows-build
+    - cp target/x86_64-pc-windows-gnu/release/squiid.exe squiid.exe
+    - make windows-installer skip_build=1
+  artifacts:
+    paths:
+      - ./squiid.exe
+      - package-build/
+
+build-windows-installer:
+  stage: build
+  needs: 
+    - job: build-windows
+      artifacts: true
+  image:
+    name: amake/innosetup
+    entrypoint: [""]
+  script:
+    - cp -r --no-preserve=mode,ownership package-build/ new-package-build/
+    - cd new-package-build/
+    - iscc squiid.iss
+    - mv Output/squiid-installer.exe ../
+    - cd ..
+  artifacts:
+    paths:
+      - squiid-installer.exe
+
 
 # build-deb:
 #   stage: build

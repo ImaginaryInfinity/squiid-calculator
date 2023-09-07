@@ -7,7 +7,7 @@
   <url type="contribute">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid</url>
   <url type="bugtracker">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/issues</url>
   <url type="help">https://imaginaryinfinity.net/docs/squiid</url>
-  <content_rating />
+  <content_rating type="oars-1.0" />
   <screenshots>
     <screenshot type="default">
       <caption>Algebraic Mode</caption>

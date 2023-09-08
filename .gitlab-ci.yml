@@ -1,7 +1,6 @@
 stages:
   - test
   - build
-  - deploy
 
 test:
  stage: test
@@ -23,7 +22,10 @@ build-snap:
     - apt install cargo gettext-base cmake -y
   script:
     - make snap
-    - snapcraft upload --release=stable squiid*.snap
+    - case "$CI_COMMIT_BRANCH" in 
+      "trunk") snapcraft upload --release=stable squiid*.snap; ;;
+      *) snapcraft upload --release=edge squiid*.snap; ;;
+      esac
 
 build-appimage:
   stage: build

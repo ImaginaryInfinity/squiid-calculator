@@ -43,6 +43,23 @@ pub struct ConfigurationPayload {
     pub action_type: ConfigurationActionType,
     pub section: Option<String>,
     pub key: Option<String>,
+    pub value: Option<String>,
+}
+
+impl ConfigurationPayload {
+    pub fn new(
+        action_type: ConfigurationActionType,
+        section: Option<String>,
+        key: Option<String>,
+        value: Option<String>,
+    ) -> Self {
+        Self {
+            action_type,
+            section,
+            key,
+            value,
+        }
+    }
 }
 
 /// configuration request action types

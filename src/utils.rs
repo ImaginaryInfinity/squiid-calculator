@@ -7,13 +7,23 @@ use squiid_engine::protocol::{
 };
 use squiid_parser::{lexer::lex, tokens::Token};
 
-/// Send data to backend
-pub fn send_data(socket: &Socket, command: &str) -> ServerResponseMessage {
-    let serialized_data: String = serde_json::to_string(&ClientRequestMessage::new(
+/// Send input data to backend
+pub fn send_input_data(socket: &Socket, command: &str) -> ServerResponseMessage {
+    send_data(
+        socket,
         RequestType::Input,
         RequestPayload::Input(command.into()),
-    ))
-    .unwrap();
+    )
+}
+
+/// Lower level function for sending data to the server
+pub fn send_data(
+    socket: &Socket,
+    request_type: RequestType,
+    request_payload: RequestPayload,
+) -> ServerResponseMessage {
+    let serialized_data: String =
+        serde_json::to_string(&ClientRequestMessage::new(request_type, request_payload)).unwrap();
 
     let _ = socket.send(serialized_data.as_bytes());
     let msg = socket.recv().unwrap();

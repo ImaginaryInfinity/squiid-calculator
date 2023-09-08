@@ -8,6 +8,7 @@ mod app;
 use app::{run_app, App};
 
 mod config_handler;
+mod config_utils;
 mod utils;
 
 use crossterm::{

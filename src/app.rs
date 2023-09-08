@@ -22,7 +22,7 @@ use ratatui::{
 
 use crate::{
     config_handler,
-    utils::{current_char_index, input_buffer_is_sci_notate, send_data},
+    utils::{current_char_index, input_buffer_is_sci_notate, send_input_data},
 };
 
 /// The input mode state of the application
@@ -200,7 +200,7 @@ impl App {
 }
 
 /// Update the stack if msg is not an error. If it is an error, display that error
-fn update_stack_or_error(msg: ServerResponseMessage, app: &mut App) {
+pub fn update_stack_or_error(msg: ServerResponseMessage, app: &mut App) {
     // TODO: make a seperate display for commands
     match msg.response_type {
         ResponseType::Stack => {
@@ -216,7 +216,9 @@ fn update_stack_or_error(msg: ServerResponseMessage, app: &mut App) {
         ResponseType::Commands => todo!(),
         // quit doesn't need any special behavior. the frontend quits when
         // the backend server thread finishes
-        ResponseType::QuitSig => (),
+        //
+        // configuration return is handeled elsewhere
+        ResponseType::QuitSig | ResponseType::Configuration => (),
     }
 }
 
@@ -226,7 +228,7 @@ fn algebraic_eval(app: &mut App, socket: &Socket) {
     let entered_expression: String = app.input.drain(..).collect();
 
     // Clear stack
-    _ = send_data(socket, "clear");
+    _ = send_input_data(socket, "clear");
 
     // Special frontend commands
     if entered_expression.as_str() == "clear" {
@@ -278,7 +280,7 @@ fn algebraic_eval(app: &mut App, socket: &Socket) {
             _ => command_raw,
         };
         // Send command to server
-        let msg = send_data(socket, command);
+        let msg = send_input_data(socket, command);
         // Update stack
         update_stack_or_error(msg, app);
     }
@@ -313,13 +315,13 @@ fn rpn_input(app: &mut App, socket: &Socket, c: char) {
     app.input.insert(index, c);
 
     // query engine for available commands
-    let binding = send_data(socket, "commands");
+    let binding = send_input_data(socket, "commands");
     let commands = extract_data!(binding.payload, ResponsePayload::Commands);
 
     // Check if input box contains a command, if so, automatically execute it
     if commands.contains(&app.input) {
         // Send command
-        let msg = send_data(socket, app.input.as_str());
+        let msg = send_input_data(socket, app.input.as_str());
         // Update stack display
         update_stack_or_error(msg, app);
         // Clear input
@@ -338,10 +340,10 @@ fn rpn_enter(app: &mut App, socket: &Socket) {
     // Send command if there is one, otherwise duplicate last item in stack
     let msg = if !command.is_empty() {
         // Send to backend and get response
-        send_data(socket, command.as_str())
+        send_input_data(socket, command.as_str())
     } else {
         // Empty input, duplicate
-        send_data(socket, "dup")
+        send_input_data(socket, "dup")
     };
     // Update stack display
     update_stack_or_error(msg, app);
@@ -355,7 +357,7 @@ fn rpn_operator(app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
     app.left_cursor_offset = 0;
     // Send operand to backend if there is one
     if !command.is_empty() {
-        _ = send_data(socket, command.as_str());
+        _ = send_input_data(socket, command.as_str());
     }
 
     // Select operation
@@ -364,7 +366,7 @@ fn rpn_operator(app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
         _ => "there is no way for this to occur",
     };
     // Send operation
-    let msg = send_data(socket, operation);
+    let msg = send_input_data(socket, operation);
     // Update stack display
     update_stack_or_error(msg, app);
 }
@@ -458,23 +460,23 @@ pub fn run_app<B: Backend>(
                         _ if key.code == app.keycode_from_config("rpn_drop")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_data(socket, "drop"), &mut app)
+                            update_stack_or_error(send_input_data(socket, "drop"), &mut app)
                         }
 
                         _ if key.code == app.keycode_from_config("rpn_roll_up")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_data(socket, "rollup"), &mut app)
+                            update_stack_or_error(send_input_data(socket, "rollup"), &mut app)
                         }
                         _ if key.code == app.keycode_from_config("rpn_roll_down")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_data(socket, "rolldown"), &mut app)
+                            update_stack_or_error(send_input_data(socket, "rolldown"), &mut app)
                         }
                         _ if key.code == app.keycode_from_config("rpn_swap")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_data(socket, "swap"), &mut app)
+                            update_stack_or_error(send_input_data(socket, "swap"), &mut app)
                         }
                         // Handle typing characters
                         KeyCode::Char(c) => {
@@ -578,7 +580,7 @@ pub fn run_app<B: Backend>(
         }
         // Update stack if there is currently an error, since the last request will have gotten the error not the stack
         if !app.error.is_empty() {
-            let msg = send_data(socket, "refresh");
+            let msg = send_input_data(socket, "refresh");
             app.stack = extract_data!(msg.payload, ResponsePayload::Stack)
                 .iter()
                 .map(|item| item.to_string())

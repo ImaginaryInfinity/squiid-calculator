@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use crate::bucket::Bucket;
 
@@ -37,6 +38,8 @@ pub enum ResponseType {
     Commands,
     #[serde(rename = "quitsig")]
     QuitSig,
+    #[serde(rename = "configuration")]
+    Configuration,
 }
 
 /// Types of message payloads to send to the client
@@ -51,4 +54,6 @@ pub enum ResponsePayload {
     /// This should always be set to None
     #[serde(rename = "quitsig")]
     QuitSig(Option<u8>),
+    #[serde(rename = "configuration")]
+    Configuration(Value),
 }

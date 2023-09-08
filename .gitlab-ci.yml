@@ -3,13 +3,15 @@ stages:
   - build
 
 test:
- stage: test
- image: rust:latest
- before_script:
-   - apt update
-   - apt install cmake -y
- script:
-   - RUST_BACKTRACE=1 cargo test -p squiid -p squiid-engine -p squiid-parser --verbose
+  stage: test
+  image: rust:latest
+  before_script:
+    - apt update
+    - apt install cmake -y
+  script:
+    - RUST_BACKTRACE=1 cargo test -p squiid -p squiid-engine -p squiid-parser --verbose
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "merge_request_event"'
 
 
 build-snap:
@@ -26,6 +28,8 @@ build-snap:
       "trunk") snapcraft upload --release=stable squiid*.snap; ;;
       *) snapcraft upload --release=edge squiid*.snap; ;;
       esac
+  only:
+    - web
 
 build-appimage:
   stage: build
@@ -49,6 +53,8 @@ build-appimage:
   artifacts:
     paths:
       - Squiid_Calculator.AppImage
+  only:
+    - web
 
 build-musl:
   stage: build
@@ -59,6 +65,8 @@ build-musl:
   artifacts:
     paths:
       - squiid
+  only:
+    - web
 
 build-windows:
   stage: build
@@ -76,6 +84,8 @@ build-windows:
     paths:
       - ./squiid.exe
       - package-build/
+  only:
+    - web
 
 build-windows-installer:
   stage: build
@@ -94,7 +104,8 @@ build-windows-installer:
   artifacts:
     paths:
       - squiid-installer.exe
-
+  only:
+    - web
 
 # build-deb:
 #   stage: build
@@ -111,6 +122,8 @@ build-windows-installer:
 #       - package-build/squiid_0.1.0-1_amd64.deb
 #       - package-build/squiid_0.1.0-1_amd64.dsc
 #       - package-build/squiid_0.1.0-1_amd64.changes
+#   only:
+#     - web
 
 # build-deb:
 #   stage: build
@@ -138,3 +151,5 @@ build-windows-installer:
 #     - git archive --format=tar.gz -o package-build/squiid-0.1.0.tar.gz trunk
 #     - cd package-build/
 #     - sudo -u non_root makedeb
+#   only:
+#     - web

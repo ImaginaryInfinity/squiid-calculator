@@ -782,15 +782,20 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     if app.input_mode == InputMode::Algebraic || app.input_mode == InputMode::Rpn {
         let input_width = chunks[2].width as usize - 3; // Account for border characters
 
-        // Truncate the input if it's too long to fit in the available space
-        let truncated_input = if app.input.len() > input_width {
-            app.input[(app.input.len() - input_width)..].to_string()
-        } else {
-            app.input.clone()
-        };
+        // Determine the starting position of the text to display
+        let mut start_pos = 0;
+        if app.input.len() > input_width {
+            let cursor_pos = app.input.len() - app.left_cursor_offset as usize;
+            if cursor_pos > input_width {
+                start_pos = cursor_pos - input_width + 1;
+            }
+        }
+
+        // Truncate and scroll the input text as needed
+        let truncated_input = &app.input[start_pos.saturating_sub(1)..];
+        let mut cursor_position_x = chunks[2].x + truncated_input.width() as u16 + 1;
 
         // Calculate the cursor position based on the truncated input
-        let mut cursor_position_x = chunks[2].x + truncated_input.width() as u16 + 1;
         if app.left_cursor_offset as usize > input_width {
             app.left_cursor_offset = input_width as u16;
         }

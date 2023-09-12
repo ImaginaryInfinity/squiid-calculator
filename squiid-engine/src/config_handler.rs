@@ -15,12 +15,22 @@ impl From<Value> for Config {
     }
 }
 
+enum ConfigValue<'a> {
+    Value(&'a Value),
+    StringList(Vec<&'a String>),
+    ValueList(Vec<&'a Value>),
+    KeyValueList(Vec<(&'a String, &'a Value)>)
+}
+
 impl Config {
     /// Get a section/key from the config
-    pub fn get(&self, section: &str, key: &str) -> Option<&Value> {
+    pub fn get(&self, section: &str, key: &str) -> Option<ConfigValue> {
         let section_value = self.config.get(section);
         if let Some(Value::Table(section_table)) = section_value {
-            section_table.get(key)
+            match section_table.get(key) {
+                Some(value) => Some(ConfigValue::Value(value)),
+                None => None
+            }
         } else {
             None
         }
@@ -28,28 +38,28 @@ impl Config {
 
     /// List sections in the config
     #[allow(dead_code)]
-    pub fn list_sections(&self) -> Vec<&String> {
+    pub fn list_sections(&self) -> Option<ConfigValue> {
         match self.config.as_table() {
-            Some(table) => table.keys().collect::<Vec<&String>>(),
-            None => Vec::new(),
+            Some(table) => Some(ConfigValue::StringList(table.keys().collect::<Vec<&String>>())),
+            None => Some(ConfigValue::StringList(Vec::new())),
         }
     }
 
     /// List the keys within a section
-    pub fn list_keys(&self, section: &str) -> Option<Vec<&String>> {
+    pub fn list_keys(&self, section: &str) -> Option<ConfigValue> {
         let section_value = self.config.get(section);
         if let Some(Value::Table(section_table)) = section_value {
-            Some(section_table.keys().collect::<Vec<&String>>())
+            Some(ConfigValue::StringList(section_table.keys().collect::<Vec<&String>>()))
         } else {
             None
         }
     }
 
     /// List the values within a section
-    pub fn list_values(&self, section: &str) -> Option<Vec<&Value>> {
+    pub fn list_values(&self, section: &str) -> Option<ConfigValue> {
         let section_value = self.config.get(section);
         if let Some(Value::Table(section_table)) = section_value {
-            Some(section_table.values().collect::<Vec<&Value>>())
+            Some(ConfigValue::ValueList(section_table.values().collect::<Vec<&Value>>()))
         } else {
             None
         }
@@ -58,17 +68,17 @@ impl Config {
     /// List the key, value pairs within a section
     /// returns a list of tuples
     /// [(key, value), (key, value)]
-    pub fn list_items(&self, section: &str) -> Option<Vec<(&String, &Value)>> {
+    pub fn list_items(&self, section: &str) -> Option<ConfigValue> {
         let keys = self.list_keys(section);
         let values = self.list_values(section);
 
-        if let (Some(key_list), Some(value_list)) = (keys, values) {
+        if let (Some(ConfigValue::StringList(key_list)), Some(ConfigValue::ValueList(value_list))) = (keys, values) {
             let pairs: Vec<(&String, &Value)> = key_list
                 .iter()
                 .zip(value_list.iter())
                 .map(|(k, v)| (&**k, *v))
                 .collect();
-            Some(pairs)
+            Some(ConfigValue::KeyValueList(pairs))
         } else {
             None
         }

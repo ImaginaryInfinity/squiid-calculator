@@ -7,7 +7,6 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 mod app;
 use app::{run_app, App};
 
-mod config_handler;
 mod config_utils;
 mod utils;
 
@@ -68,7 +67,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut terminal = Terminal::new(backend)?;
 
     // create app and run it
-    let app = App::default();
+    let app = App::new(&socket);
     let res = run_app(&mut terminal, app, &socket, &backend_join_handle);
 
     reset_terminal()?;

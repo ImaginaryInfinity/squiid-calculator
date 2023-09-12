@@ -2,6 +2,7 @@ pub mod bucket;
 pub mod command_mappings;
 pub mod engine;
 pub mod utils;
+pub mod config_handler;
 
 pub mod protocol {
     pub mod client_request;
@@ -84,7 +85,7 @@ pub fn start_server(address: Option<&str>) {
                 &commands,
                 extract_data!(&recieved.payload, RequestPayload::Input),
             ),
-            RequestType::Configuration => todo!(),
+            RequestType::Configuration => engine.handle_config_data(extract_data!(recieved.payload, RequestPayload::Configuration)),
         };
 
         // set previous answer
@@ -97,6 +98,9 @@ pub fn start_server(address: Option<&str>) {
                     ResponseType::Stack,
                     ResponsePayload::Stack(engine.stack.clone()),
                 );
+            }
+            Ok(MessageAction::SendConfigValue) => {
+                let _ = send_response(&responder, ResponseType::Configuration, ResponsePayload::Configuration(()))
             }
             Ok(MessageAction::SendCommands) => {
                 let mut avaiable_commands: Vec<String> =

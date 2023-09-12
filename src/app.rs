@@ -20,10 +20,7 @@ use ratatui::{
     Frame, Terminal,
 };
 
-use crate::{
-    config_handler,
-    utils::{current_char_index, input_buffer_is_sci_notate, send_input_data},
-};
+use crate::{utils::{current_char_index, input_buffer_is_sci_notate, send_input_data}, config_utils};
 
 /// The input mode state of the application
 #[derive(PartialEq)]
@@ -122,9 +119,11 @@ impl StatefulTopPanel {
 }
 
 /// App holds the state of the application
-pub struct App {
+pub struct App<'a> {
     /// Current value of the input box
     input: String,
+    /// Socket used to communicate with the backend
+    pub socket: &'a Socket,
     /// Current input mode
     input_mode: InputMode,
     /// History of recorded messages
@@ -139,15 +138,13 @@ pub struct App {
     left_cursor_offset: u16,
     /// Stack selection state
     top_panel_state: StatefulTopPanel,
-    /// Configuration
-    config: config_handler::Config,
 }
 
-impl Default for App {
-    fn default() -> App {
-        config_handler::init_config();
+impl<'a> App<'a> {
+    pub fn new(socket: &'a Socket) -> App<'a> {
         App {
             input: String::new(),
+            socket,
             input_mode: InputMode::None,
             history: Vec::new(),
             info: vec![
@@ -159,25 +156,20 @@ impl Default for App {
             error: String::new(),
             left_cursor_offset: 0,
             top_panel_state: StatefulTopPanel::with_items(vec![]),
-            config: config_handler::read_user_config().unwrap(),
         }
     }
 }
 
-impl App {
+impl<'a> App<'a> {
     /// Get keybind from config file as string
-    pub fn keybind_from_config(&self, keybind_name: &str) -> &str {
-        self.config
-            .get("keybinds", keybind_name)
-            .unwrap()
-            .as_str()
-            .unwrap()
+    pub fn keybind_from_config(&mut self, keybind_name: &str) -> String {
+        config_utils::get_key(self, "keybinds", keybind_name).to_string()
     }
 
     /// Get keycode from config
-    pub fn keycode_from_config(&self, keybind_name: &str) -> KeyCode {
+    pub fn keycode_from_config(&mut self, keybind_name: &str) -> KeyCode {
         let keybind = self.keybind_from_config(keybind_name);
-        match keybind {
+        match keybind.as_str() {
             "backspace" => KeyCode::Backspace,
             "enter" => KeyCode::Enter,
             "left" => KeyCode::Left,
@@ -379,12 +371,8 @@ pub fn run_app<B: Backend>(
     backend_join_handle: &thread::JoinHandle<()>,
 ) -> io::Result<()> {
     // set default start mode
-    let start_mode = app
-        .config
-        .get("system", "start_mode")
-        .unwrap()
-        .as_str()
-        .unwrap();
+    let binding = config_utils::get_key(&mut app, "system", "start_mode");
+    let start_mode = binding.as_str().unwrap();
 
     app.input_mode = match start_mode {
         "algebraic" => InputMode::Algebraic,

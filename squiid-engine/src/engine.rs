@@ -5,34 +5,63 @@ use rust_decimal_macros::dec;
 
 use crate::{
     bucket::{build_exposed_constants, Bucket, BucketTypes, ConstantTypes},
-    protocol::server_response::MessageAction,
-    utils::{ID_REGEX, NUMERIC_REGEX},
+    protocol::{server_response::MessageAction, client_request::{ConfigurationPayload, ConfigurationActionType}},
+    utils::{ID_REGEX, NUMERIC_REGEX}, config_handler,
 };
 
 /// Evaluation engine struct
 pub struct Engine {
+    /// The stack of bucket items
     pub stack: Vec<Bucket>,
+    /// Hashmap of set variables
     pub variables: HashMap<String, Bucket>,
+    /// History vecdeque for undo support
     pub history: VecDeque<Vec<Bucket>>,
+    /// Variables vecdeque for undo support
     pub variable_history: VecDeque<HashMap<String, Bucket>>,
+    /// Previous answer
     pub previous_answer: Bucket,
+    /// Configuration struct
+    config: config_handler::Config
 }
 
 /// Evaluation engine implementation
 impl Engine {
     /// Helper to construct a new engine object
     pub fn new() -> Engine {
+        config_handler::init_config();
         Engine {
-            /// The stack of bucket items
             stack: Vec::new(),
-            /// Hashmap of set variables
             variables: HashMap::new(),
-            /// History vecdeque for undo support
             history: VecDeque::new(),
-            /// Variables vecdeque for undo support
             variable_history: VecDeque::new(),
-            /// Previous answer
             previous_answer: Bucket::from(0),
+            config: config_handler::read_user_config().unwrap(),
+        }
+    }
+
+    /// handle config data sent to the server
+    pub fn handle_config_data(&self, data: ConfigurationPayload) -> Result<MessageAction, String> {
+        let value_option = match data.action_type {
+            ConfigurationActionType::GetKey => {
+                if data.section.is_none() {
+                    return Err("config section not provided in GetKey".to_string());
+                }
+                if data.key.is_none() {
+                    return Err("config key not provided in GetKey".to_string());
+                }
+                self.config.get(&data.section.unwrap(), &data.key.unwrap())
+            },
+            ConfigurationActionType::ListSections => {
+                self.config.list_sections()
+            },
+            ConfigurationActionType::ListKeys => todo!(),
+            ConfigurationActionType::ListValues => todo!(),
+            ConfigurationActionType::ListItems => todo!(),
+            ConfigurationActionType::SetKey => todo!(),
+            ConfigurationActionType::CreateSection => todo!(),
+            ConfigurationActionType::DeleteSection => todo!(),
+            ConfigurationActionType::DeleteKey => todo!(),
         }
     }
 

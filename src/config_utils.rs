@@ -1,4 +1,3 @@
-use nng::Socket;
 use serde_json::Value;
 use squiid_engine::{
     extract_data,
@@ -20,7 +19,6 @@ use crate::{
 /// send config data to the server and return the response
 #[allow(dead_code)]
 fn send_configuration_data(
-    socket: &Socket,
     app: &mut App,
     config_payload: ConfigurationPayload,
 ) -> Value {
@@ -28,7 +26,7 @@ fn send_configuration_data(
     let payload = RequestPayload::Configuration(config_payload);
 
     // send data
-    let response = send_data(socket, RequestType::Configuration, payload);
+    let response = send_data(app.socket, RequestType::Configuration, payload);
     // error handling
     update_stack_or_error(response.clone(), app);
 
@@ -38,9 +36,8 @@ fn send_configuration_data(
 
 /// Get a key from the config
 #[allow(dead_code)]
-fn get_key(socket: &Socket, app: &mut App, section: &str, key: &str) -> Value {
+pub fn get_key(app: &mut App, section: &str, key: &str) -> Value {
     send_configuration_data(
-        socket,
         app,
         ConfigurationPayload::new(
             ConfigurationActionType::GetKey,
@@ -53,9 +50,8 @@ fn get_key(socket: &Socket, app: &mut App, section: &str, key: &str) -> Value {
 
 /// List sections from the config
 #[allow(dead_code)]
-fn list_sections(socket: &Socket, app: &mut App) -> Value {
+pub fn list_sections(app: &mut App) -> Value {
     send_configuration_data(
-        socket,
         app,
         ConfigurationPayload::new(ConfigurationActionType::ListSections, None, None, None),
     )
@@ -63,9 +59,8 @@ fn list_sections(socket: &Socket, app: &mut App) -> Value {
 
 /// List keys from a specific section
 #[allow(dead_code)]
-fn list_keys(socket: &Socket, app: &mut App, section: &str) -> Value {
+pub fn list_keys(app: &mut App, section: &str) -> Value {
     send_configuration_data(
-        socket,
         app,
         ConfigurationPayload::new(
             ConfigurationActionType::ListKeys,
@@ -78,9 +73,8 @@ fn list_keys(socket: &Socket, app: &mut App, section: &str) -> Value {
 
 /// List values from the config
 #[allow(dead_code)]
-fn list_values(socket: &Socket, app: &mut App, section: &str) -> Value {
+pub fn list_values(app: &mut App, section: &str) -> Value {
     send_configuration_data(
-        socket,
         app,
         ConfigurationPayload::new(
             ConfigurationActionType::ListValues,
@@ -93,9 +87,8 @@ fn list_values(socket: &Socket, app: &mut App, section: &str) -> Value {
 
 /// List items from the config
 #[allow(dead_code)]
-fn list_items(socket: &Socket, app: &mut App, section: &str) -> Value {
+pub fn list_items(app: &mut App, section: &str) -> Value {
     send_configuration_data(
-        socket,
         app,
         ConfigurationPayload::new(
             ConfigurationActionType::ListItems,
@@ -108,9 +101,8 @@ fn list_items(socket: &Socket, app: &mut App, section: &str) -> Value {
 
 /// Set a specific key in the config
 #[allow(dead_code)]
-fn set_key(socket: &Socket, app: &mut App, section: &str, key: &str, value: &str) -> Value {
+pub fn set_key(app: &mut App, section: &str, key: &str, value: &str) -> Value {
     send_configuration_data(
-        socket,
         app,
         ConfigurationPayload::new(
             ConfigurationActionType::ListValues,
@@ -123,9 +115,8 @@ fn set_key(socket: &Socket, app: &mut App, section: &str, key: &str, value: &str
 
 /// Create a section in the config
 #[allow(dead_code)]
-fn create_section(socket: &Socket, app: &mut App, section: &str) -> Value {
+pub fn create_section(app: &mut App, section: &str) -> Value {
     send_configuration_data(
-        socket,
         app,
         ConfigurationPayload::new(
             ConfigurationActionType::CreateSection,
@@ -138,9 +129,8 @@ fn create_section(socket: &Socket, app: &mut App, section: &str) -> Value {
 
 /// Delete a specific section in the config
 #[allow(dead_code)]
-fn delete_section(socket: &Socket, app: &mut App, section: &str) -> Value {
+pub fn delete_section(app: &mut App, section: &str) -> Value {
     send_configuration_data(
-        socket,
         app,
         ConfigurationPayload::new(
             ConfigurationActionType::DeleteSection,
@@ -153,9 +143,8 @@ fn delete_section(socket: &Socket, app: &mut App, section: &str) -> Value {
 
 /// Delete a specific key in the config
 #[allow(dead_code)]
-fn delete_key(socket: &Socket, app: &mut App, section: &str, key: &str) -> Value {
+pub fn delete_key(app: &mut App, section: &str, key: &str) -> Value {
     send_configuration_data(
-        socket,
         app,
         ConfigurationPayload::new(
             ConfigurationActionType::DeleteKey,

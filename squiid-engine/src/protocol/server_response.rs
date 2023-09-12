@@ -8,6 +8,7 @@ use crate::bucket::Bucket;
 pub enum MessageAction {
     SendStack,
     SendCommands,
+    SendConfigValue,
     Quit,
 }
 

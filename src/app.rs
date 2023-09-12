@@ -780,8 +780,37 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     };
 
     if app.input_mode == InputMode::Algebraic || app.input_mode == InputMode::Rpn {
+        let input_width = chunks[2].width as usize - 3; // Account for border characters
+
+        // Determine the starting position of the text to display
+        let mut start_pos = 0;
+        if app.input.len() > input_width {
+            // cursor_pos keeps track of the cursor position within the entire line of text
+            // cursor_position_x keeps track of the x position of the rendered cursor
+            let cursor_pos = app
+                .input
+                .len()
+                .saturating_sub(app.left_cursor_offset as usize);
+            if cursor_pos > input_width {
+                start_pos = cursor_pos - input_width + 1;
+            }
+        }
+
+        // Truncate and scroll the input text as needed
+        let truncated_input = &app.input[start_pos.saturating_sub(1)..];
+
+        // Calculate the cursor position based on the truncated input
+        if app.left_cursor_offset as usize > app.input.len() {
+            app.left_cursor_offset = app.input.len() as u16;
+        }
+
+        // calculate the rendered cursor's x position
+        let cursor_position_x = chunks[2].x
+            + (truncated_input.width() as u16).saturating_sub(app.left_cursor_offset)
+            + 1;
+
         // THIS IS WHERE THE INPUT IS BEING ADDED TO THE PARAGRAPH DISPLAY
-        let input = Paragraph::new(app.input.as_ref())
+        let input = Paragraph::new(truncated_input)
             .style(match app.input_mode {
                 _ if app.top_panel_state.currently_selecting() => Style::default(),
                 InputMode::None => Style::default(),
@@ -790,29 +819,8 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             })
             .block(Block::default().borders(Borders::ALL).title(input_label));
         f.render_widget(input, chunks[2]);
-    }
-    match app.input_mode {
-        InputMode::None =>
-            // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
-            {}
 
-        InputMode::Algebraic | InputMode::Rpn if !app.top_panel_state.currently_selecting() => {
-            // Make the cursor visible and ask ratatui to put it at the specified coordinates after rendering
-
-            let mut cursor_position_x = chunks[2].x + app.input.width() as u16 + 1;
-            if app.left_cursor_offset as usize > app.input.width() {
-                app.left_cursor_offset = app.input.width() as u16;
-            }
-
-            cursor_position_x -= app.left_cursor_offset;
-            f.set_cursor(
-                // Put cursor past the end of the input text
-                cursor_position_x,
-                // Move one line down, from the border to the input line
-                chunks[2].y + 1,
-            )
-        }
-
-        _ => (),
+        // Set the cursor position
+        f.set_cursor(cursor_position_x, chunks[2].y + 1);
     }
 }

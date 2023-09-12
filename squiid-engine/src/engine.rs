@@ -5,8 +5,9 @@ use rust_decimal_macros::dec;
 
 use crate::{
     bucket::{build_exposed_constants, Bucket, BucketTypes, ConstantTypes},
-    protocol::{server_response::MessageAction, client_request::{ConfigurationPayload, ConfigurationActionType}},
-    utils::{ID_REGEX, NUMERIC_REGEX}, config_handler,
+    config_handler,
+    protocol::server_response::MessageAction,
+    utils::{ID_REGEX, NUMERIC_REGEX},
 };
 
 /// Evaluation engine struct
@@ -22,7 +23,7 @@ pub struct Engine {
     /// Previous answer
     pub previous_answer: Bucket,
     /// Configuration struct
-    config: config_handler::Config
+    pub config: config_handler::Config,
 }
 
 /// Evaluation engine implementation
@@ -37,31 +38,6 @@ impl Engine {
             variable_history: VecDeque::new(),
             previous_answer: Bucket::from(0),
             config: config_handler::read_user_config().unwrap(),
-        }
-    }
-
-    /// handle config data sent to the server
-    pub fn handle_config_data(&self, data: ConfigurationPayload) -> Result<MessageAction, String> {
-        let value_option = match data.action_type {
-            ConfigurationActionType::GetKey => {
-                if data.section.is_none() {
-                    return Err("config section not provided in GetKey".to_string());
-                }
-                if data.key.is_none() {
-                    return Err("config key not provided in GetKey".to_string());
-                }
-                self.config.get(&data.section.unwrap(), &data.key.unwrap())
-            },
-            ConfigurationActionType::ListSections => {
-                self.config.list_sections()
-            },
-            ConfigurationActionType::ListKeys => todo!(),
-            ConfigurationActionType::ListValues => todo!(),
-            ConfigurationActionType::ListItems => todo!(),
-            ConfigurationActionType::SetKey => todo!(),
-            ConfigurationActionType::CreateSection => todo!(),
-            ConfigurationActionType::DeleteSection => todo!(),
-            ConfigurationActionType::DeleteKey => todo!(),
         }
     }
 

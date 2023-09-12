@@ -20,7 +20,10 @@ use ratatui::{
     Frame, Terminal,
 };
 
-use crate::{utils::{current_char_index, input_buffer_is_sci_notate, send_input_data}, config_utils};
+use crate::{
+    config_utils,
+    utils::{current_char_index, input_buffer_is_sci_notate, send_input_data},
+};
 
 /// The input mode state of the application
 #[derive(PartialEq)]
@@ -163,7 +166,10 @@ impl<'a> App<'a> {
 impl<'a> App<'a> {
     /// Get keybind from config file as string
     pub fn keybind_from_config(&mut self, keybind_name: &str) -> String {
-        config_utils::get_key(self, "keybinds", keybind_name).to_string()
+        config_utils::get_key(self, "keybinds", keybind_name)
+            .as_str()
+            .unwrap()
+            .to_string()
     }
 
     /// Get keycode from config

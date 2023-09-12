@@ -1,8 +1,8 @@
 pub mod bucket;
 pub mod command_mappings;
+pub mod config_handler;
 pub mod engine;
 pub mod utils;
-pub mod config_handler;
 
 pub mod protocol {
     pub mod client_request;
@@ -20,7 +20,10 @@ use engine::Engine;
 
 #[cfg(feature = "ipc")]
 use nng::{Protocol, Socket};
-use protocol::server_response::MessageAction;
+use protocol::{
+    client_request::{ConfigurationActionType, ConfigurationPayload},
+    server_response::MessageAction,
+};
 
 #[cfg(feature = "ipc")]
 use crate::{
@@ -85,11 +88,11 @@ pub fn start_server(address: Option<&str>) {
                 &commands,
                 extract_data!(&recieved.payload, RequestPayload::Input),
             ),
-            RequestType::Configuration => engine.handle_config_data(extract_data!(recieved.payload, RequestPayload::Configuration)),
+            RequestType::Configuration => handle_config_data(
+                &mut engine,
+                extract_data!(recieved.payload.clone(), RequestPayload::Configuration),
+            ),
         };
-
-        // set previous answer
-        let _ = engine.update_previous_answer();
 
         match result {
             Ok(MessageAction::SendStack) => {
@@ -99,8 +102,12 @@ pub fn start_server(address: Option<&str>) {
                     ResponsePayload::Stack(engine.stack.clone()),
                 );
             }
-            Ok(MessageAction::SendConfigValue) => {
-                let _ = send_response(&responder, ResponseType::Configuration, ResponsePayload::Configuration(()))
+            Ok(MessageAction::SendConfigValue(config_value)) => {
+                let _ = send_response(
+                    &responder,
+                    ResponseType::Configuration,
+                    ResponsePayload::Configuration(config_value.into()),
+                );
             }
             Ok(MessageAction::SendCommands) => {
                 let mut avaiable_commands: Vec<String> =
@@ -125,6 +132,9 @@ pub fn start_server(address: Option<&str>) {
             }
         }
     }
+
+    // set previous answer
+    let _ = engine.update_previous_answer();
 
     // send quit message to client
     let _ = send_response(
@@ -161,4 +171,87 @@ pub fn handle_data(
     };
 
     result
+}
+
+/// handle config data sent to the server
+pub fn handle_config_data(
+    engine: &mut Engine,
+    data: ConfigurationPayload,
+) -> Result<MessageAction, String> {
+    let value_option = match data.action_type {
+        ConfigurationActionType::GetKey => {
+            if data.section.is_none() {
+                return Err("config section not provided in GetKey".to_string());
+            }
+            if data.key.is_none() {
+                return Err("config key not provided in GetKey".to_string());
+            }
+            engine
+                .config
+                .get_key(&data.section.unwrap(), &data.key.unwrap())
+        }
+        ConfigurationActionType::ListSections => engine.config.list_sections(),
+        ConfigurationActionType::ListKeys => {
+            if data.section.is_none() {
+                return Err("config section not provided in ListKeys".to_string());
+            }
+            engine.config.list_keys(&data.section.unwrap())
+        }
+        ConfigurationActionType::ListValues => {
+            if data.section.is_none() {
+                return Err("config section not provided in ListValues".to_string());
+            }
+            engine.config.list_values(&data.section.unwrap())
+        }
+        ConfigurationActionType::ListItems => {
+            if data.section.is_none() {
+                return Err("config section not provided in ListItems".to_string());
+            }
+            engine.config.list_items(&data.section.unwrap())
+        }
+        ConfigurationActionType::SetKey => {
+            if data.section.is_none() {
+                return Err("config section not provided in SetKey".to_string());
+            }
+            if data.key.is_none() {
+                return Err("config key not provided in SetKey".to_string());
+            }
+            if data.value.is_none() {
+                return Err("config value not provided in SetKey".to_string());
+            }
+            engine.config.set_key(
+                &data.section.unwrap(),
+                &data.key.unwrap(),
+                data.value.unwrap(),
+            )
+        }
+        ConfigurationActionType::CreateSection => {
+            if data.section.is_none() {
+                return Err("config section not provided in CreateSection".to_string());
+            }
+            engine.config.create_section(&data.section.unwrap())
+        }
+        ConfigurationActionType::DeleteSection => {
+            if data.section.is_none() {
+                return Err("config section not provided in DeleteSection".to_string());
+            }
+            engine.config.delete_section(&data.section.unwrap())
+        }
+        ConfigurationActionType::DeleteKey => {
+            if data.section.is_none() {
+                return Err("config section not provided in DeleteKey".to_string());
+            }
+            if data.key.is_none() {
+                return Err("config key not provided in DeleteKey".to_string());
+            }
+            engine
+                .config
+                .delete_key(&data.section.unwrap(), &data.key.unwrap())
+        }
+    };
+
+    match value_option {
+        Ok(item) => Ok(MessageAction::SendConfigValue(item)),
+        Err(e) => Err(e),
+    }
 }

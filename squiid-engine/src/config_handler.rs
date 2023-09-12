@@ -2,6 +2,8 @@ use directories::{BaseDirs, ProjectDirs};
 use std::{fs, io::Write, path::PathBuf};
 use toml::Value;
 
+use crate::protocol::server_response::ConfigValue;
+
 /// Wrapper for the config
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -15,105 +17,122 @@ impl From<Value> for Config {
     }
 }
 
-enum ConfigValue<'a> {
-    Value(&'a Value),
-    StringList(Vec<&'a String>),
-    ValueList(Vec<&'a Value>),
-    KeyValueList(Vec<(&'a String, &'a Value)>)
-}
-
 impl Config {
     /// Get a section/key from the config
-    pub fn get(&self, section: &str, key: &str) -> Option<ConfigValue> {
+    pub fn get_key(&self, section: &str, key: &str) -> Result<ConfigValue, String> {
         let section_value = self.config.get(section);
         if let Some(Value::Table(section_table)) = section_value {
             match section_table.get(key) {
-                Some(value) => Some(ConfigValue::Value(value)),
-                None => None
+                Some(value) => Ok(ConfigValue::Value(value.clone())),
+                None => Err(format!(
+                    "could not get key {} in section {} in get_key",
+                    key, section
+                )),
             }
         } else {
-            None
+            Err(format!("could not get section {} in get_key", section))
         }
     }
 
     /// List sections in the config
     #[allow(dead_code)]
-    pub fn list_sections(&self) -> Option<ConfigValue> {
+    pub fn list_sections(&self) -> Result<ConfigValue, String> {
         match self.config.as_table() {
-            Some(table) => Some(ConfigValue::StringList(table.keys().collect::<Vec<&String>>())),
-            None => Some(ConfigValue::StringList(Vec::new())),
+            Some(table) => Ok(ConfigValue::StringList(
+                table.keys().map(|s| s.to_owned()).collect(),
+            )),
+            None => Ok(ConfigValue::StringList(Vec::new())),
         }
     }
 
     /// List the keys within a section
-    pub fn list_keys(&self, section: &str) -> Option<ConfigValue> {
+    pub fn list_keys(&self, section: &str) -> Result<ConfigValue, String> {
         let section_value = self.config.get(section);
         if let Some(Value::Table(section_table)) = section_value {
-            Some(ConfigValue::StringList(section_table.keys().collect::<Vec<&String>>()))
+            Ok(ConfigValue::StringList(
+                section_table.keys().map(|s| s.to_owned()).collect(),
+            ))
         } else {
-            None
+            Err(format!("could not get section {} in list_keys", section))
         }
     }
 
     /// List the values within a section
-    pub fn list_values(&self, section: &str) -> Option<ConfigValue> {
+    pub fn list_values(&self, section: &str) -> Result<ConfigValue, String> {
         let section_value = self.config.get(section);
         if let Some(Value::Table(section_table)) = section_value {
-            Some(ConfigValue::ValueList(section_table.values().collect::<Vec<&Value>>()))
+            Ok(ConfigValue::ValueList(
+                section_table.values().map(|v| v.to_owned()).collect(),
+            ))
         } else {
-            None
+            Err(format!("could not get section {} in list_values", section))
         }
     }
 
     /// List the key, value pairs within a section
     /// returns a list of tuples
     /// [(key, value), (key, value)]
-    pub fn list_items(&self, section: &str) -> Option<ConfigValue> {
+    pub fn list_items(&self, section: &str) -> Result<ConfigValue, String> {
         let keys = self.list_keys(section);
         let values = self.list_values(section);
 
-        if let (Some(ConfigValue::StringList(key_list)), Some(ConfigValue::ValueList(value_list))) = (keys, values) {
-            let pairs: Vec<(&String, &Value)> = key_list
+        if let (Ok(ConfigValue::StringList(key_list)), Ok(ConfigValue::ValueList(value_list))) =
+            (keys, values)
+        {
+            let pairs: Vec<(String, Value)> = key_list
                 .iter()
                 .zip(value_list.iter())
-                .map(|(k, v)| (&**k, *v))
+                .map(|(k, v)| (k.to_owned(), v.to_owned()))
                 .collect();
-            Some(ConfigValue::KeyValueList(pairs))
+            Ok(ConfigValue::KeyValueList(pairs))
         } else {
-            None
+            Err(format!("could not get section {} in list_items", section))
         }
     }
 
     /// Set a specific key in a specific section of the config
-    pub fn set(&mut self, section: &str, key: &str, value: Value) {
+    pub fn set_key(
+        &mut self,
+        section: &str,
+        key: &str,
+        value: Value,
+    ) -> Result<ConfigValue, String> {
         if let Value::Table(config) = &mut self.config {
             if let Some(Value::Table(section_config)) = config.get_mut(section) {
                 section_config.insert(key.to_string(), value);
+                return Ok(ConfigValue::None(()));
             }
         }
+        Err(format!("could not set {}.{} to {}", section, key, value))
     }
 
     /// Create a new section in the config
-    pub fn create_section(&mut self, section: &str) {
+    pub fn create_section(&mut self, section: &str) -> Result<ConfigValue, String> {
         if let Value::Table(config) = &mut self.config {
             config.insert(section.to_string(), Value::Table(toml::map::Map::new()));
+            return Ok(ConfigValue::None(()));
         }
+        Err(format!("could not create section {}", section))
     }
 
     /// delete a section in the config
-    pub fn delete_section(&mut self, section: &str) {
+    pub fn delete_section(&mut self, section: &str) -> Result<ConfigValue, String> {
         if let Value::Table(config) = &mut self.config {
             config.remove(section);
+            return Ok(ConfigValue::None(()));
         }
+        Err(format!("could not delete section {}", section))
     }
 
     /// delete a key in a section of the config
-    pub fn delete_key(&mut self, section: &str, key: &str) {
+    pub fn delete_key(&mut self, section: &str, key: &str) -> Result<ConfigValue, String> {
         if let Value::Table(config) = &mut self.config {
             if let Some(Value::Table(section_data)) = config.get_mut(section) {
                 section_data.remove(key);
+                return Ok(ConfigValue::None(()));
             }
         }
+        Err(format!("could not delete key {}.{}", section, key))
     }
 }
 

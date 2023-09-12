@@ -43,7 +43,7 @@ pub struct ConfigurationPayload {
     pub action_type: ConfigurationActionType,
     pub section: Option<String>,
     pub key: Option<String>,
-    pub value: Option<String>,
+    pub value: Option<toml::Value>,
 }
 
 impl ConfigurationPayload {
@@ -51,7 +51,7 @@ impl ConfigurationPayload {
         action_type: ConfigurationActionType,
         section: Option<String>,
         key: Option<String>,
-        value: Option<String>,
+        value: Option<toml::Value>,
     ) -> Self {
         Self {
             action_type,

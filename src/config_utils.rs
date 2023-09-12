@@ -18,10 +18,7 @@ use crate::{
 
 /// send config data to the server and return the response
 #[allow(dead_code)]
-fn send_configuration_data(
-    app: &mut App,
-    config_payload: ConfigurationPayload,
-) -> Value {
+fn send_configuration_data(app: &mut App, config_payload: ConfigurationPayload) -> Value {
     // create payload
     let payload = RequestPayload::Configuration(config_payload);
 

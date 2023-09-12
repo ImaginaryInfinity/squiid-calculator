@@ -1,7 +1,7 @@
 fn main() {
     // only run if target os is windows
     if std::env::var("CARGO_CFG_TARGET_OS").unwrap() != "windows" {
-        return;
+        std::process::exit(0)
     }
 
     // only build the resource for release builds

@@ -785,7 +785,12 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         // Determine the starting position of the text to display
         let mut start_pos = 0;
         if app.input.len() > input_width {
-            let cursor_pos = app.input.len() - app.left_cursor_offset as usize;
+            // cursor_pos keeps track of the cursor position within the entire line of text
+            // cursor_position_x keeps track of the x position of the rendered cursor
+            let cursor_pos = app
+                .input
+                .len()
+                .saturating_sub(app.left_cursor_offset as usize);
             if cursor_pos > input_width {
                 start_pos = cursor_pos - input_width + 1;
             }
@@ -793,17 +798,19 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 
         // Truncate and scroll the input text as needed
         let truncated_input = &app.input[start_pos.saturating_sub(1)..];
-        let mut cursor_position_x = chunks[2].x + truncated_input.width() as u16 + 1;
 
         // Calculate the cursor position based on the truncated input
-        if app.left_cursor_offset as usize > input_width {
-            app.left_cursor_offset = input_width as u16;
+        if app.left_cursor_offset as usize > app.input.len() {
+            app.left_cursor_offset = app.input.len() as u16;
         }
 
-        cursor_position_x -= app.left_cursor_offset;
+        // calculate the rendered cursor's x position
+        let cursor_position_x = chunks[2].x
+            + (truncated_input.width() as u16).saturating_sub(app.left_cursor_offset)
+            + 1;
 
         // THIS IS WHERE THE INPUT IS BEING ADDED TO THE PARAGRAPH DISPLAY
-        let input = Paragraph::new(truncated_input.as_ref())
+        let input = Paragraph::new(truncated_input)
             .style(match app.input_mode {
                 _ if app.top_panel_state.currently_selecting() => Style::default(),
                 InputMode::None => Style::default(),

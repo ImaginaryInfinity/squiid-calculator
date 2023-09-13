@@ -3,4 +3,5 @@
  - Create merge request
  - Update subtree versions
  - Push to subtrees
+ - Update documentation on website
  - Run release pipeline

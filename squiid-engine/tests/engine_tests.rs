@@ -638,7 +638,7 @@ fn test_lt() {
 }
 
 #[test]
-fn test_egt() {
+fn test_geq() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("-1".into());
@@ -651,18 +651,18 @@ fn test_egt() {
     let _ = engine.add_item_to_stack("2".into());
 
     // evaluate from last stack entries to first
-    let _ = engine.egt();
+    let _ = engine.geq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 
-    let _ = engine.egt();
+    let _ = engine.geq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 
-    let _ = engine.egt();
+    let _ = engine.geq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
 }
 
 #[test]
-fn test_elt() {
+fn test_leq() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("-1".into());
@@ -675,13 +675,13 @@ fn test_elt() {
     let _ = engine.add_item_to_stack("2".into());
 
     // evaluate from last stack entries to first
-    let _ = engine.elt();
+    let _ = engine.leq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 
-    let _ = engine.elt();
+    let _ = engine.leq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
 
-    let _ = engine.elt();
+    let _ = engine.leq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 }
 

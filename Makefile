@@ -3,13 +3,14 @@
 PREFIX ?= /usr
 BINDIR ?= $(PREFIX)/bin
 APPLICATIONSDIR ?= $(PREFIX)/share/applications
-ICONSDIR ?= $(PREFIX)/share/icons/hicolor
+ICONSDIR ?= $(PREFIX)/share/icons/hicolor/scalable/apps/
 
 BINARY_NAME := squiid
 BINARY_PATH ?= target/release/$(BINARY_NAME)
 DESKTOP_FILE_NAME := squiid.desktop
 DESKTOP_FILE_PATH ?= packages/$(DESKTOP_FILE_NAME)
 ICON_FILE_NAME := squiidsquare.svg
+ICON_FILE_DEST_NAME := squiid.svg
 ICON_FILE_PATH ?= branding/$(ICON_FILE_NAME)
 
 DEBUILD_OPTIONS ?= -us -uc
@@ -65,12 +66,12 @@ build-musl: require ## Build the Linux MUSL version
 install: build ## Install Squiid to the system
 	$(ELEVATE) install -D -v -m755 $(BINARY_PATH) $(DESTDIR)$(BINDIR)
 	$(ELEVATE) install -D -v -m644 $(DESKTOP_FILE_PATH) $(DESTDIR)$(APPLICATIONSDIR)
-	$(ELEVATE) install -D -v -m644 $(ICON_FILE_PATH) $(DESTDIR)$(ICONSDIR)
+	$(ELEVATE) install -D -v -m644 $(ICON_FILE_PATH) $(DESTDIR)$(ICONSDIR)/$(ICON_FILE_DEST_NAME)
 
 uninstall: ## Uninstall the version of Squiid installed with the Makefile
 	$(ELEVATE) rm $(DESTDIR)$(BINDIR)/$(BINARY_NAME)
 	$(ELEVATE) rm $(DESTDIR)$(APPLICATIONSDIR)/$(DESKTOP_FILE_NAME)
-	$(ELEVATE) rm $(DESTDIR)$(ICONSDIR)/$(ICON_FILE_NAME)
+	$(ELEVATE) rm $(DESTDIR)$(ICONSDIR)/$(ICON_FILE_DEST_NAME)
 
 flatpak: require clean ## Build the flatpak in package-build/
 	@python3 --version >/dev/null 2>&1 || (echo "ERROR: python3 is required."; exit 1)
@@ -114,7 +115,7 @@ snap: require clean ## Build the snap
 
 	rm -rf snap
 
-appimage: require clean build ## Build the AppImage
+appimage: require clean build-musl ## Build the AppImage
 	# Check for appimagetool
 	@$(APPIMAGETOOL) --version > /dev/null 2>&1 || (echo "ERROR: appimagetool is required"; exit 1)
 	# Check for curl
@@ -126,7 +127,7 @@ appimage: require clean build ## Build the AppImage
 	mkdir -p package-build/squiid.AppDir/usr/bin
 	mkdir -p package-build/squiid.AppDir/usr/share/icons
 	# Copy squiid binary
-	cp target/release/squiid package-build/squiid.AppDir/usr/bin/squiid
+	cp target/x86_64-unknown-linux-musl/release/squiid package-build/squiid.AppDir/usr/bin/squiid
 	# Copy AppRun
 	cp packages/appimage/AppRun package-build/squiid.AppDir/AppRun
 	# Make AppRun executable
@@ -214,7 +215,7 @@ aur-metadata: require clean ## Build the AUR metadata files for deployment
 	mkdir -p package-build/
 	@envsubst '$${VERSION}' < packages/arch/PKGBUILD > package-build/PKGBUILD
 	# retrieve sha512sum of source
-	export SHA512SUM=$$(curl -sL $$(cd package-build; makepkg --printsrcinfo | makepkg --printsrcinfo | grep -oP 'source = \K.*') | sha512sum | awk '{print $$1}'); \
+	export SHA512SUM=$$(curl -sL $$(cd package-build; makepkg --printsrcinfo | grep -oP 'source = \K.*') | sha512sum | awk '{print $$1}'); \
 	envsubst '$${SHA512SUM}' < package-build/PKGBUILD > package-build/PKGBUILD-new
 
 	mv package-build/PKGBUILD-new package-build/PKGBUILD
@@ -223,6 +224,20 @@ aur-metadata: require clean ## Build the AUR metadata files for deployment
 
 arch-package: aur-metadata ## Build an Arch package
 	cd package-build; makepkg -s
+
+homebrew: clean ## Format the homebrew metadata
+	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
+
+	mkdir -p package-build/
+	@envsubst '$${VERSION}' < packages/homebrew/squiid.rb > package-build/squiid.rb
+	# retrieve sha256sum of source
+	export SHA256SUM=$$(curl -sL $$(awk -F '"' '/url/ {print $$2}' package-build/squiid.rb) | sha256sum | awk '{print $$1}'); \
+	envsubst '$${SHA256SUM}' < package-build/squiid.rb > package-build/squiid.new
+
+	mv package-build/squiid.new package-build/squiid.rb
+
+	@echo "squiid.rb can be found in the package-build/ directory"
+	@echo "Commit it to your branch of homebrew-core to update"
 
 deb: require clean
 	@git --version > /dev/null 2>&1 || (echo "ERROR: git is required"; exit 1)

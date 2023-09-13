@@ -22,7 +22,7 @@ squiid-engine = { path="./squiid-engine" }
 squiid-parser = { path="./squiid-parser" }
 unicode-width = "0.1.10"
 
-[build-dependencies]
+[target.'cfg(target_os = "windows")'.build-dependencies]
 winresource = "0.1.15"
 
 [profile.release]

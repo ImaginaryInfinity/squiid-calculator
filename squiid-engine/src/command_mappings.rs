@@ -44,8 +44,8 @@ pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     function_map_entry!(function_map, "eq", eq);
     function_map_entry!(function_map, "gt", gt);
     function_map_entry!(function_map, "lt", lt);
-    function_map_entry!(function_map, "egt", egt);
-    function_map_entry!(function_map, "elt", elt);
+    function_map_entry!(function_map, "leq", geq);
+    function_map_entry!(function_map, "geq", leq);
     function_map_entry!(function_map, "round", round);
     function_map_entry!(function_map, "invert", invert);
     function_map_entry!(function_map, "chs", chs);

@@ -65,6 +65,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
+    print!("{}[2J", 27 as char);
 
     // create app and run it
     let app = App::new(&socket);

@@ -109,6 +109,8 @@ In order to send data to the server, you must specify the type of request that y
     See [Configuration Protocol](./configuration_protocol.md) for more examples
 ----
 
+<!--TODO: talk about calling update_previous_answer-->
+
 ### Receiving data from the server
 
 There are a few types of messages that you can receive from the server. They are documented below.

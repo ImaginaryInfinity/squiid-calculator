@@ -122,6 +122,13 @@ pub fn start_server(address: Option<&str>) {
                     ResponsePayload::Commands(avaiable_commands),
                 );
             }
+            Ok(MessageAction::SendPrevAnswer) => {
+                let _ = send_response(
+                    &responder,
+                    ResponseType::PrevAnswer,
+                    ResponsePayload::PrevAnswer(engine.previous_answer.clone()),
+                );
+            }
             Ok(MessageAction::Quit) => break,
             Err(error) => {
                 let _ = send_response(
@@ -132,9 +139,6 @@ pub fn start_server(address: Option<&str>) {
             }
         }
     }
-
-    // set previous answer
-    let _ = engine.update_previous_answer();
 
     // send quit message to client
     let _ = send_response(

@@ -216,7 +216,7 @@ pub fn update_stack_or_error(msg: ServerResponseMessage, app: &mut App) {
         // the backend server thread finishes
         //
         // configuration return is handeled elsewhere
-        ResponseType::QuitSig | ResponseType::Configuration => (),
+        ResponseType::QuitSig | ResponseType::Configuration | ResponseType::PrevAnswer => (),
     }
 }
 
@@ -417,6 +417,8 @@ pub fn run_app<B: Backend>(
                     match key.code {
                         // Handle enter
                         _ if key.code == app.keycode_from_config("enter") => {
+                            send_input_data(socket, "update_previous_answer");
+
                             if app.top_panel_state.currently_selecting() {
                                 // currently selecting, insert into text
                                 let selected_item = app

@@ -8,6 +8,7 @@ pub enum MessageAction {
     SendStack,
     SendCommands,
     SendConfigValue(ConfigValue),
+    SendPrevAnswer,
     Quit,
 }
 
@@ -97,6 +98,8 @@ pub enum ResponseType {
     QuitSig,
     #[serde(rename = "configuration")]
     Configuration,
+    #[serde(rename = "previous_answer")]
+    PrevAnswer,
 }
 
 /// Types of message payloads to send to the client
@@ -113,4 +116,6 @@ pub enum ResponsePayload {
     QuitSig(Option<u8>),
     #[serde(rename = "configuration")]
     Configuration(serde_json::Value),
+    #[serde(rename = "previous_answer")]
+    PrevAnswer(Bucket),
 }

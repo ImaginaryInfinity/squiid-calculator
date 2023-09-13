@@ -225,10 +225,10 @@ impl Engine {
 
     /// Update the previous answer variable
     /// TODO: document that this function needs to be called a lot
-    pub fn update_previous_answer(&mut self) -> Result<String, String> {
+    pub fn update_previous_answer(&mut self) -> Result<MessageAction, String> {
         if !self.stack.is_empty() {
             self.previous_answer = self.stack.last().unwrap().clone();
-            Ok(String::from("ok"))
+            Ok(MessageAction::SendPrevAnswer)
         } else {
             Err(String::from("stack is empty"))
         }

@@ -1,5 +1,5 @@
 # Add
-`add` / `+` 
+`add` / ++plus++
 
 The add command will add two numbers
 

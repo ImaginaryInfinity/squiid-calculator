@@ -1,4 +1,6 @@
  - Update changelog.md
  - Update `packages/flatpak/net.imaginaryinfinity.Squiid.releases.xml` (`make xmlreleases`)
  - Create merge request
+ - Update subtree versions
+ - Push to subtrees
  - Run release pipeline

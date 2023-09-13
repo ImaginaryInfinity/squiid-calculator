@@ -1,5 +1,5 @@
 # Inverted Store
-`invstore` / `=`
+`invstore` / ++equal++
 
 The `invstore` command will store a value in a variable, with the variable name being the first argument. This is used for storing variables in algebraic mode, since that is the intuitive way `=` works. 
 

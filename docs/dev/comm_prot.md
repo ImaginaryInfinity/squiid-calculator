@@ -44,6 +44,7 @@ The transmission protocol for sending and receiving data to and from the engine 
 
 ```json
 {
+    "request_type": "command",
     "payload": "add"
 }
 ```
@@ -61,9 +62,106 @@ Something that you might get back from the server could look like this:
 }
 ```
 
+----
+
+### Sending data to the server
+In order to send data to the server, you must specify the type of request that you are making, along with the payload that goes along with your request. A table and examples of available request types are provided below.
+
+<!--TODO: talk about 1 at a time on input type -->
+
+| Request Type    | Payload                                                                                                                                         |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `input`         | The input as a string to be processed by Squiid's backend. Can be a command, number, or anything else to be evaluated by the engine             |
+| `configuration` | A set of options (detailed below) that deal with modifying Squiid's configuration file. See the page on [Configuration Protocol](./configuration_protocol.md) for more details |
+
+=== "input"
+
+    ```json
+    {
+        "request_type": "input",
+        "payload": "1"
+    }
+
+    {
+        "request_type": "input",
+        "payload": "2"
+    }
+
+    {
+        "request_type": "input",
+        "payload": "add"
+    }
+    ```
+
+=== "configuration"
+
+    ```json
+    {
+        "request_type": "configuration",
+        "payload": {
+            "action_type": "set",
+            "section": "system",
+            "key": "start_mode",
+            "value": "rpn"
+        }
+    }
+    ```
+    See [Configuration Protocol](./configuration_protocol.md) for more examples
+----
+
+### Receiving data from the server
+
+There are a few types of messages that you can receive from the server. They are documented below.
+
 | Response Type | Payload                                                            |
 | ------------- | ------------------------------------------------------------------ |
-| stack         | A list of every item in the stack                                  |
-| error         | A string containing an error message                               |
-| commands      | A list of every command                                            |
-| quitsig       | None. This is a confirmation that the server has successfully quit |
+| `stack`       | A list of every item in the stack                                  |
+| `error`       | A string containing an error message                               |
+| `commands`    | A list of every command                                            |
+| `quitsig`     | None. This is a confirmation that the server has successfully quit |
+
+=== "stack"
+
+    ```json
+    {
+        "response_type": "stack",
+        "payload": [
+            "1",
+            "2",
+            "3"
+        ]
+    }
+    ```
+
+=== "error"
+
+    ```json
+    {
+        "response_type": "error",
+        "payload": "Not enough items on stack for operation"
+    }
+    ```
+
+=== "commands"
+
+    ```json
+    {
+        "response_type": "commands",
+        "payload": [
+            "add",
+            "subtract",
+            "divide",
+            "multiply",
+            ...
+        ]
+    }
+    ```
+
+=== "quitsig"
+
+    ```json
+    {
+        "response_type": "quitsig",
+        "payload": null
+    }
+    ```

@@ -2,6 +2,8 @@ use directories::{BaseDirs, ProjectDirs};
 use std::{fs, io::Write, path::PathBuf};
 use toml::Value;
 
+use crate::protocol::server_response::ConfigValue;
+
 /// Wrapper for the config
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -17,47 +19,135 @@ impl From<Value> for Config {
 
 impl Config {
     /// Get a section/key from the config
-    pub fn get(&self, section: &str, key: &str) -> Option<&Value> {
+    pub fn get_key(&self, section: &str, key: &str) -> Result<ConfigValue, String> {
         let section_value = self.config.get(section);
         if let Some(Value::Table(section_table)) = section_value {
-            section_table.get(key)
+            match section_table.get(key) {
+                Some(value) => Ok(ConfigValue::Value(value.clone())),
+                None => Err(format!(
+                    "could not get key {} in section {} in get_key",
+                    key, section
+                )),
+            }
         } else {
-            None
+            Err(format!("could not get section {} in get_key", section))
+        }
+    }
+
+    /// List sections in the config
+    #[allow(dead_code)]
+    pub fn list_sections(&self) -> Result<ConfigValue, String> {
+        match self.config.as_table() {
+            Some(table) => Ok(ConfigValue::StringList(
+                table.keys().map(|s| s.to_owned()).collect(),
+            )),
+            None => Ok(ConfigValue::StringList(Vec::new())),
+        }
+    }
+
+    /// List the keys within a section
+    pub fn list_keys(&self, section: &str) -> Result<ConfigValue, String> {
+        let section_value = self.config.get(section);
+        if let Some(Value::Table(section_table)) = section_value {
+            Ok(ConfigValue::StringList(
+                section_table.keys().map(|s| s.to_owned()).collect(),
+            ))
+        } else {
+            Err(format!("could not get section {} in list_keys", section))
+        }
+    }
+
+    /// List the values within a section
+    pub fn list_values(&self, section: &str) -> Result<ConfigValue, String> {
+        let section_value = self.config.get(section);
+        if let Some(Value::Table(section_table)) = section_value {
+            Ok(ConfigValue::ValueList(
+                section_table.values().map(|v| v.to_owned()).collect(),
+            ))
+        } else {
+            Err(format!("could not get section {} in list_values", section))
+        }
+    }
+
+    /// List the key, value pairs within a section
+    /// returns a list of tuples
+    /// [(key, value), (key, value)]
+    pub fn list_items(&self, section: &str) -> Result<ConfigValue, String> {
+        let keys = self.list_keys(section);
+        let values = self.list_values(section);
+
+        if let (Ok(ConfigValue::StringList(key_list)), Ok(ConfigValue::ValueList(value_list))) =
+            (keys, values)
+        {
+            let pairs: Vec<(String, Value)> = key_list
+                .iter()
+                .zip(value_list.iter())
+                .map(|(k, v)| (k.to_owned(), v.to_owned()))
+                .collect();
+            Ok(ConfigValue::KeyValueList(pairs))
+        } else {
+            Err(format!("could not get section {} in list_items", section))
         }
     }
 
     /// Set a specific key in a specific section of the config
-    #[allow(dead_code)]
-    pub fn set(&mut self, section: &str, key: &str, value: Value) {
+    pub fn set_key(
+        &mut self,
+        section: &str,
+        key: &str,
+        value: Value,
+    ) -> Result<ConfigValue, String> {
         if let Value::Table(config) = &mut self.config {
             if let Some(Value::Table(section_config)) = config.get_mut(section) {
                 section_config.insert(key.to_string(), value);
+                return Ok(ConfigValue::None(()));
             }
         }
+        Err(format!("could not set {}.{} to {}", section, key, value))
     }
 
     /// Create a new section in the config
-    #[allow(dead_code)]
-    pub fn create_section(&mut self, section: &str) {
+    pub fn create_section(&mut self, section: &str) -> Result<ConfigValue, String> {
         if let Value::Table(config) = &mut self.config {
             config.insert(section.to_string(), Value::Table(toml::map::Map::new()));
+            return Ok(ConfigValue::None(()));
         }
+        Err(format!("could not create section {}", section))
+    }
+
+    /// delete a section in the config
+    pub fn delete_section(&mut self, section: &str) -> Result<ConfigValue, String> {
+        if let Value::Table(config) = &mut self.config {
+            config.remove(section);
+            return Ok(ConfigValue::None(()));
+        }
+        Err(format!("could not delete section {}", section))
+    }
+
+    /// delete a key in a section of the config
+    pub fn delete_key(&mut self, section: &str, key: &str) -> Result<ConfigValue, String> {
+        if let Value::Table(config) = &mut self.config {
+            if let Some(Value::Table(section_data)) = config.get_mut(section) {
+                section_data.remove(key);
+                return Ok(ConfigValue::None(()));
+            }
+        }
+        Err(format!("could not delete key {}.{}", section, key))
     }
 }
 
-/// Initialize config handler
-pub fn init_config() -> Config {
+/// Initialize the user config
+/// Tests if the user config exists, and if not, it is created
+pub fn init_config() {
     let config_path = determine_config_path();
     let config_exists = config_path.exists();
 
     if !config_exists {
         copy_default_config(config_path.clone());
     }
-
-    let config = read_config(config_path);
-    config.unwrap()
 }
 
+// TODO: document this somewhere
 /// Determine the path of the config file and make directories if required
 ///
 /// Linux: `~/.config/squiid/`
@@ -70,7 +160,7 @@ pub fn init_config() -> Config {
 fn determine_config_path() -> PathBuf {
     // try to determine correct config path
     let config_directory =
-        if let Some(proj_dirs) = ProjectDirs::from("org", "ImaginaryInfinity", "Squiid") {
+        if let Some(proj_dirs) = ProjectDirs::from("net", "ImaginaryInfinity", "Squiid") {
             let mut config_directory = proj_dirs.config_dir().to_path_buf();
             config_directory.push("config.toml");
             config_directory
@@ -114,7 +204,7 @@ fn read_config(config_path: PathBuf) -> Option<Config> {
     }
 }
 
-/// Write config file
+/// Write config file to a given path
 fn write_config(config: Config, config_path: PathBuf) {
     let config_string = toml::to_string_pretty(&config.config).unwrap();
 
@@ -124,31 +214,27 @@ fn write_config(config: Config, config_path: PathBuf) {
         .unwrap();
 }
 
-/// Function to update TOML config
-pub fn update_user_config() -> Option<Config> {
+/// Function to read the user config file and update it with any new values
+/// that may have been added to the system config file
+pub fn read_user_config() -> Option<Config> {
     let config_path = determine_config_path();
-    if !config_path.exists() {
-        return None;
-    }
+    let mut user_config = match read_config(config_path.clone()) {
+        Some(config) => config,
+        None => return None,
+    };
 
     let system_config: Value = toml::from_str(include_str!("config.toml")).unwrap();
 
-    let user_config_string = fs::read_to_string(config_path.clone()).unwrap();
-    let mut user_config: Value = toml::from_str(&user_config_string).unwrap();
-
     // update the system config with the user's currently chosen config setup
-    update_toml_values(&mut user_config, &system_config);
+    update_toml_values(&mut user_config.config, &system_config);
 
-    let new_user_config = Config {
-        config: user_config,
-    };
+    write_config(user_config.clone(), config_path);
 
-    write_config(new_user_config.clone(), config_path);
-
-    Some(new_user_config)
+    Some(user_config)
 }
 
 /// Recursive function to update TOML values
+/// shadows user_config onto system_config
 fn update_toml_values(user_config: &mut Value, system_config: &Value) {
     match (user_config, system_config) {
         (Value::Table(user_table), Value::Table(system_table)) => {

@@ -18,7 +18,7 @@ abs(-4)
 ```
 
 ### RPN Example
-See [negative numbers](./user/negative_numbers.md)
+See [negative numbers](../../negative_numbers.md)
 ```plaintext
 4_
 abs

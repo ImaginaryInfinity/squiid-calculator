@@ -1,6 +1,6 @@
 use std::{borrow::BorrowMut, collections::HashMap};
 
-use crate::{engine::Engine, protocol::MessageAction};
+use crate::{engine::Engine, protocol::server_response::MessageAction};
 
 /// Insert a function and reference name into a hashmap
 macro_rules! function_map_entry {

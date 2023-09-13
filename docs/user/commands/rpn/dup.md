@@ -1,5 +1,5 @@
 # Duplicate (RPN Only)
-`dup` / `[enter]`
+`dup` / ++enter++
 
 The `dup` command will duplicate the last item on the stack. By default the enter keybind will activate `dup` when the input is empty. This command is rebindable
 

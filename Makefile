@@ -47,7 +47,8 @@ clean: ## Clean the build environment
 		.flatpak-builder \
 		flatpak-cargo-generator.py \
 		../squiid_0.1.0.orig.tar.gz \
-		debian
+		debian \
+		snap
 
 require:
 	@echo "Checking the programs required for the build are installed..."
@@ -102,12 +103,17 @@ snap: require clean ## Build the snap
 	@snapcraft --version >/dev/null 2>&1 || (echo "ERROR: snapcraft is required."; exit 1)
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 
+	mkdir -p snap/gui
+
 	@echo "Replacing VERSION with ${VERSION} in snapcraft.yaml"
-	@envsubst '$${VERSION}' < packages/snap/snapcraft.yaml > snapcraft.yaml
+	@envsubst '$${VERSION}' < packages/snap/snapcraft.yaml > snap/snapcraft.yaml
+
+	cp packages/snap/squiid.desktop snap/gui
+	cp branding/icons/squiid512.png snap/gui/squiid.png
 
 	snapcraft
 
-	rm -f snapcraft.yaml
+	rm -rf snap
 
 appimage: require clean build-musl ## Build the AppImage
 	# Check for appimagetool

@@ -1,5 +1,5 @@
 site_name: Squiid Documentation
-repo_url: https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid
+repo_url: https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/
 repo_name: GitLab
 edit_uri: edit/trunk/docs/
 site_description: Squiid is a modular calculator written in Rust. It is currently very early in development but it is intended to be the successor to ImaginaryInfinity Calculator.
@@ -64,6 +64,7 @@ nav:
     - Developer Documentation:
         - Cross Compiling: dev/cross_compiling.md
         - Communication Protocol: dev/comm_prot.md
+        - Configuration Protocol: dev/configuration_protocol.md
         - Squiid Parser: dev/parser.md
         - Squiid Engine: dev/engine.md
 
@@ -74,34 +75,36 @@ theme:
         scheme: slate
         primary: indigo
         accent: indigo
-    font:
-        #text: Ubuntu
-        text: Hack
-        #code: Ubuntu Mono
-        code: Hack Mono
-    logo: img/favicon.ico
+    font: false
+    logo: img/favicon.png
+    favicon: img/favicon.png
     features:
-        content.code.annotate
+        - content.code.annotate
+        - content.code.copy
+        - content.action.edit
+        - content.action.view
 
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true 
+  - pymdownx.betterem
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.keys
 
 plugins:
     - search
-    - mermaid2
 
 extra_css:
   - style.css
 
-extra_javascript:
-    - https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js

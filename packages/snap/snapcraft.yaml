@@ -5,6 +5,8 @@ description: |
   Squiid is a modular calculator written in Rust. It is currently very early
   in development but it is intended to be the successor to
   ImaginaryInfinity Calculator
+website: https://imaginaryinfinity.net
+contact: imaginaryinfinity@googlegroups.com
 
 license: GPL-3.0
 
@@ -18,6 +20,10 @@ parts:
   squiid:
     plugin: rust
     source: .
+
+plugs:
+  squiid-network:
+    interface: network-bind
 
 apps:
   squiid:

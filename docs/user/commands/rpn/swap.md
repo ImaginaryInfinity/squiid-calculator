@@ -1,5 +1,5 @@
 # Swap (RPN Only)
-`swap` / `[tab]`
+`swap` / ++tab++
 
 The `swap` command will swap the last two items on the stack. This command is rebindable
 

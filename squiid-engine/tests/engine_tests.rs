@@ -545,7 +545,6 @@ fn test_blog() {
 fn test_ln() {
     let mut engine = Engine::new();
 
-    // TODO: fix variable storing as decimals
     let _ = engine.add_item_to_stack("#e".into());
 
     // evaluate from last stack entries to first
@@ -748,7 +747,7 @@ fn test_drop() {
     let result = engine.drop();
     assert_eq!(
         result,
-        Ok(squiid_engine::protocol::MessageAction::SendStack)
+        Ok(squiid_engine::protocol::server_response::MessageAction::SendStack)
     );
 }
 
@@ -958,7 +957,7 @@ fn test_list_commands() {
 
     assert!(matches!(
         engine.list_commands().unwrap(),
-        squiid_engine::protocol::MessageAction::SendCommands
+        squiid_engine::protocol::server_response::MessageAction::SendCommands
     ));
 }
 

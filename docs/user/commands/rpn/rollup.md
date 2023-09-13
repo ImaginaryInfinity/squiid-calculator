@@ -1,5 +1,5 @@
 # Roll Up (RPN Only)
-`rollup` / `[page_up]`
+`rollup` / ++page-up++
 
 The `rollup` command will rotate all items in the stack up one place. This command is rebindable
 

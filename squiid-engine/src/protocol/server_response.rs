@@ -21,9 +21,9 @@ pub enum ConfigValue {
     None(()),
 }
 
-impl Into<serde_json::Value> for ConfigValue {
-    fn into(self) -> serde_json::Value {
-        match self {
+impl From<ConfigValue> for serde_json::Value {
+    fn from(val: ConfigValue) -> Self {
+        match val {
             ConfigValue::Value(item) => toml_to_serde_json_value(&item),
             ConfigValue::StringList(string_list) => serde_json::Value::Array(
                 string_list
@@ -57,7 +57,7 @@ fn toml_to_serde_json_value(toml_value: &toml::Value) -> serde_json::Value {
         toml::Value::Boolean(b) => serde_json::Value::Bool(*b),
         toml::Value::Datetime(dt) => serde_json::Value::String(dt.to_string()),
         toml::Value::Array(arr) => {
-            serde_json::Value::Array(arr.iter().map(|v| toml_to_serde_json_value(v)).collect())
+            serde_json::Value::Array(arr.iter().map(toml_to_serde_json_value).collect())
         }
         toml::Value::Table(table) => {
             let object: serde_json::Map<String, serde_json::Value> = table

@@ -1,6 +1,7 @@
 pub mod bucket;
 pub mod command_mappings;
 pub mod config_handler;
+pub mod crash_reporter;
 pub mod engine;
 pub mod utils;
 
@@ -12,7 +13,7 @@ pub mod protocol {
 #[cfg(feature = "ipc")]
 pub mod ffi;
 
-use std::borrow::BorrowMut;
+use std::{borrow::BorrowMut, panic};
 
 use bucket::Bucket;
 use command_mappings::CommandsMap;
@@ -41,6 +42,14 @@ const DEFAULT_ADDRESS: &str = "tcp://*:33242";
 #[cfg(feature = "ipc")]
 /// Start the server at the given address (default is DEFAULT_ADDRESS)
 pub fn start_server(address: Option<&str>) {
+    panic::set_hook(Box::new(|panic_info| {
+        crash_reporter::crash_report(panic_info);
+
+        // propegate panic for frontend to handle
+        // TODO: document this
+        std::process::exit(2);
+    }));
+
     // Use default address unless one was specified from the command line
 
     let address_to_bind = match address {

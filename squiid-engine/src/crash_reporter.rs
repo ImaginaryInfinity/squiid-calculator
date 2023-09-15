@@ -1,0 +1,107 @@
+use colored::Colorize;
+use std::{
+    fmt,
+    fs::File,
+    io::Write,
+    panic::{self, PanicInfo},
+};
+
+use crate::config_handler;
+
+#[derive(Debug)]
+struct EnvironmentDetails<'a> {
+    version: &'a str,
+    pkg_name: &'a str,
+    crate_name: &'a str,
+    arch: &'a str,
+    os: &'a str,
+    ipc_enabled: bool,
+}
+
+impl fmt::Display for EnvironmentDetails<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Version: {}\nPackage: {}\nCrate: {}\nArchitecture: {}\nOS: {}\nIPC: {}",
+            self.version,
+            self.pkg_name,
+            self.crate_name,
+            self.arch,
+            self.os,
+            if self.ipc_enabled {
+                "Enabled"
+            } else {
+                "Disabled"
+            }
+        )
+    }
+}
+
+pub fn crash_report(panic_info: &PanicInfo) {
+    let backtrace = backtrace::Backtrace::new();
+
+    // create environment struct
+    let environment = EnvironmentDetails {
+        version: env!("CARGO_PKG_VERSION"),
+        pkg_name: env!("CARGO_PKG_NAME"),
+        crate_name: env!("CARGO_CRATE_NAME"),
+        arch: std::env::consts::ARCH,
+        os: std::env::consts::OS,
+        ipc_enabled: cfg!(feature = "ipc"),
+    };
+
+    // print crash report for user
+    println!(
+        "{}\n\n{}\n\n{}\n\n{}\n\n{}\n{:?}\n{}",
+        "-".repeat(70).yellow(),
+        "---------- Crash Report Information ----------".red(),
+        environment,
+        panic_info.to_string(),
+        "---------- Backtrace ----------".blue(),
+        backtrace,
+        "-".repeat(70).yellow(),
+    );
+
+    // determine the config directory to write the crash to
+    let result = panic::catch_unwind(|| config_handler::determine_config_path());
+
+    let config_directory = match result {
+        Ok(value) => match value.parent() {
+            Some(path) => Some(path.to_path_buf()),
+            None => None,
+        },
+        Err(_) => match std::env::current_dir() {
+            Ok(value) => Some(value),
+            Err(_) => None,
+        },
+    };
+
+    if config_directory.is_some() {
+        let mut config_path_unwrapped = config_directory.unwrap();
+        config_path_unwrapped.push("squiid_crash.txt");
+
+        // remove the old crash if it exists
+        let _ = std::fs::remove_file(&config_path_unwrapped);
+
+        let file = File::create(&config_path_unwrapped);
+        if file.is_ok() {
+            // write crash file
+            let crash_string = format!(
+                "Crash report generated at {}\n\n{}\n\n{}\n\n{:?}",
+                chrono::offset::Local::now(),
+                environment,
+                panic_info.to_string(),
+                backtrace
+            );
+            let write_result = file.unwrap().write_all(crash_string.as_bytes());
+            if write_result.is_ok() {
+                println!(
+                    "Crash report written to: {}",
+                    config_path_unwrapped.to_string_lossy()
+                );
+            }
+        }
+    }
+
+    println!("\n\nPlease report this issue at https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/issues/new?issuable_template=Bug%20Report")
+}

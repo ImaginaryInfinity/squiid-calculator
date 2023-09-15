@@ -56,44 +56,40 @@ pub fn crash_report(panic_info: &PanicInfo) {
         "-".repeat(70).yellow(),
         "---------- Crash Report Information ----------".red(),
         environment,
-        panic_info.to_string(),
+        panic_info,
         "---------- Backtrace ----------".blue(),
         backtrace,
         "-".repeat(70).yellow(),
     );
 
     // determine the config directory to write the crash to
-    let result = panic::catch_unwind(|| config_handler::determine_config_path());
+    let result = panic::catch_unwind(config_handler::determine_config_path);
 
     let config_directory = match result {
-        Ok(value) => match value.parent() {
-            Some(path) => Some(path.to_path_buf()),
-            None => None,
-        },
+        Ok(value) => value.parent().map(|path| path.to_path_buf()),
         Err(_) => match std::env::current_dir() {
             Ok(value) => Some(value),
             Err(_) => None,
         },
     };
 
-    if config_directory.is_some() {
-        let mut config_path_unwrapped = config_directory.unwrap();
+    if let Some(mut config_path_unwrapped) = config_directory {
         config_path_unwrapped.push("squiid_crash.txt");
 
         // remove the old crash if it exists
         let _ = std::fs::remove_file(&config_path_unwrapped);
 
         let file = File::create(&config_path_unwrapped);
-        if file.is_ok() {
+        if let Ok(mut file_unwrapped) = file {
             // write crash file
             let crash_string = format!(
                 "Crash report generated at {}\n\n{}\n\n{}\n\n{:?}",
                 chrono::offset::Local::now(),
                 environment,
-                panic_info.to_string(),
+                panic_info,
                 backtrace
             );
-            let write_result = file.unwrap().write_all(crash_string.as_bytes());
+            let write_result = file_unwrapped.write_all(crash_string.as_bytes());
             if write_result.is_ok() {
                 println!(
                     "Crash report written to: {}",

@@ -1,4 +1,5 @@
  - Update changelog.md
+ - `cargo update` and retest src and subtrees
  - Update `packages/flatpak/net.imaginaryinfinity.Squiid.releases.xml` (`make xmlreleases`)
  - Create merge request
  - Update subtree versions

@@ -1,8 +1,11 @@
 # 1.1.0 (Unreleased)
- - Renamed `elt` and `egt` to `leq` and `geq`
- - Created flatpak
+ - Renamed `elt` and `egt` to `leq` and `geq` (#38)
+ - Created flatpak (#43)
  - Updated documentation theme
- - Fixed `make install`
+ - Fixed `make install` (#39)
+ - Fix previous answer not working (616edfc140a461982e195e98749d8f0d87673d30)
+ - Moved the config handler to the backend (#40)
+ - Support for typing numbers longer than the input box (#24)
 
 # 1.0.6
  - Update Windows installer to add desktop shortcut by default for winget

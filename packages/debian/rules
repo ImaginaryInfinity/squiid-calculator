@@ -18,13 +18,14 @@ export DH_VERBOSE = 1
 
 override_dh_auto_build:
 	# TODO: change to build-musl
-	dh_auto_build -- build
+	make build
 
 override_dh_auto_clean:
 	# stop this step so that it doesn't delete the debian/ directory
 
-# override_dh_auto_install:
-# 	dh_auto_install -- BINARY_PATH=target/x86_64-unknown-linux-musl/release/squiid
+override_dh_auto_install:
+	dh_auto_install -- BINARY_PATH=target/release/squiid ELEVATE='' EXECUTABLE_PERMISSION='' NORMAL_PERMISSION=''
+
 # dh_make generated override targets
 # This is example for Cmake (See https://bugs.debian.org/641051 )
 #override_dh_auto_configure:

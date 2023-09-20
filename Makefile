@@ -17,6 +17,8 @@ DEBUILD_OPTIONS ?= -us -uc
 
 APPIMAGETOOL ?= appimagetool
 ELEVATE ?= sudo
+EXECUTABLE_PERMISSION ?= -m755
+NORMAL_PERMISSION ?= -m644
 
 VERSION := $(shell awk -F ' = ' '$$1 ~ /version/ { gsub(/["]/, "", $$2); printf("%s",$$2) }' Cargo.toml)
 export VERSION
@@ -64,9 +66,9 @@ build-musl: require ## Build the Linux MUSL version
 	cargo build --release --target=x86_64-unknown-linux-musl
 
 install: build ## Install Squiid to the system
-	$(ELEVATE) install -D -v -m755 $(BINARY_PATH) $(DESTDIR)$(BINDIR)
-	$(ELEVATE) install -D -v -m644 $(DESKTOP_FILE_PATH) $(DESTDIR)$(APPLICATIONSDIR)
-	$(ELEVATE) install -D -v -m644 $(ICON_FILE_PATH) $(DESTDIR)$(ICONSDIR)/$(ICON_FILE_DEST_NAME)
+	$(ELEVATE) install -D -v $(EXECUTABLE_PERMISSION) $(BINARY_PATH) $(DESTDIR)/$(BINDIR)/$(BINARY_NAME)
+	$(ELEVATE) install -D -v $(NORMAL_PERMISSION) $(DESKTOP_FILE_PATH) $(DESTDIR)/$(APPLICATIONSDIR)/$(DESKTOP_FILE_NAME)
+	$(ELEVATE) install -D -v $(NORMAL_PERMISSION) $(ICON_FILE_PATH) $(DESTDIR)$(ICONSDIR)/$(ICON_FILE_DEST_NAME)
 
 uninstall: ## Uninstall the version of Squiid installed with the Makefile
 	$(ELEVATE) rm $(DESTDIR)$(BINDIR)/$(BINARY_NAME)

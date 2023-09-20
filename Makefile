@@ -13,8 +13,6 @@ ICON_FILE_NAME := squiidsquare.svg
 ICON_FILE_DEST_NAME := squiid.svg
 ICON_FILE_PATH ?= branding/$(ICON_FILE_NAME)
 
-DEBUILD_OPTIONS ?= -us -uc
-
 APPIMAGETOOL ?= appimagetool
 ELEVATE ?= sudo
 EXECUTABLE_PERMISSION ?= -m755
@@ -281,9 +279,8 @@ endif
 	git add .; \
 	git commit -m 'New version: Squiid version ${VERSION}'
 
-deb: clean
+setup-deb-files: clean
 	@git --version > /dev/null 2>&1 || (echo "ERROR: git is required"; exit 1)
-	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
 	@tar --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
 	@python3 --version > /dev/null 2>&1 || (echo "ERROR: python is required"; exit 1)
 
@@ -296,4 +293,11 @@ deb: clean
 	cp -r package-build/packages/debian/ package-build/
 	python3 package-build/debian/generate_changelog.py > package-build/debian/changelog
 
-	cd package-build; debuild -S -d -sa -p"gpg --batch --passphrase $$GPG_PASSPHRASE --pinentry-mode loopback"
+deb: setup-deb-files
+	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
+	sed -i 's/make build/make build-musl/' package-build/debian/rules
+	cd package-build; dpkg-buildpackage -b -us -uc $(DEBUILD_OPTIONS)
+
+ppa: setup-deb-files
+	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
+	cd package-build; debuild -S -sa $(DEBUILD_OPTIONS)

@@ -48,8 +48,7 @@ clean: ## Clean the build environment
 		generated-sources.json \
 		.flatpak-builder \
 		flatpak-cargo-generator.py \
-		../squiid_0.1.0.orig.tar.gz \
-		debian \
+		squiid_0.1.0.orig.tar.gz \
 		snap
 
 require:
@@ -241,24 +240,24 @@ homebrew: clean ## Format the homebrew metadata
 	@echo "squiid.rb can be found in the package-build/ directory"
 	@echo "Commit it to your branch of homebrew-core to update"
 
-deb: require clean
-	@git --version > /dev/null 2>&1 || (echo "ERROR: git is required"; exit 1)
-	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
+# deb: require clean
+# 	@git --version > /dev/null 2>&1 || (echo "ERROR: git is required"; exit 1)
+# 	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
 
-	ls packages
+# 	ls packages
 
-	mkdir -p package-build
-	cp -r packages/debian ./
+# 	mkdir -p package-build
+# 	cp -r packages/debian ./
 
-	git archive --format=tar.gz -o ../squiid_0.1.0.orig.tar.gz trunk
+# 	git archive --format=tar.gz -o ../squiid_0.1.0.orig.tar.gz trunk
 
-	debuild $(DEBUILD_OPTIONS)
+# 	debuild $(DEBUILD_OPTIONS)
 
-	ls ..
+# 	ls ..
 
-	mv ../squiid*.deb ../squiid*.build ../squiid*.changes ../squiid*.tar.xz ../squiid*.dsc ../squiid*.buildinfo ./package-build || true
+# 	mv ../squiid*.deb ../squiid*.build ../squiid*.changes ../squiid*.tar.xz ../squiid*.dsc ../squiid*.buildinfo ./package-build || true
 
-	rm -rf ../squiid_0.1.0.orig.tar.gz debian
+# 	rm -rf ../squiid_0.1.0.orig.tar.gz debian
 
 rpm: require clean
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
@@ -281,3 +280,20 @@ endif
 	cd "$(forkpath)"; \
 	git add .; \
 	git commit -m 'New version: Squiid version ${VERSION}'
+
+deb: clean
+	@git --version > /dev/null 2>&1 || (echo "ERROR: git is required"; exit 1)
+	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
+	@tar --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
+	@python3 --version > /dev/null 2>&1 || (echo "ERROR: python is required"; exit 1)
+
+	mkdir -p package-build/
+
+	# create archive for deb and extract it into package-build
+	git archive --format=tar.gz -o squiid_${VERSION}.orig.tar.gz --prefix=squiid-${VERSION}/ trunk
+	tar -xzf squiid_${VERSION}.orig.tar.gz -C package-build/ --strip-components=1
+
+	cp -r package-build/packages/debian/ package-build/
+	python3 package-build/debian/generate_changelog.py > package-build/debian/changelog
+
+	cd package-build; debuild -S -d -sa -p"gpg --batch --passphrase $$GPG_PASSPHRASE --pinentry-mode loopback"

@@ -1,5 +1,12 @@
 import requests
 from datetime import datetime, timezone, timedelta
+import sys
+
+try:
+	distro = sys.argv[1]
+except IndexError:
+	print("Error: please provide an ubuntu distribution codename")
+	sys.exit(1)
 
 response = requests.get("https://gitlab.com/api/v4/projects/44631396/releases").json()
 
@@ -17,7 +24,7 @@ for release in response:
 	self_url = release["_links"]["self"]
 
 	full_changelog += f"""\
-squiid ({version}-1-0ubuntu1~bionicppa1) bionic; urgency=medium
+squiid ({version}-1-0ubuntu1~{distro}ppa1) {distro}; urgency=medium
 
   * {title}
   * View more at {self_url}

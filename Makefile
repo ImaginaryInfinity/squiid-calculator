@@ -280,7 +280,8 @@ endif
 	git add .; \
 	git commit -m 'New version: Squiid version ${VERSION}'
 
-setup-deb-files: clean
+define generate_rule
+setup-deb-files-$(1): clean
 	@git --version > /dev/null 2>&1 || (echo "ERROR: git is required"; exit 1)
 	@tar --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
 	@python3 --version > /dev/null 2>&1 || (echo "ERROR: python is required"; exit 1)
@@ -288,17 +289,21 @@ setup-deb-files: clean
 	mkdir -p package-build/
 
 	# create archive for deb and extract it into package-build
-	git archive --format=tar.gz -o squiid_${VERSION}.orig.tar.gz --prefix=squiid-${VERSION}/ $$(git rev-parse --abbrev-ref HEAD)
-	tar -xzf squiid_${VERSION}.orig.tar.gz -C package-build/ --strip-components=1
+	git archive --format=tar.gz -o squiid_${VERSION}-0ubuntu1~$(1)ppa1.orig.tar.gz --prefix=squiid-${VERSION}-0ubuntu1~$(1)ppa1/ $(2)
+	tar -xzf squiid_${VERSION}-0ubuntu1~$(1)ppa1.orig.tar.gz -C package-build/ --strip-components=1
 
 	cp -r package-build/packages/debian/ package-build/
-	python3 packages/debian/generate_changelog.py > package-build/debian/changelog
+	python3 packages/debian/generate_changelog.py $(1) > package-build/debian/changelog
+endef
 
-deb: setup-deb-files
+RELEASES := bionic focal jammy
+$(foreach release,$(RELEASES),$(eval $(call generate_rule,$(release),$(shell git rev-parse --abbrev-ref HEAD))))
+
+deb: setup-deb-files-bionic
 	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
 	# sed -i 's/make build/make build-musl/' package-build/debian/rules
 	cd package-build; dpkg-buildpackage -b -d -us -uc $(DEBUILD_OPTIONS)
 
-ppa: setup-deb-files
+ppa: setup-deb-files-bionic
 	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
 	cd package-build; debuild -S -sa $(DEBUILD_OPTIONS)

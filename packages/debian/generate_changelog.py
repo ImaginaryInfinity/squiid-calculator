@@ -17,7 +17,7 @@ for release in response:
 	self_url = release["_links"]["self"]
 
 	full_changelog += f"""\
-squiid ({version}-1) focal; urgency=medium
+squiid ({version}-1-0ubuntu1~bionicppa1) bionic; urgency=medium
 
   * {title}
   * View more at {self_url}

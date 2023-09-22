@@ -242,25 +242,6 @@ homebrew: clean ## Format the homebrew metadata
 	@echo "squiid.rb can be found in the package-build/ directory"
 	@echo "Commit it to your branch of homebrew-core to update"
 
-# deb: require clean
-# 	@git --version > /dev/null 2>&1 || (echo "ERROR: git is required"; exit 1)
-# 	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
-
-# 	ls packages
-
-# 	mkdir -p package-build
-# 	cp -r packages/debian ./
-
-# 	git archive --format=tar.gz -o ../squiid_0.1.0.orig.tar.gz trunk
-
-# 	debuild $(DEBUILD_OPTIONS)
-
-# 	ls ..
-
-# 	mv ../squiid*.deb ../squiid*.build ../squiid*.changes ../squiid*.tar.xz ../squiid*.dsc ../squiid*.buildinfo ./package-build || true
-
-# 	rm -rf ../squiid_0.1.0.orig.tar.gz debian
-
 rpm: require clean
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 
@@ -292,8 +273,8 @@ setup-deb-files-$(1): clean
 	mkdir -p package-build/
 
 	# create archive for deb and extract it into package-build
-	git archive --format=tar.gz -o squiid_${VERSION}-0ubuntu1~$(1)ppa1.orig.tar.gz --prefix=squiid-${VERSION}-0ubuntu1~$(1)ppa1/ $(2)
-	tar -xzf squiid_${VERSION}-0ubuntu1~$(1)ppa1.orig.tar.gz -C package-build/ --strip-components=1
+	git archive --format=tar.gz -o squiid_${VERSION}-1.orig.tar.gz --prefix=squiid-${VERSION}-1/ $(2)
+	tar -xzf squiid_${VERSION}1.orig.tar.gz -C package-build/ --strip-components=1
 
 	cp -r package-build/packages/debian/ package-build/
 	python3 packages/debian/generate_changelog.py $(1) > package-build/debian/changelog

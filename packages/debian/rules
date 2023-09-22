@@ -25,19 +25,10 @@ override_dh_auto_build:
 	python3 -m pip install scikit-build
 	PIP_ONLY_BINARY=cmake python3 -m pip install cmake
 
-
-	# CARGO_HOME=/opt/rust/cargo rustup update
-	
-	# CARGO='$$HOME/.cargo/bin/cargo' make build
-	PATH="$$PATH:$$HOME/.cargo/bin" cargo test -p squiid -p squiid-engine -p squiid-parser
 	PATH="$$PATH:$$HOME/.cargo/bin" make build
-	# CARGO='RUSTFLAGS="-L /usr/lib/x86_64-linux-gnu -L /usr/lib/x86_64-linux-gnu/ -lpthread" cargo' make build
 
 override_dh_auto_test:
 	PATH="$$PATH:$$HOME/.cargo/bin" dh_auto_test
-
-# override_dh_auto_clean:
-# 	# stop this step so that it doesn't delete the debian/ directory
 
 override_dh_auto_install:
 	PATH="$$PATH:$$HOME/.cargo/bin" dh_auto_install -- BINARY_PATH=target/release/squiid ELEVATE='' EXECUTABLE_PERMISSION='' NORMAL_PERMISSION=''

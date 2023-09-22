@@ -2,7 +2,7 @@ Source: squiid
 Section: math
 Priority: optional
 Maintainer: Connor Sample <tabulatejarl8@gmail.com>
-Build-Depends: debhelper-compat (= 11), cmake
+Build-Depends: debhelper-compat (= 11), python3-pip
 Standards-Version: 4.6.0
 Homepage: https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid
 #Vcs-Browser: https://salsa.debian.org/debian/squiid

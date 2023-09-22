@@ -123,19 +123,22 @@ deploy-ppa:
       - package-build/squiid_0.1.0-1_amd64.dsc
       - package-build/squiid_0.1.0-1_amd64.changes
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
 
 build-deb:
   stage: build
-  image: ubuntu:focal
+  image: ubuntu:bionic
   before_script:
     - DEBIAN_FRONTEND=noninteractive apt update
-    - DEBIAN_FRONTEND=noninteractive apt install -y build-essential binutils lintian debhelper dh-make devscripts cmake fakeroot git curl gnupg musl-tools
+    - DEBIAN_FRONTEND=noninteractive apt install -y build-essential binutils lintian debhelper dh-make devscripts cmake fakeroot git curl gnupg musl-tools python3-pip
+    # - curl -L https://launchpad.net/ubuntu/+archive/primary/+files/libnng-dev_1.2.6-1_amd64.deb -o libnng.deb
+    # - curl -L https://launchpad.net/ubuntu/+archive/primary/+files/libnng1_1.2.6-1_amd64.deb -o libnng1.deb
+    # - DEBIAN_FRONTEND=noninteractive apt install -y ./libnng1.deb ./libnng.deb
+    # - dpkg -L libnng-dev
+    # - dpkg -L libnng1
     - echo "$GPG_PRIVATE_KEY_B64" | base64 --decode | gpg --batch --import
     - gpg --list-keys --fingerprint --with-colons | sed -E -n -e 's/^fpr:::::::::([0-9A-F]+):$/\1:6:/p' | gpg --import-ownertrust
-    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y -t x86_64-unknown-linux-musl
   script:
-    - source "$HOME/.cargo/env"
     - make deb
   artifacts:
     paths:

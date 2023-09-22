@@ -17,13 +17,30 @@ export DH_VERBOSE = 1
 	dh $@
 
 override_dh_auto_build:
-	make build
+	# install rust through rustup 
+	@cargo --version >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-override_dh_auto_clean:
-	# stop this step so that it doesn't delete the debian/ directory
+	cat $$HOME/.cargo/env
+
+	python3 -m pip install scikit-build
+	PIP_ONLY_BINARY=cmake python3 -m pip install cmake
+
+
+	# CARGO_HOME=/opt/rust/cargo rustup update
+	
+	# CARGO='$$HOME/.cargo/bin/cargo' make build
+	PATH="$$PATH:$$HOME/.cargo/bin" cargo test -p squiid -p squiid-engine -p squiid-parser
+	PATH="$$PATH:$$HOME/.cargo/bin" make build
+	# CARGO='RUSTFLAGS="-L /usr/lib/x86_64-linux-gnu -L /usr/lib/x86_64-linux-gnu/ -lpthread" cargo' make build
+
+override_dh_auto_test:
+	PATH="$$PATH:$$HOME/.cargo/bin" dh_auto_test
+
+# override_dh_auto_clean:
+# 	# stop this step so that it doesn't delete the debian/ directory
 
 override_dh_auto_install:
-	dh_auto_install -- BINARY_PATH=target/release/squiid ELEVATE='' EXECUTABLE_PERMISSION='' NORMAL_PERMISSION=''
+	PATH="$$PATH:$$HOME/.cargo/bin" dh_auto_install -- BINARY_PATH=target/release/squiid ELEVATE='' EXECUTABLE_PERMISSION='' NORMAL_PERMISSION=''
 
 # dh_make generated override targets
 # This is example for Cmake (See https://bugs.debian.org/641051 )

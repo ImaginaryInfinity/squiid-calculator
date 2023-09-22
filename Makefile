@@ -15,6 +15,7 @@ ICON_FILE_PATH ?= branding/$(ICON_FILE_NAME)
 
 APPIMAGETOOL ?= appimagetool
 ELEVATE ?= sudo
+CARGO ?= cargo
 EXECUTABLE_PERMISSION ?= -m755
 NORMAL_PERMISSION ?= -m644
 
@@ -51,16 +52,16 @@ clean: ## Clean the build environment
 
 require:
 	@echo "Checking the programs required for the build are installed..."
-	@cargo --version >/dev/null 2>&1 || (echo "ERROR: cargo is required."; exit 1)
+	@$(CARGO) --version >/dev/null 2>&1 || (echo "ERROR: cargo is required."; exit 1)
 
 test: ## Test each component of the project
-	cargo test -p squiid-parser -p squiid-engine -p squiid
+	$(CARGO) test -p squiid-parser -p squiid-engine -p squiid
 
 build: require ## Build the release version of the program for the system platform
-	cargo build --release
+	$(CARGO) build --release
 
 build-musl: require ## Build the Linux MUSL version
-	cargo build --release --target=x86_64-unknown-linux-musl
+	$(CARGO) build --release --target=x86_64-unknown-linux-musl
 
 install: build ## Install Squiid to the system
 	$(ELEVATE) install -D -v $(EXECUTABLE_PERMISSION) $(BINARY_PATH) $(DESTDIR)/$(BINDIR)/$(BINARY_NAME)
@@ -155,7 +156,7 @@ appimage: require clean build-musl ## Build the AppImage
 
 windows-build: require clean ## Cross compile the Windows release
 	# cross compile windows version
-	cargo build --release --target=x86_64-pc-windows-gnu
+	$(CARGO) build --release --target=x86_64-pc-windows-gnu
 
 ifndef skip_build
 windows-installer: windows-build
@@ -187,21 +188,21 @@ ifndef platform
 	exit 1
 endif
 	# check if cargo ndk is installed
-	@cargo ndk --version > /dev/null 2>&1 || (echo "ERROR: cargo-ndk is required. Install it with `cargo install cargo-ndk`"; exit 1)
+	@$(CARGO) ndk --version > /dev/null 2>&1 || (echo "ERROR: cargo-ndk is required. Install it with `cargo install cargo-ndk`"; exit 1)
 
 android-armv8: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android-armv8: android-require ## Build the Android ARMv8 release
 	@echo "Android armv8 building is currently broken"; exit 1
-	RUST_LOG=debug cargo ndk --platform $(platform) --target arm64-v8a build --release
+	RUST_LOG=debug $(CARGO) ndk --platform $(platform) --target arm64-v8a build --release
 
 android-armv7: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android-armv7: ## Build the Android ARMv7 release
-	cargo build --target armv7-linux-androideabi --release
+	$(CARGO) build --target armv7-linux-androideabi --release
 
 android-x86_64: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android-x86_64: android-require ## Build the Android x86_64 release
 	@echo "Android x86_64 building is currently broken"; exit 1
-	cargo ndk --platform $(platform) --target x86_64 build --release
+	$(CARGO) ndk --platform $(platform) --target x86_64 build --release
 
 android: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android: android-armv8 android-armv7 android-x86_64 ## Build all android targets
@@ -287,16 +288,16 @@ setup-deb-files: clean
 	mkdir -p package-build/
 
 	# create archive for deb and extract it into package-build
-	git archive --format=tar.gz -o squiid_${VERSION}.orig.tar.gz --prefix=squiid-${VERSION}/ trunk
+	git archive --format=tar.gz -o squiid_${VERSION}.orig.tar.gz --prefix=squiid-${VERSION}/ $$(git rev-parse --abbrev-ref HEAD)
 	tar -xzf squiid_${VERSION}.orig.tar.gz -C package-build/ --strip-components=1
 
 	cp -r package-build/packages/debian/ package-build/
-	python3 package-build/debian/generate_changelog.py > package-build/debian/changelog
+	python3 packages/debian/generate_changelog.py > package-build/debian/changelog
 
 deb: setup-deb-files
 	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
-	sed -i 's/make build/make build-musl/' package-build/debian/rules
-	cd package-build; dpkg-buildpackage -b -us -uc $(DEBUILD_OPTIONS)
+	# sed -i 's/make build/make build-musl/' package-build/debian/rules
+	cd package-build; dpkg-buildpackage -b -d -us -uc $(DEBUILD_OPTIONS)
 
 ppa: setup-deb-files
 	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)

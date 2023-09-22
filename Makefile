@@ -47,7 +47,10 @@ clean: ## Clean the build environment
 		generated-sources.json \
 		.flatpak-builder \
 		flatpak-cargo-generator.py \
-		squiid_0.1.0.orig.tar.gz \
+		squiid*.orig.tar.gz \
+		squiid*.dsc \
+		squiid*.debian.tar.xz \
+		squiid*_source.* \
 		snap
 
 require:

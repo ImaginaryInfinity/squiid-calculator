@@ -157,7 +157,7 @@ pub fn init_config() {
 /// Windows: `C:\Users\<NAME>\AppData\Roaming\ImaginaryInfinity\Squiid\config`
 ///
 /// Anything else: See Linux
-fn determine_config_path() -> PathBuf {
+pub fn determine_config_path() -> PathBuf {
     // try to determine correct config path
     let config_directory =
         if let Some(proj_dirs) = ProjectDirs::from("net", "ImaginaryInfinity", "Squiid") {

@@ -283,7 +283,6 @@ impl Engine {
             // not 2*pi, perform normal mulitplication
             Bucket::from(operands[0] * operands[1])
         };
-
         // Put result on stack
         let _ = self.add_item_to_stack(result);
         Ok(MessageAction::SendStack)

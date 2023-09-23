@@ -6,6 +6,7 @@
  - Fix previous answer not working (616edfc140a461982e195e98749d8f0d87673d30)
  - Moved the config handler to the backend (#40)
  - Support for typing numbers longer than the input box (#24)
+ - Create system for generating crash reports (#37)
 
 # 1.0.6
  - Update Windows installer to add desktop shortcut by default for winget

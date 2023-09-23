@@ -169,8 +169,8 @@ pub fn handle_data(
         _ = engine.variable_history.pop_front();
     }
 
-    // Don't add to history if command is refresh or commands as it does not affect the stack
-    if !["refresh", "commands"].contains(&data) {
+    // Don't add to history if command is refresh, commands, or update_previous_answer as it does not affect the stack
+    if !["refresh", "commands", "update_previous_answer"].contains(&data) {
         // Add current stack to history
         engine.history.push_back(engine.stack.clone());
         // Add current variable state to history

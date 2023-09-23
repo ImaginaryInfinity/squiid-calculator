@@ -837,7 +837,8 @@ impl Engine {
         if self.history.len() > 1 {
             // Throw away current stack
             _ = self.history.pop_back();
-            // Restore previous stack
+            // Restore previous stack and pop it off of the history stack
+            // the latest history is now 1 before the current stack
             self.stack = self.history.pop_back().unwrap();
             // Throw away current state of variables
             _ = self.variable_history.pop_back();

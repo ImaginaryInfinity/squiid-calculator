@@ -54,7 +54,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     std::panic::set_hook(Box::new(|panic| {
         reset_terminal().unwrap();
-        crash_reporter::crash_report(panic);
+        crash_reporter::crash_report(panic, true);
         std::process::exit(1);
     }));
 

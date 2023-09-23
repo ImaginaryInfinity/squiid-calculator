@@ -42,6 +42,8 @@ const DEFAULT_ADDRESS: &str = "tcp://*:33242";
 #[cfg(feature = "ipc")]
 /// Start the server at the given address (default is DEFAULT_ADDRESS)
 pub fn start_server(address: Option<&str>) {
+    //TODO: document features
+    #[cfg(not(feature = "disable-crash-reports"))]
     panic::set_hook(Box::new(|panic_info| {
         crash_reporter::crash_report(panic_info);
 

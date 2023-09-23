@@ -30,6 +30,7 @@ lto = true
 default = ["ipc"]
 # enable IPC support with NNG
 ipc = ["dep:nng"]
+disable-crash-reports = []
 
 [lib]
 name = "squiid_engine"

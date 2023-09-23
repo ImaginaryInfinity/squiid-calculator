@@ -15,6 +15,7 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
+use squiid_engine::crash_reporter;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let matches = clap::command!()
@@ -51,12 +52,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         .dial(&format!("tcp://127.0.0.1:{}", port_num))
         .is_ok());
 
-    // set panic hook to clean the terminal
-    let original_hook = std::panic::take_hook();
-
-    std::panic::set_hook(Box::new(move |panic| {
+    std::panic::set_hook(Box::new(|panic| {
         reset_terminal().unwrap();
-        original_hook(panic);
+        crash_reporter::crash_report(panic);
+        std::process::exit(1);
     }));
 
     // setup terminal

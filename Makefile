@@ -274,7 +274,7 @@ setup-deb-files-$(1): clean
 
 	# create archive for deb and extract it into package-build
 	git archive --format=tar.gz -o squiid_${VERSION}-1.orig.tar.gz --prefix=squiid-${VERSION}-1/ $(2)
-	tar -xzf squiid_${VERSION}1.orig.tar.gz -C package-build/ --strip-components=1
+	tar -xzf squiid_${VERSION}-1.orig.tar.gz -C package-build/ --strip-components=1
 
 	cp -r package-build/packages/debian/ package-build/
 	python3 packages/debian/generate_changelog.py $(1) > package-build/debian/changelog

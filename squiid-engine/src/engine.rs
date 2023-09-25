@@ -17,9 +17,12 @@ pub struct Engine {
     /// Hashmap of set variables
     pub variables: HashMap<String, Bucket>,
     /// History vecdeque for undo support
-    pub history: VecDeque<Vec<Bucket>>,
+    pub undo_history: VecDeque<Vec<Bucket>>,
     /// Variables vecdeque for undo support
-    pub variable_history: VecDeque<HashMap<String, Bucket>>,
+    pub undo_variable_history: VecDeque<HashMap<String, Bucket>>,
+    /// Offset pointer to the current index of the undo history.
+    /// Index will be calculated by history.len() - pointer - 1
+    pub undo_state_pointer: u8,
     /// Previous answer
     pub previous_answer: Bucket,
     /// Configuration struct
@@ -34,8 +37,9 @@ impl Engine {
         Engine {
             stack: Vec::new(),
             variables: HashMap::new(),
-            history: VecDeque::new(),
-            variable_history: VecDeque::new(),
+            undo_history: VecDeque::new(),
+            undo_variable_history: VecDeque::new(),
+            undo_state_pointer: 0,
             previous_answer: Bucket::from(0),
             config: config_handler::read_user_config().unwrap(),
         }
@@ -832,21 +836,40 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
+    /// Update stack and variables from the undo history
+    fn update_engine_from_history(&mut self) {
+        self.stack =
+            self.undo_history[self.undo_history.len() - self.undo_state_pointer as usize].clone();
+        self.variables = self.undo_variable_history
+            [self.undo_variable_history.len() - self.undo_state_pointer as usize]
+            .clone();
+    }
+
     /// Undo last operation
     pub fn undo(&mut self) -> Result<MessageAction, String> {
-        if self.history.len() > 1 {
-            // Throw away current stack
-            _ = self.history.pop_back();
-            // Restore previous stack and pop it off of the history stack
-            // the latest history is now 1 before the current stack
-            self.stack = self.history.pop_back().unwrap();
-            // Throw away current state of variables
-            _ = self.variable_history.pop_back();
-            // Restore previous state of variables
-            self.variables = self.variable_history.pop_back().unwrap();
+        if self.undo_state_pointer < self.undo_history.len() as u8 {
+            if self.undo_state_pointer == 0 {
+                // add current stack and variables to hsitory and increment pointer by 1
+                self.undo_history.push_back(self.stack.clone());
+                self.undo_variable_history.push_back(self.variables.clone());
+                self.undo_state_pointer += 1;
+            }
+            self.undo_state_pointer += 1;
+            self.update_engine_from_history();
             Ok(MessageAction::SendStack)
         } else {
             Err(String::from("Cannot undo further"))
+        }
+    }
+
+    /// Redo the last undo
+    pub fn redo(&mut self) -> Result<MessageAction, String> {
+        if self.undo_state_pointer > 1 {
+            self.undo_state_pointer -= 1;
+            self.update_engine_from_history();
+            Ok(MessageAction::SendStack)
+        } else {
+            Err(String::from("Cannot redo further"))
         }
     }
 

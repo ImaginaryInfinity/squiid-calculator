@@ -1,8 +1,8 @@
 use std::f64::consts::PI;
 
 use squiid_engine::{
-    command_mappings,
     bucket::{Bucket, BucketTypes, ConstantTypes},
+    command_mappings,
     engine::*,
 };
 
@@ -953,14 +953,20 @@ fn test_redo() {
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
     // redo the undo
     let _ = engine.redo();
-    assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2), Bucket::from("test")]);
+    assert_eq!(
+        engine.stack,
+        vec![Bucket::from(1), Bucket::from(2), Bucket::from("test")]
+    );
 
     // undo drop
     let _ = squiid_engine::handle_data(&mut engine, &commands, "drop");
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     let _ = engine.undo();
-    assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2), Bucket::from("test")]);
+    assert_eq!(
+        engine.stack,
+        vec![Bucket::from(1), Bucket::from(2), Bucket::from("test")]
+    );
 
     // test redo drop
     let _ = engine.redo();
@@ -1006,10 +1012,7 @@ fn test_redo() {
 
     // redo variable assignment
     let _ = engine.redo();
-    assert_eq!(
-        engine.stack,
-        vec![Bucket::from(1),]
-    );
+    assert_eq!(engine.stack, vec![Bucket::from(1),]);
     assert_eq!(*engine.variables.get("a").unwrap(), Bucket::from(2));
 
     // test that extra redos dont crash

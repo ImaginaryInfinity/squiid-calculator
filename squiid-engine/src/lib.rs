@@ -168,17 +168,30 @@ pub fn handle_data(
         _ = engine.undo_history.pop_front();
         _ = engine.undo_variable_history.pop_front();
     }
-    eprintln!("{:?}", engine.undo_state_pointer);
 
     // Don't add to history if command is refresh, commands, or update_previous_answer as it does not affect the stack
-    if !["refresh", "commands", "update_previous_answer", "undo", "redo"].contains(&data) {
+    if ![
+        "refresh",
+        "commands",
+        "update_previous_answer",
+        "undo",
+        "redo",
+    ]
+    .contains(&data)
+    {
         // reset everything in front of the undo history pointer
-        engine
-            .undo_history
-            .drain(engine.undo_history.len().saturating_sub(engine.undo_state_pointer as usize)..);
-        engine
-            .undo_variable_history
-            .drain(engine.undo_variable_history.len().saturating_sub(engine.undo_state_pointer as usize)..);
+        engine.undo_history.drain(
+            engine
+                .undo_history
+                .len()
+                .saturating_sub(engine.undo_state_pointer as usize)..,
+        );
+        engine.undo_variable_history.drain(
+            engine
+                .undo_variable_history
+                .len()
+                .saturating_sub(engine.undo_state_pointer as usize)..,
+        );
         // reset history pointer
         engine.undo_state_pointer = 0;
 

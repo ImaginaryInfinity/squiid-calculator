@@ -60,6 +60,7 @@ pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     function_map_entry!(function_map, "clear", clear);
     function_map_entry!(function_map, "clear", clear);
     function_map_entry!(function_map, "undo", undo);
+    function_map_entry!(function_map, "redo", redo);
     function_map_entry!(function_map, "commands", list_commands);
     function_map_entry!(function_map, "quit", quit);
     function_map_entry!(

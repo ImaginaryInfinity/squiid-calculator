@@ -836,19 +836,40 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
+    /// Update stack and variables from the undo history
+    fn update_engine_from_history(&mut self) {
+        self.stack =
+            self.undo_history[self.undo_history.len() - self.undo_state_pointer as usize].clone();
+        self.variables = self.undo_variable_history
+            [self.undo_variable_history.len() - self.undo_state_pointer as usize]
+            .clone();
+    }
+
     /// Undo last operation
     pub fn undo(&mut self) -> Result<MessageAction, String> {
         if self.undo_state_pointer < self.undo_history.len() as u8 {
+            if self.undo_state_pointer == 0 {
+                // add current stack and variables to hsitory and increment pointer by 1
+                self.undo_history.push_back(self.stack.clone());
+                self.undo_variable_history.push_back(self.variables.clone());
+                self.undo_state_pointer += 1;
+            }
             self.undo_state_pointer += 1;
-            self.stack = self.undo_history
-                [self.undo_history.len() - self.undo_state_pointer as usize]
-                .clone();
-            self.variables = self.undo_variable_history
-                [self.undo_variable_history.len() - self.undo_state_pointer as usize]
-                .clone();
+            self.update_engine_from_history();
             Ok(MessageAction::SendStack)
         } else {
             Err(String::from("Cannot undo further"))
+        }
+    }
+
+    /// Redo the last undo
+    pub fn redo(&mut self) -> Result<MessageAction, String> {
+        if self.undo_state_pointer > 1 {
+            self.undo_state_pointer -= 1;
+            self.update_engine_from_history();
+            Ok(MessageAction::SendStack)
+        } else {
+            Err(String::from("Cannot redo further"))
         }
     }
 

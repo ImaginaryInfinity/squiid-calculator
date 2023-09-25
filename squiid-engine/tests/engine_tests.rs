@@ -1,6 +1,7 @@
 use std::f64::consts::PI;
 
 use squiid_engine::{
+    command_mappings,
     bucket::{Bucket, BucketTypes, ConstantTypes},
     engine::*,
 };
@@ -891,59 +892,40 @@ fn test_clear() {
 
 #[test]
 fn test_undo() {
-    macro_rules! push_to_history {
-        ($engine:ident) => {
-            $engine.history.push_back($engine.stack.clone());
-            $engine
-                .variable_history
-                .push_back($engine.variables.clone());
-        };
-    }
-
     let mut engine = Engine::new();
 
     // after each command, we must push a copy of the stack to the engine history
+    let commands = command_mappings::create_function_map();
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "1");
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "2");
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "test");
 
-    let _ = engine.add_item_to_stack("1".into());
-    push_to_history!(engine);
-    let _ = engine.add_item_to_stack("2".into());
-    push_to_history!(engine);
-    let _ = engine.add_item_to_stack("test".into());
-    push_to_history!(engine);
-
-    // test undo of adding something to the stack
+    // // test undo of adding something to the stack
     let _ = engine.undo();
-    push_to_history!(engine);
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
-    // test undo of operation
-    let _ = engine.add();
-    push_to_history!(engine);
+    // // test undo of operation
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "add");
     assert_eq!(engine.stack, vec![Bucket::from(3),]);
 
     let _ = engine.undo();
-    push_to_history!(engine);
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     // test undo of clear
-    let _ = engine.clear();
-    push_to_history!(engine);
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "clear");
     assert_eq!(engine.stack, vec![]);
 
     let _ = engine.undo();
-    push_to_history!(engine);
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     // test undo of variable assignment
-    let _ = engine.add_item_to_stack("a".into());
-    push_to_history!(engine);
-    let _ = engine.store();
-    push_to_history!(engine);
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "a");
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "store");
+
     assert_eq!(engine.stack, vec![Bucket::from(1),]);
     assert_eq!(*engine.variables.get("a").unwrap(), Bucket::from(2));
 
     let _ = engine.undo();
-    push_to_history!(engine);
     assert_eq!(
         engine.stack,
         vec![Bucket::from(1), Bucket::from(2), Bucket::from("a"),]

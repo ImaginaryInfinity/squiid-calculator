@@ -7,8 +7,9 @@
  - Moved the config handler to the backend (#40)
  - Support for typing numbers longer than the input box (#24)
  - Create system for generating crash reports (#37)
- - Added the `redo` command
- - Added keybinds for `undo` and `redo`
+ - Added the `redo` command (#54)
+ - Added keybinds for `undo` and `redo` (#54)
+ - Added new tests for better coverage (#56)
 
 # 1.0.6
  - Update Windows installer to add desktop shortcut by default for winget

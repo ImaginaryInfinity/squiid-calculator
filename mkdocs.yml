@@ -59,6 +59,7 @@ nav:
                 - Store: user/commands/rpn/store.md
                 - Swap: user/commands/rpn/swap.md
                 - Undo: user/commands/rpn/undo.md
+                - Redo: user/commands/rpn/redo.md
             - Internal Functions:
                 - Inverted Store: user/commands/internal-funcs/invstore.md
     - Developer Documentation:

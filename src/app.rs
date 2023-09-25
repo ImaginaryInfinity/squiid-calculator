@@ -474,6 +474,16 @@ pub fn run_app<B: Backend>(
                         {
                             update_stack_or_error(send_input_data(socket, "swap"), &mut app)
                         }
+                        _ if key.code == app.keycode_from_config("rpn_undo")
+                            && app.input_mode == InputMode::Rpn =>
+                        {
+                            update_stack_or_error(send_input_data(socket, "undo"), &mut app)
+                        }
+                        _ if key.code == app.keycode_from_config("rpn_redo")
+                            && app.input_mode == InputMode::Rpn =>
+                        {
+                            update_stack_or_error(send_input_data(socket, "redo"), &mut app)
+                        }
                         // Handle typing characters
                         KeyCode::Char(c) => {
                             if app.input_mode == InputMode::Algebraic {
@@ -699,7 +709,17 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                     app.keybind_from_config("rpn_swap").to_owned(),
                     Style::default().add_modifier(Modifier::BOLD),
                 ),
-                Span::raw(": swap"),
+                Span::raw(": swap  "),
+                Span::styled(
+                    app.keybind_from_config("rpn_undo").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
+                Span::raw(": undo  "),
+                Span::styled(
+                    app.keybind_from_config("rpn_redo").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
+                Span::raw(": redo"),
             ],
             Style::default(),
         ),

@@ -164,17 +164,30 @@ pub fn handle_data(
     commands: &CommandsMap,
     data: &str,
 ) -> Result<MessageAction, String> {
-    if engine.history.len() > 20 {
-        _ = engine.history.pop_front();
-        _ = engine.variable_history.pop_front();
+    if engine.undo_history.len() > 20 {
+        _ = engine.undo_history.pop_front();
+        _ = engine.undo_variable_history.pop_front();
     }
+    eprintln!("{:?}", engine.undo_state_pointer);
 
     // Don't add to history if command is refresh, commands, or update_previous_answer as it does not affect the stack
-    if !["refresh", "commands", "update_previous_answer"].contains(&data) {
+    if !["refresh", "commands", "update_previous_answer", "undo", "redo"].contains(&data) {
+        // reset everything in front of the undo history pointer
+        engine
+            .undo_history
+            .drain(engine.undo_history.len().saturating_sub(engine.undo_state_pointer as usize)..);
+        engine
+            .undo_variable_history
+            .drain(engine.undo_variable_history.len().saturating_sub(engine.undo_state_pointer as usize)..);
+        // reset history pointer
+        engine.undo_state_pointer = 0;
+
         // Add current stack to history
-        engine.history.push_back(engine.stack.clone());
+        engine.undo_history.push_back(engine.stack.clone());
         // Add current variable state to history
-        engine.variable_history.push_back(engine.variables.clone());
+        engine
+            .undo_variable_history
+            .push_back(engine.variables.clone());
     }
 
     let result = match commands.get(data) {

@@ -1,9 +1,12 @@
 use std::f64::consts::PI;
+use std::path::PathBuf;
+use std::fs;
 
 use squiid_engine::{
     bucket::{Bucket, BucketTypes, ConstantTypes},
     command_mappings,
     engine::*,
+    protocol::server_response::MessageAction
 };
 
 #[test]
@@ -280,7 +283,7 @@ fn test_modulo() {
 }
 
 #[test]
-fn test_sine() {
+fn test_sin() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("#pi".into());
@@ -303,7 +306,7 @@ fn test_sine() {
 }
 
 #[test]
-fn test_cosine() {
+fn test_cos() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("#pi".into());
@@ -326,7 +329,7 @@ fn test_cosine() {
 }
 
 #[test]
-fn test_tangent() {
+fn test_tan() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("#pi".into());
@@ -349,7 +352,7 @@ fn test_tangent() {
 }
 
 #[test]
-fn test_secant() {
+fn test_sec() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("#pi".into());
@@ -370,7 +373,7 @@ fn test_secant() {
 }
 
 #[test]
-fn test_cosecant() {
+fn test_csc() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("#pi".into());
@@ -393,7 +396,7 @@ fn test_cosecant() {
 }
 
 #[test]
-fn test_cotangent() {
+fn test_cot() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("#pi".into());
@@ -782,7 +785,7 @@ fn test_dup() {
 }
 
 #[test]
-fn test_roll_down() {
+fn test_rolldown() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("-1.2".into());
@@ -802,7 +805,7 @@ fn test_roll_down() {
 }
 
 #[test]
-fn test_roll_up() {
+fn test_rollup() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("-1.2".into());
@@ -1032,7 +1035,7 @@ fn test_list_commands() {
 }
 
 #[test]
-fn test_prev_ans() {
+fn test_update_previous_answer() {
     let mut engine = Engine::new();
 
     assert_eq!(engine.previous_answer, Bucket::from(0));
@@ -1050,4 +1053,50 @@ fn test_prev_ans() {
 
     assert_eq!(*engine.stack.last().unwrap(), Bucket::from(5));
     assert_eq!(engine.previous_answer, Bucket::from(5));
+}
+
+#[test]
+fn test_commands() {
+    let mut engine = Engine::new();
+
+    let commands = command_mappings::create_function_map();
+
+    let result = squiid_engine::handle_data(&mut engine, &commands, "commands");
+
+    assert_eq!(result.unwrap(), MessageAction::SendCommands);
+}
+
+#[test]
+fn test_refresh() {
+    let mut engine = Engine::new();
+
+    let commands = command_mappings::create_function_map();
+
+    let result = squiid_engine::handle_data(&mut engine, &commands, "refresh");
+
+    assert_eq!(result.unwrap(), MessageAction::SendStack);
+}
+
+#[test]
+fn test_quit() {
+    let mut engine = Engine::new();
+
+    let commands = command_mappings::create_function_map();
+
+    let result = squiid_engine::handle_data(&mut engine, &commands, "quit");
+
+    assert_eq!(result.unwrap(), MessageAction::Quit);
+}
+
+#[test]
+fn test_all_commands_covered() {
+    let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    d.push("tests/engine_tests.rs");
+    let data = fs::read_to_string(d).expect("Unable to read test file");
+
+    let commands = command_mappings::create_function_map();
+    for command in commands.keys() {
+        assert!(data.contains(&format!("fn test_{}", command)), "command {} is missing a test", command);
+    }
+
 }

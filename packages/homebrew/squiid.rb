@@ -32,33 +32,14 @@ class Squiid < Formula
     require "pty"
 
     PTY.spawn("squiid") do |r, w, pid|
-      # Wait for squiid to start
-      sleep 1
+      sleep 1 # wait for squiid to start
 
-      # test that math works
-      w.write "(10 - 2) * (3 + 5) / 4"
-
-      # send enter key
-      w.write "\r"
-
-      # capture the stdout into output variable
-      output = read_stdout(r)
-
-      # check that the calculator has done math correctly
-      assert_match "(10-2)*(3+5)/4=16", output
-
-      # quit
-      w.write "quit"
-      w.write "\r"
+      w.write "(10 - 2) * (3 + 5) / 4\r"
+      assert_match "(10-2)*(3+5)/4=16", read_stdout(r)
+      w.write "quit\r"
 
       # for some reason the test hangs on macOS until stdout is read again
-      begin
-        read_stdout(r)
-      rescue Errno::EIO
-        # this happens on linux but not macOS
-      end
-
-      # Wait for the TUI app to exit
+      read_stdout(r) unless OS.linux?
       Process.wait(pid)
     rescue PTY::ChildExited
       # app exited

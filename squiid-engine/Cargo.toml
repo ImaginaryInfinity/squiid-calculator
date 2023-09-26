@@ -28,9 +28,10 @@ strip = "symbols"
 lto = true
 
 [features]
-default = ["ipc"]
+default = ["nng"]
 # enable IPC support with NNG
-ipc = ["dep:nng"]
+ipc = []
+nng = ["ipc", "dep:nng"]
 disable-crash-reports = []
 
 [lib]

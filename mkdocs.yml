@@ -66,6 +66,7 @@ nav:
         - Cross Compiling: dev/cross_compiling.md
         - Communication Protocol: dev/comm_prot.md
         - Configuration Protocol: dev/configuration_protocol.md
+        - Adding an IPC Backend: dev/adding_ipc_backend.md
         - Squiid Parser: dev/parser.md
         - Squiid Engine: dev/engine.md
 

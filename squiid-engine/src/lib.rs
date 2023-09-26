@@ -13,6 +13,9 @@ pub mod protocol {
 #[cfg(feature = "ipc")]
 pub mod ffi;
 
+#[cfg(feature = "ipc")]
+pub mod ipc;
+
 use std::{borrow::BorrowMut, panic};
 
 use bucket::Bucket;
@@ -20,19 +23,9 @@ use command_mappings::CommandsMap;
 use engine::Engine;
 
 #[cfg(feature = "ipc")]
-use nng::{Protocol, Socket};
-use protocol::{
-    client_request::{ConfigurationActionType, ConfigurationPayload},
-    server_response::MessageAction,
-};
-
-#[cfg(feature = "ipc")]
-use crate::{
-    protocol::{
-        client_request::{RequestPayload, RequestType},
-        server_response::{ResponsePayload, ResponseType},
-    },
-    utils::{recv_data, send_response},
+use crate::protocol::{
+    client_request::{ConfigurationActionType, ConfigurationPayload, RequestPayload, RequestType},
+    server_response::{MessageAction, ResponsePayload, ResponseType},
 };
 
 #[cfg(feature = "ipc")]
@@ -43,6 +36,8 @@ const DEFAULT_ADDRESS: &str = "tcp://*:33242";
 /// Start the server at the given address (default is DEFAULT_ADDRESS)
 pub fn start_server(address: Option<&str>) {
     //TODO: document features
+
+    use crate::{ipc::IPCBackend, protocol::server_response::ServerResponseMessage};
     #[cfg(not(feature = "disable-crash-reports"))]
     panic::set_hook(Box::new(|panic_info| {
         crash_reporter::crash_report(panic_info, true);
@@ -59,12 +54,12 @@ pub fn start_server(address: Option<&str>) {
         None => DEFAULT_ADDRESS,
     };
 
-    // create NNG socket to listen on
-    let responder = Socket::new(Protocol::Rep0).unwrap();
+    // create nng IPC wrapper
+    let ipc_wrapper = ipc::nng::NanoMsg::new();
 
     // Print and bind to selected port
     assert!(
-        responder.listen(address_to_bind).is_ok(),
+        ipc_wrapper.bind_and_listen(address_to_bind).is_ok(),
         "could not bind to address {:?}. if you're using this as a shared object file, are you encoding the input to utf-8 bytes?",
         address_to_bind
     );
@@ -78,17 +73,16 @@ pub fn start_server(address: Option<&str>) {
     // listen forever
     loop {
         // recieve message from client
-        let data = recv_data(&responder);
+        let data = ipc_wrapper.recv_data();
         // check if error was encountered when parsing JSON
         let recieved = match data {
             Ok(ref value) => value,
             Err(_) => {
                 // send error back to client and continue loop
-                let _ = send_response(
-                    &responder,
+                let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
                     ResponseType::Error,
                     ResponsePayload::Error("invalid JSON data was sent to the server".to_string()),
-                );
+                ));
                 continue;
             }
         };
@@ -107,18 +101,16 @@ pub fn start_server(address: Option<&str>) {
 
         match result {
             Ok(MessageAction::SendStack) => {
-                let _ = send_response(
-                    &responder,
+                let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
                     ResponseType::Stack,
                     ResponsePayload::Stack(engine.stack.clone()),
-                );
+                ));
             }
             Ok(MessageAction::SendConfigValue(config_value)) => {
-                let _ = send_response(
-                    &responder,
+                let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
                     ResponseType::Configuration,
                     ResponsePayload::Configuration(config_value.into()),
-                );
+                ));
             }
             Ok(MessageAction::SendCommands) => {
                 let mut avaiable_commands: Vec<String> =
@@ -127,36 +119,32 @@ pub fn start_server(address: Option<&str>) {
                 // add quit since it is a special case not in the commands list
                 avaiable_commands.push(String::from("quit"));
 
-                let _ = send_response(
-                    &responder,
+                let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
                     ResponseType::Commands,
                     ResponsePayload::Commands(avaiable_commands),
-                );
+                ));
             }
             Ok(MessageAction::SendPrevAnswer) => {
-                let _ = send_response(
-                    &responder,
+                let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
                     ResponseType::PrevAnswer,
                     ResponsePayload::PrevAnswer(engine.previous_answer.clone()),
-                );
+                ));
             }
             Ok(MessageAction::Quit) => break,
             Err(error) => {
-                let _ = send_response(
-                    &responder,
+                let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
                     ResponseType::Error,
                     ResponsePayload::Error(error.to_string()),
-                );
+                ));
             }
         }
     }
 
     // send quit message to client
-    let _ = send_response(
-        &responder,
+    let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
         ResponseType::QuitSig,
         ResponsePayload::QuitSig(None),
-    );
+    ));
 }
 
 pub fn handle_data(

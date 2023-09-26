@@ -1,5 +1,5 @@
 class Squiid < Formula
-  desc "Modular calculator written in Rust"
+  desc "Do advanced algebraic and RPN calculations"
   homepage "https://imaginaryinfinity.net/projects/squiid/"
   url "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/archive/${VERSION}/squiid-${VERSION}.tar.gz"
   sha256 "${SHA256SUM}"

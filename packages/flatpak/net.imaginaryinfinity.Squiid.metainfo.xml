@@ -2,8 +2,8 @@
 <component type="console-application">
   <id>net.imaginaryinfinity.Squiid</id>
   <name>Squiid</name>
-  <summary>Squiid is a modular calculator</summary>
-  <url type="homepage">https://imaginaryinfinity.net</url>
+  <summary>Do advanced algebraic and RPN calculations</summary>
+  <url type="homepage">https://imaginaryinfinity.net/projects/squiid/</url>
   <url type="contribute">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid</url>
   <url type="bugtracker">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/issues</url>
   <url type="help">https://imaginaryinfinity.net/docs/squiid</url>

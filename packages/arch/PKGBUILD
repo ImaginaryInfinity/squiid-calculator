@@ -2,7 +2,7 @@
 pkgname=squiid
 pkgver=${VERSION}
 pkgrel=1
-pkgdesc="A modular calculator written in Rust. Intended to be the successor to ImaginaryInfinity Calculator."
+pkgdesc="Advanced calculator written in Rust, featuring a terminal user interface supporting both RPN and algebraic input."
 arch=('any')
 url="https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid"
 license=('GPLv3')

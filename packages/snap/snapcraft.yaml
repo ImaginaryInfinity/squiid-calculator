@@ -1,10 +1,9 @@
 name: squiid
 version: '$VERSION'
-summary: Squiid is a modular calculator written in Rust.
+summary: Do advanced algebraic and RPN calculations.
 description: |
-  Squiid is a modular calculator written in Rust. It is currently very early
-  in development but it is intended to be the successor to
-  ImaginaryInfinity Calculator
+  Advanced calculator written in Rust, featuring a terminal user interface
+  supporting both RPN and algebraic input.
 website: https://imaginaryinfinity.net
 contact: imaginaryinfinity@googlegroups.com
 

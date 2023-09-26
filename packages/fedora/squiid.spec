@@ -3,7 +3,7 @@
 Name:     squiid
 Version:  ${VERSION}
 Release:  %autorelease
-Summary:  A modular calculator written in Rust.
+Summary:  Do advanced algebraic and RPN calculations.
 License:  GPL-3.0
 URL:      https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid
 Source:   https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/archive/%{version}/squiid-%{version}.tar.gz

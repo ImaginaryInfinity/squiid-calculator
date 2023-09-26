@@ -6,8 +6,9 @@ PackageVersion: ${VERSION}
 PackageLocale: en-US
 Publisher: ImaginaryInfinity
 PackageName: Squiid
-PackageUrl: https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/
+PackageUrl: https://imaginaryinfinity.net/projects/squiid/
 License: GPLv3
-ShortDescription: Squiid is a modular calculator written in Rust. It is currently very early in development but it is intended to be the successor to ImaginaryInfinity Calculator.
+ShortDescription: Do advanced algebraic and RPN calculations.
 ManifestType: defaultLocale
 ManifestVersion: 1.4.0
+Description: Advanced calculator written in Rust, featuring a terminal user interface supporting both RPN and algebraic input.

@@ -11,6 +11,7 @@
  - Added keybinds for `undo` and `redo` (#54)
  - Added new tests for better coverage (#56)
  - Added abstraction layer to easily drop in different IPC backends (#52)
+ - Update short and long descriptions
 
 # 1.0.6
  - Update Windows installer to add desktop shortcut by default for winget

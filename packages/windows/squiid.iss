@@ -5,7 +5,7 @@
 ; version number is made to be formatted with envsubst
 #define MyAppVersion "${VERSION}"
 #define MyAppPublisher "ImaginaryInfinity"
-#define MyAppURL "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid"
+#define MyAppURL "https://imaginaryinfinity.net/projects/squiid/"
 #define MyAppExeName "squiid.exe"
 ; #define MyAppAssocName MyAppName + " File"
 ; #define MyAppAssocExt ".myp"

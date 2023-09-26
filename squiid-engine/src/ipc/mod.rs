@@ -4,6 +4,7 @@ use crate::protocol::{
     client_request::ClientRequestMessage, server_response::ServerResponseMessage,
 };
 
+// TODO: developer docs for this
 pub trait IPCBackend {
     /// construct new default object
     fn new() -> Self;

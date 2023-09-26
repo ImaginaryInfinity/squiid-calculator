@@ -1,14 +1,24 @@
 class Squiid < Formula
   desc "Modular calculator written in Rust"
-  homepage "https://imaginaryinfinity.net/"
+  homepage "https://imaginaryinfinity.net/projects/squiid/"
   url "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/archive/${VERSION}/squiid-${VERSION}.tar.gz"
   sha256 "${SHA256SUM}"
-  license "GPL-3.0-only"
+  license "GPL-3.0-or-later"
 
-  depends_on "cmake" => :build
   depends_on "rust" => :build
+  depends_on "nng"
 
   def install
+    # Avoid vendoring `nng`.
+    # "build-nng" is the `nng` crate's only default feature. To check:
+    # https://gitlab.com/neachdainn/nng-rs/-/blob/v#{nng_crate_version}/Cargo.toml
+    inreplace "Cargo.toml",
+              /^nng = "(.+)"$/,
+              'nng = { version = "\\1", default-features = false }'
+    inreplace "squiid-engine/Cargo.toml",
+              /^nng = { version = "(.+)", optional = true }$/,
+              'nng = { version = "\\1", optional = true, default-features = false }'
+
     system "cargo", "install", *std_cargo_args
   end
 
@@ -28,10 +38,18 @@ class Squiid < Formula
     output
   end
 
+  def check_binary_linkage(binary, library)
+    binary.dynamically_linked_libraries.any? do |dll|
+      next false unless dll.start_with?(HOMEBREW_PREFIX.to_s)
+
+      File.realpath(dll) == File.realpath(library)
+    end
+  end
+
   test do
     require "pty"
 
-    PTY.spawn("squiid") do |r, w, pid|
+    PTY.spawn("#{bin}/squiid") do |r, w, pid|
       sleep 1 # wait for squiid to start
 
       w.write "(10 - 2) * (3 + 5) / 4\r"
@@ -44,5 +62,8 @@ class Squiid < Formula
     rescue PTY::ChildExited
       # app exited
     end
+
+    assert check_binary_linkage(bin/"squiid", Formula["nng"].opt_lib/shared_library("libnng")),
+      "No linkage with libnng! Cargo is likely using a vendored version."
   end
 end

@@ -9,6 +9,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.75"
 backtrace = "0.3.69"
 chrono = { version = "0.4.30", default-features = false, features = ["clock", "std"] }
 colored = "2.0.4"

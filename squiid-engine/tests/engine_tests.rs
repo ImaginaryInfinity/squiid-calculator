@@ -1,12 +1,10 @@
-use std::f64::consts::PI;
-use std::path::PathBuf;
-use std::fs;
+use std::{f64::consts::PI, fs, path::PathBuf};
 
 use squiid_engine::{
     bucket::{Bucket, BucketTypes, ConstantTypes},
     command_mappings,
     engine::*,
-    protocol::server_response::MessageAction
+    protocol::server_response::MessageAction,
 };
 
 #[test]
@@ -1096,7 +1094,10 @@ fn test_all_commands_covered() {
 
     let commands = command_mappings::create_function_map();
     for command in commands.keys() {
-        assert!(data.contains(&format!("fn test_{}", command)), "command {} is missing a test", command);
+        assert!(
+            data.contains(&format!("fn test_{}", command)),
+            "command {} is missing a test",
+            command
+        );
     }
-
 }

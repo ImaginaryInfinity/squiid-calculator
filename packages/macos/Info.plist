@@ -1,0 +1,11 @@
+{
+   CFBundleName = squiid;
+   CFBundleDisplayName = Squiid;
+   CFBundleIdentifier = "net.imaginaryinfinity.squiid";
+   CFBundleVersion = "${VERSION}";
+   CFBundleShortVersionString = "${VERSION}";
+   CFBundleInfoDictionaryVersion = "6.0";
+   CFBundlePackageType = APPL;
+   CFBundleExecutable = squiid;
+   CFBundleIconFile = "squiid.icns";
+}

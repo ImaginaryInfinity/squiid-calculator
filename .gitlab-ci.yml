@@ -108,20 +108,20 @@ build-windows-installer:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
 
-deploy-ppa:
-  stage: deploy
-  image: ubuntu:bionic
-  before_script:
-    - DEBIAN_FRONTEND=noninteractive apt update
-    - DEBIAN_FRONTEND=noninteractive apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git gnupg python3-pip curl
-    - echo "$GPG_PRIVATE_KEY_B64" | base64 --decode | gpg --batch --import
-    - gpg --list-keys --fingerprint --with-colons | sed -E -n -e 's/^fpr:::::::::([0-9A-F]+):$/\1:6:/p' | gpg --import-ownertrust
-    - echo -ne "[squiid]\nfqdn = ppa.launchpad.net\nmethod = ftp\nincoming = ~imaginaryinfinity/ubuntu/squiid/\nlogin = squiid\nallow_unsigned_uploads = 0" > ~/.dput.cf
-  script:
-    - make ppa DEBUILD_OPTIONS="-p\"gpg --batch --passphrase $GPG_PASSPHRASE --pinentry-mode loopback\""
-    - echo $LAUNCHPAD_PASS | dput squiid squiid*_*_source.changes
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "web"'
+# deploy-ppa:
+#   stage: deploy
+#   image: ubuntu:bionic
+#   before_script:
+#     - DEBIAN_FRONTEND=noninteractive apt update
+#     - DEBIAN_FRONTEND=noninteractive apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git gnupg python3-pip curl
+#     - echo "$GPG_PRIVATE_KEY_B64" | base64 --decode | gpg --batch --import
+#     - gpg --list-keys --fingerprint --with-colons | sed -E -n -e 's/^fpr:::::::::([0-9A-F]+):$/\1:6:/p' | gpg --import-ownertrust
+#     - echo -ne "[squiid]\nfqdn = ppa.launchpad.net\nmethod = ftp\nincoming = ~imaginaryinfinity/ubuntu/squiid/\nlogin = squiid\nallow_unsigned_uploads = 0" > ~/.dput.cf
+#   script:
+#     - make ppa DEBUILD_OPTIONS="-p\"gpg --batch --passphrase $GPG_PASSPHRASE --pinentry-mode loopback\""
+#     - echo $LAUNCHPAD_PASS | dput squiid squiid*_*_source.changes
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "web"'
 
 build-deb:
   stage: build

@@ -43,6 +43,9 @@ cd squiid
 makepkg -si
 ```
 
+### Binary
+Linux users can find the latest stable portable binary [here](https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/jobs/artifacts/trunk/download?job=build-musl).
+
 ----
 
 ## MacOS Users

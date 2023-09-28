@@ -11,7 +11,7 @@
  - Added keybinds for `undo` and `redo` (#54)
  - Added new tests for better coverage (#56)
  - Added abstraction layer to easily drop in different IPC backends (#52)
- - Update short and long descriptions
+ - Update short and long descriptions (#53)
  - Created deb package (#45)
  - Created homebrew package (#44)
 

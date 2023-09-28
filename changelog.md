@@ -12,6 +12,8 @@
  - Added new tests for better coverage (#56)
  - Added abstraction layer to easily drop in different IPC backends (#52)
  - Update short and long descriptions
+ - Created deb package (#45)
+ - Created homebrew package (#44)
 
 # 1.0.6
  - Update Windows installer to add desktop shortcut by default for winget

@@ -64,6 +64,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
+
+    // clear terminal
+    // this is for terminals that aren't smart enough to do it themselves
+    // from whatever ratatui does
     print!("{}[2J", 27 as char);
 
     // create app and run it

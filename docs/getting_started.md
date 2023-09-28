@@ -43,6 +43,9 @@ cd squiid
 makepkg -si
 ```
 
+### Deb
+Ubuntu users have the option to manually install a deb. However, this is not recommended, and we are working on a PPA. For alternatives, see [Snap](#snap) or [Flatpak](#flatpak). The deb may work on debian, however this has not been tested. It was compiled on Ubuntu 18.04, and should work on the versions above that as well. It can be downloaded [here](https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/jobs/artifacts/trunk/download?job=build-deb), or as an artifact on the latest pipeline.
+
 ### Binary
 Linux users can find the latest stable portable binary [here](https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/jobs/artifacts/trunk/download?job=build-musl).
 

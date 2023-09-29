@@ -125,7 +125,7 @@ deploy-ppa:
 
 build-deb:
   stage: build
-  image: ubuntu:latest
+  image: ubuntu:bionic
   before_script:
     - DEBIAN_FRONTEND=noninteractive apt update
     - DEBIAN_FRONTEND=noninteractive apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git curl gnupg python3-pip

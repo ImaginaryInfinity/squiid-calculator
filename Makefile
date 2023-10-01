@@ -242,14 +242,14 @@ homebrew: clean ## Format the homebrew metadata
 	@echo "squiid.rb can be found in the package-build/ directory"
 	@echo "Commit it to your branch of homebrew-core to update"
 
-rpm: require clean
+rpm: require clean ## Create the RPM spec file
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 
 	mkdir -p package-build
 
 	@envsubst '$${VERSION}' < packages/fedora/squiid.spec > package-build/squiid.spec
 
-winget:
+winget: ## Create the winget metadata files
 ifndef forkpath
 	# check if forkpath= argument is defined
 	@echo "ERROR: forkpath is not defined. please specify a path to your winget-pkgs fork with forkpath=xx"
@@ -283,11 +283,11 @@ endef
 RELEASES := bionic focal jammy
 $(foreach release,$(RELEASES),$(eval $(call generate_rule,$(release),$(shell git rev-parse --abbrev-ref HEAD))))
 
-deb: setup-deb-files-bionic
+deb: setup-deb-files-bionic ## Build a deb
 	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
 	# sed -i 's/make build/make build-musl/' package-build/debian/rules
 	cd package-build; dpkg-buildpackage -b -d -us -uc $(DEBUILD_OPTIONS)
 
-ppa: setup-deb-files-bionic
+ppa: setup-deb-files-bionic ## Create PPA changes file
 	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
 	cd package-build; debuild -S -sa $(DEBUILD_OPTIONS)

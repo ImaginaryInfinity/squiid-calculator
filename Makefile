@@ -260,9 +260,9 @@ endif
 	@envsubst '$${VERSION}' < packages/winget/ImaginaryInfinity.Squiid.locale.en-US.yaml > "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/ImaginaryInfinity.Squiid.locale.en-US.yaml"
 	@envsubst '$${VERSION}' < packages/winget/ImaginaryInfinity.Squiid.yaml > "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/ImaginaryInfinity.Squiid.yaml"
 	@echo "PLEASE UPDATE THE INSTALLER URL AND HASH IN THE FORK PATH"
-	cd "$(forkpath)"; \
-	git add .; \
-	git commit -m 'New version: Squiid version ${VERSION}'
+	# cd "$(forkpath)"; \
+	# git add .; \
+	# git commit -m 'New version: Squiid version ${VERSION}'
 
 define generate_rule
 setup-deb-files-$(1): clean

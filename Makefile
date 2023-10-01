@@ -255,14 +255,19 @@ ifndef forkpath
 	@echo "ERROR: forkpath is not defined. please specify a path to your winget-pkgs fork with forkpath=xx"
 	exit 1
 endif
+ifndef installerurl
+	# check if installerurl= argument is defined
+	@echo "ERROR: installerurl is not defined. please specify a url to the windows installer"
+	exit 1
+endif
 	mkdir -p "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/"
-	@envsubst '$${VERSION}' < packages/winget/ImaginaryInfinity.Squiid.installer.yaml > "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/ImaginaryInfinity.Squiid.installer.yaml"
+	export sha256=$$(curl -sL $${installerurl} | sha256sum | awk '{print $$1}'); \
+	envsubst '$${VERSION} $${installerurl} $${sha256}' < packages/winget/ImaginaryInfinity.Squiid.installer.yaml > "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/ImaginaryInfinity.Squiid.installer.yaml"
 	@envsubst '$${VERSION}' < packages/winget/ImaginaryInfinity.Squiid.locale.en-US.yaml > "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/ImaginaryInfinity.Squiid.locale.en-US.yaml"
 	@envsubst '$${VERSION}' < packages/winget/ImaginaryInfinity.Squiid.yaml > "$(forkpath)/manifests/i/ImaginaryInfinity/Squiid/${VERSION}/ImaginaryInfinity.Squiid.yaml"
-	@echo "PLEASE UPDATE THE INSTALLER URL AND HASH IN THE FORK PATH"
-	# cd "$(forkpath)"; \
-	# git add .; \
-	# git commit -m 'New version: Squiid version ${VERSION}'
+	cd "$(forkpath)"; \
+	git add .; \
+	git commit -m 'New version: Squiid version ${VERSION}'
 
 define generate_rule
 setup-deb-files-$(1): clean

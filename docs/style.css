@@ -4,6 +4,45 @@
 
 @media screen and (max-width: 76.1875em) {
 	.md-nav--primary .md-nav__title[for="__drawer"] {
-	background-color: #3C4061;
+		background-color: #3C4061;
 	}
+}
+
+/*!
+ *  Hack typeface https://github.com/source-foundry/Hack
+ *  License: https://github.com/source-foundry/Hack/blob/master/LICENSE.md
+ */
+/* FONT PATHS
+ * -------------------------- */
+@font-face {
+	font-family: 'Hack';
+	src: url('fonts/Hack-Regular.ttf');
+	font-weight: 400;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Hack';
+	src: url('fonts/Hack-Bold.ttf');
+	font-weight: 700;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Hack';
+	src: url('fonts/Hack-Italic.ttf');
+	font-weight: 400;
+	font-style: italic;
+}
+
+@font-face {
+	font-family: 'Hack';
+	src: url('fonts/Hack-BoldItalic.ttf');
+	font-weight: 700;
+	font-style: italic;
+}
+
+:root {
+	--md-text-font: "Hack";
+	--md-code-font: "Hack Mono"
 }

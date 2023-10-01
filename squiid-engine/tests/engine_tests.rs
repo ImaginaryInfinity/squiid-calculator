@@ -1,8 +1,10 @@
-use std::f64::consts::PI;
+use std::{f64::consts::PI, fs, path::PathBuf};
 
 use squiid_engine::{
     bucket::{Bucket, BucketTypes, ConstantTypes},
+    command_mappings,
     engine::*,
+    protocol::server_response::MessageAction,
 };
 
 #[test]
@@ -279,7 +281,7 @@ fn test_modulo() {
 }
 
 #[test]
-fn test_sine() {
+fn test_sin() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("#pi".into());
@@ -302,7 +304,7 @@ fn test_sine() {
 }
 
 #[test]
-fn test_cosine() {
+fn test_cos() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("#pi".into());
@@ -325,7 +327,7 @@ fn test_cosine() {
 }
 
 #[test]
-fn test_tangent() {
+fn test_tan() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("#pi".into());
@@ -348,7 +350,7 @@ fn test_tangent() {
 }
 
 #[test]
-fn test_secant() {
+fn test_sec() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("#pi".into());
@@ -369,7 +371,7 @@ fn test_secant() {
 }
 
 #[test]
-fn test_cosecant() {
+fn test_csc() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("#pi".into());
@@ -392,7 +394,7 @@ fn test_cosecant() {
 }
 
 #[test]
-fn test_cotangent() {
+fn test_cot() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("#pi".into());
@@ -545,7 +547,6 @@ fn test_blog() {
 fn test_ln() {
     let mut engine = Engine::new();
 
-    // TODO: fix variable storing as decimals
     let _ = engine.add_item_to_stack("#e".into());
 
     // evaluate from last stack entries to first
@@ -639,7 +640,7 @@ fn test_lt() {
 }
 
 #[test]
-fn test_egt() {
+fn test_geq() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("-1".into());
@@ -652,18 +653,18 @@ fn test_egt() {
     let _ = engine.add_item_to_stack("2".into());
 
     // evaluate from last stack entries to first
-    let _ = engine.egt();
+    let _ = engine.geq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 
-    let _ = engine.egt();
+    let _ = engine.geq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 
-    let _ = engine.egt();
+    let _ = engine.geq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
 }
 
 #[test]
-fn test_elt() {
+fn test_leq() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("-1".into());
@@ -676,13 +677,13 @@ fn test_elt() {
     let _ = engine.add_item_to_stack("2".into());
 
     // evaluate from last stack entries to first
-    let _ = engine.elt();
+    let _ = engine.leq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 
-    let _ = engine.elt();
+    let _ = engine.leq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
 
-    let _ = engine.elt();
+    let _ = engine.leq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 }
 
@@ -748,7 +749,7 @@ fn test_drop() {
     let result = engine.drop();
     assert_eq!(
         result,
-        Ok(squiid_engine::protocol::MessageAction::SendStack)
+        Ok(squiid_engine::protocol::server_response::MessageAction::SendStack)
     );
 }
 
@@ -782,7 +783,7 @@ fn test_dup() {
 }
 
 #[test]
-fn test_roll_down() {
+fn test_rolldown() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("-1.2".into());
@@ -802,7 +803,7 @@ fn test_roll_down() {
 }
 
 #[test]
-fn test_roll_up() {
+fn test_rollup() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("-1.2".into());
@@ -892,64 +893,133 @@ fn test_clear() {
 
 #[test]
 fn test_undo() {
-    macro_rules! push_to_history {
-        ($engine:ident) => {
-            $engine.history.push_back($engine.stack.clone());
-            $engine
-                .variable_history
-                .push_back($engine.variables.clone());
-        };
-    }
-
     let mut engine = Engine::new();
 
     // after each command, we must push a copy of the stack to the engine history
-
-    let _ = engine.add_item_to_stack("1".into());
-    push_to_history!(engine);
-    let _ = engine.add_item_to_stack("2".into());
-    push_to_history!(engine);
-    let _ = engine.add_item_to_stack("test".into());
-    push_to_history!(engine);
+    let commands = command_mappings::create_function_map();
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "1");
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "2");
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "test");
 
     // test undo of adding something to the stack
     let _ = engine.undo();
-    push_to_history!(engine);
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     // test undo of operation
-    let _ = engine.add();
-    push_to_history!(engine);
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "add");
     assert_eq!(engine.stack, vec![Bucket::from(3),]);
 
     let _ = engine.undo();
-    push_to_history!(engine);
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     // test undo of clear
-    let _ = engine.clear();
-    push_to_history!(engine);
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "clear");
     assert_eq!(engine.stack, vec![]);
 
     let _ = engine.undo();
-    push_to_history!(engine);
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     // test undo of variable assignment
-    let _ = engine.add_item_to_stack("a".into());
-    push_to_history!(engine);
-    let _ = engine.store();
-    push_to_history!(engine);
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "a");
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "store");
+
     assert_eq!(engine.stack, vec![Bucket::from(1),]);
     assert_eq!(*engine.variables.get("a").unwrap(), Bucket::from(2));
 
     let _ = engine.undo();
-    push_to_history!(engine);
     assert_eq!(
         engine.stack,
         vec![Bucket::from(1), Bucket::from(2), Bucket::from("a"),]
     );
     assert_eq!(engine.variables.get("a"), None);
+
+    // test that we dont crash from extra undos
+    let _ = engine.undo();
+    let _ = engine.undo();
+    let _ = engine.undo();
+}
+
+#[test]
+fn test_redo() {
+    let mut engine = Engine::new();
+
+    // after each command, we must push a copy of the stack to the engine history
+    let commands = command_mappings::create_function_map();
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "1");
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "2");
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "test");
+
+    // undo adding something to the stack
+    let _ = engine.undo();
+    assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
+    // redo the undo
+    let _ = engine.redo();
+    assert_eq!(
+        engine.stack,
+        vec![Bucket::from(1), Bucket::from(2), Bucket::from("test")]
+    );
+
+    // undo drop
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "drop");
+    assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
+
+    let _ = engine.undo();
+    assert_eq!(
+        engine.stack,
+        vec![Bucket::from(1), Bucket::from(2), Bucket::from("test")]
+    );
+
+    // test redo drop
+    let _ = engine.redo();
+    assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
+
+    // undo an operation
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "add");
+    assert_eq!(engine.stack, vec![Bucket::from(3),]);
+
+    let _ = engine.undo();
+    assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
+
+    // redo the operation
+    let _ = engine.redo();
+    assert_eq!(engine.stack, vec![Bucket::from(3),]);
+
+    // undo clear
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "clear");
+    assert_eq!(engine.stack, vec![]);
+
+    let _ = engine.undo();
+    assert_eq!(engine.stack, vec![Bucket::from(3),]);
+
+    // redo clear
+    let _ = engine.redo();
+    assert_eq!(engine.stack, vec![]);
+
+    // undo variable assignment
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "1");
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "2");
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "a");
+    let _ = squiid_engine::handle_data(&mut engine, &commands, "store");
+
+    assert_eq!(engine.stack, vec![Bucket::from(1),]);
+    assert_eq!(*engine.variables.get("a").unwrap(), Bucket::from(2));
+
+    let _ = engine.undo();
+    assert_eq!(
+        engine.stack,
+        vec![Bucket::from(1), Bucket::from(2), Bucket::from("a"),]
+    );
+    assert_eq!(engine.variables.get("a"), None);
+
+    // redo variable assignment
+    let _ = engine.redo();
+    assert_eq!(engine.stack, vec![Bucket::from(1),]);
+    assert_eq!(*engine.variables.get("a").unwrap(), Bucket::from(2));
+
+    // test that extra redos dont crash
+    let _ = engine.redo();
+    let _ = engine.redo();
+    let _ = engine.redo();
 }
 
 #[test]
@@ -958,12 +1028,12 @@ fn test_list_commands() {
 
     assert!(matches!(
         engine.list_commands().unwrap(),
-        squiid_engine::protocol::MessageAction::SendCommands
+        squiid_engine::protocol::server_response::MessageAction::SendCommands
     ));
 }
 
 #[test]
-fn test_prev_ans() {
+fn test_update_previous_answer() {
     let mut engine = Engine::new();
 
     assert_eq!(engine.previous_answer, Bucket::from(0));
@@ -981,4 +1051,53 @@ fn test_prev_ans() {
 
     assert_eq!(*engine.stack.last().unwrap(), Bucket::from(5));
     assert_eq!(engine.previous_answer, Bucket::from(5));
+}
+
+#[test]
+fn test_commands() {
+    let mut engine = Engine::new();
+
+    let commands = command_mappings::create_function_map();
+
+    let result = squiid_engine::handle_data(&mut engine, &commands, "commands");
+
+    assert_eq!(result.unwrap(), MessageAction::SendCommands);
+}
+
+#[test]
+fn test_refresh() {
+    let mut engine = Engine::new();
+
+    let commands = command_mappings::create_function_map();
+
+    let result = squiid_engine::handle_data(&mut engine, &commands, "refresh");
+
+    assert_eq!(result.unwrap(), MessageAction::SendStack);
+}
+
+#[test]
+fn test_quit() {
+    let mut engine = Engine::new();
+
+    let commands = command_mappings::create_function_map();
+
+    let result = squiid_engine::handle_data(&mut engine, &commands, "quit");
+
+    assert_eq!(result.unwrap(), MessageAction::Quit);
+}
+
+#[test]
+fn test_all_commands_covered() {
+    let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    d.push("tests/engine_tests.rs");
+    let data = fs::read_to_string(d).expect("Unable to read test file");
+
+    let commands = command_mappings::create_function_map();
+    for command in commands.keys() {
+        assert!(
+            data.contains(&format!("fn test_{}", command)),
+            "command {} is missing a test",
+            command
+        );
+    }
 }

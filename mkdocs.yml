@@ -1,5 +1,5 @@
 site_name: Squiid Documentation
-repo_url: https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid
+repo_url: https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/
 repo_name: GitLab
 edit_uri: edit/trunk/docs/
 site_description: Squiid is a modular calculator written in Rust. It is currently very early in development but it is intended to be the successor to ImaginaryInfinity Calculator.
@@ -45,9 +45,9 @@ nav:
             - Logic:
                 - Equals: user/commands/logic/eq.md
                 - Greater Than: user/commands/logic/gt.md
-                - Greater Than or Equal To: user/commands/logic/egt.md
+                - Greater Than or Equal To: user/commands/logic/geq.md
                 - Less Than: user/commands/logic/lt.md
-                - Less Than or Equal To: user/commands/logic/elt.md
+                - Less Than or Equal To: user/commands/logic/leq.md
             - RPN Mode:
                 - Change Sign: user/commands/rpn/chs.md
                 - Clear (RPN): user/commands/rpn/clear.md
@@ -59,11 +59,14 @@ nav:
                 - Store: user/commands/rpn/store.md
                 - Swap: user/commands/rpn/swap.md
                 - Undo: user/commands/rpn/undo.md
+                - Redo: user/commands/rpn/redo.md
             - Internal Functions:
                 - Inverted Store: user/commands/internal-funcs/invstore.md
     - Developer Documentation:
         - Cross Compiling: dev/cross_compiling.md
         - Communication Protocol: dev/comm_prot.md
+        - Configuration Protocol: dev/configuration_protocol.md
+        - Adding an IPC Backend: dev/adding_ipc_backend.md
         - Squiid Parser: dev/parser.md
         - Squiid Engine: dev/engine.md
 
@@ -74,34 +77,36 @@ theme:
         scheme: slate
         primary: indigo
         accent: indigo
-    font:
-        #text: Ubuntu
-        text: Hack
-        #code: Ubuntu Mono
-        code: Hack Mono
-    logo: img/favicon.ico
+    font: false
+    logo: img/favicon.png
+    favicon: img/favicon.png
     features:
-        content.code.annotate
+        - content.code.annotate
+        - content.code.copy
+        - content.action.edit
+        - content.action.view
 
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true 
+  - pymdownx.betterem
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.keys
 
 plugins:
     - search
-    - mermaid2
 
 extra_css:
   - style.css
 
-extra_javascript:
-    - https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js

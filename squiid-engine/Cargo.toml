@@ -1,6 +1,6 @@
 [package]
 name = "squiid-engine"
-version = "1.0.0"
+version = "1.1.0"
 description = "This repository contains the RPN (postfix) evaluation engine that is used in Squiid Calculator"
 repository = "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-parser"
 license = "GPL-3.0"
@@ -9,6 +9,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.75"
+backtrace = "0.3.69"
+chrono = { version = "0.4.30", default-features = false, features = ["clock", "std"] }
+colored = "2.0.4"
+directories = "5.0.1"
 lazy_static = "1.4.0"
 nng = { version = "1.0.1", optional = true }
 regex = "1.7.3"
@@ -16,15 +21,18 @@ rust_decimal = { version = "1.29.1", features = ["maths"] }
 rust_decimal_macros = "1.29.1"
 serde = { version = "1.0.159", features = ["derive"] }
 serde_json = "1.0.95"
+toml = "0.7.8"
 
 [profile.release]
 strip = "symbols"
 lto = true
 
 [features]
-default = ["ipc"]
+default = ["nng"]
 # enable IPC support with NNG
-ipc = ["dep:nng"]
+ipc = []
+nng = ["ipc", "dep:nng"]
+disable-crash-reports = []
 
 [lib]
 name = "squiid_engine"

@@ -3,21 +3,23 @@
 PREFIX ?= /usr
 BINDIR ?= $(PREFIX)/bin
 APPLICATIONSDIR ?= $(PREFIX)/share/applications
-ICONSDIR ?= $(PREFIX)/share/icons/hicolor
+ICONSDIR ?= $(PREFIX)/share/icons/hicolor/scalable/apps/
 
 BINARY_NAME := squiid
 BINARY_PATH ?= target/release/$(BINARY_NAME)
 DESKTOP_FILE_NAME := squiid.desktop
 DESKTOP_FILE_PATH ?= packages/$(DESKTOP_FILE_NAME)
 ICON_FILE_NAME := squiidsquare.svg
+ICON_FILE_DEST_NAME := squiid.svg
 ICON_FILE_PATH ?= branding/$(ICON_FILE_NAME)
-
-DEBUILD_OPTIONS ?= -us -uc
 
 APPIMAGETOOL ?= appimagetool
 ELEVATE ?= sudo
+CARGO ?= cargo
+EXECUTABLE_PERMISSION ?= -m755
+NORMAL_PERMISSION ?= -m644
 
-VERSION := $(shell awk -F ' = ' '$$1 ~ /version/ { gsub(/[\"]/, "", $$2); printf("%s",$$2) }' Cargo.toml)
+VERSION := $(shell awk -F ' = ' '$$1 ~ /version/ { gsub(/["]/, "", $$2); printf("%s",$$2) }' Cargo.toml)
 export VERSION
 
 .PHONY: help
@@ -45,31 +47,34 @@ clean: ## Clean the build environment
 		generated-sources.json \
 		.flatpak-builder \
 		flatpak-cargo-generator.py \
-		../squiid_0.1.0.orig.tar.gz \
-		debian
+		squiid*.orig.tar.gz \
+		squiid*.dsc \
+		squiid*.debian.tar.xz \
+		squiid*_source.* \
+		snap
 
 require:
 	@echo "Checking the programs required for the build are installed..."
-	@cargo --version >/dev/null 2>&1 || (echo "ERROR: cargo is required."; exit 1)
+	@$(CARGO) --version >/dev/null 2>&1 || (echo "ERROR: cargo is required."; exit 1)
 
 test: ## Test each component of the project
-	cargo test -p squiid-parser -p squiid-engine -p squiid
+	$(CARGO) test -p squiid-parser -p squiid-engine -p squiid
 
 build: require ## Build the release version of the program for the system platform
-	cargo build --release
+	$(CARGO) build --release
 
 build-musl: require ## Build the Linux MUSL version
-	cargo build --release --target=x86_64-unknown-linux-musl
+	$(CARGO) build --release --target=x86_64-unknown-linux-musl
 
 install: build ## Install Squiid to the system
-	$(ELEVATE) install -D -v -m755 $(BINARY_PATH) $(DESTDIR)$(BINDIR)
-	$(ELEVATE) install -D -v -m644 $(DESKTOP_FILE_PATH) $(DESTDIR)$(APPLICATIONSDIR)
-	$(ELEVATE) install -D -v -m644 $(ICON_FILE_PATH) $(DESTDIR)$(ICONSDIR)
+	$(ELEVATE) install -D -v $(EXECUTABLE_PERMISSION) $(BINARY_PATH) $(DESTDIR)/$(BINDIR)/$(BINARY_NAME)
+	$(ELEVATE) install -D -v $(NORMAL_PERMISSION) $(DESKTOP_FILE_PATH) $(DESTDIR)/$(APPLICATIONSDIR)/$(DESKTOP_FILE_NAME)
+	$(ELEVATE) install -D -v $(NORMAL_PERMISSION) $(ICON_FILE_PATH) $(DESTDIR)$(ICONSDIR)/$(ICON_FILE_DEST_NAME)
 
 uninstall: ## Uninstall the version of Squiid installed with the Makefile
 	$(ELEVATE) rm $(DESTDIR)$(BINDIR)/$(BINARY_NAME)
 	$(ELEVATE) rm $(DESTDIR)$(APPLICATIONSDIR)/$(DESKTOP_FILE_NAME)
-	$(ELEVATE) rm $(DESTDIR)$(ICONSDIR)/$(ICON_FILE_NAME)
+	$(ELEVATE) rm $(DESTDIR)$(ICONSDIR)/$(ICON_FILE_DEST_NAME)
 
 flatpak: require clean ## Build the flatpak in package-build/
 	@python3 --version >/dev/null 2>&1 || (echo "ERROR: python3 is required."; exit 1)
@@ -101,14 +106,19 @@ snap: require clean ## Build the snap
 	@snapcraft --version >/dev/null 2>&1 || (echo "ERROR: snapcraft is required."; exit 1)
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 
+	mkdir -p snap/gui
+
 	@echo "Replacing VERSION with ${VERSION} in snapcraft.yaml"
-	@envsubst '$${VERSION}' < packages/snap/snapcraft.yaml > snapcraft.yaml
+	@envsubst '$${VERSION}' < packages/snap/snapcraft.yaml > snap/snapcraft.yaml
+
+	cp packages/snap/squiid.desktop snap/gui
+	cp branding/icons/squiid512.png snap/gui/squiid.png
 
 	snapcraft
 
-	rm -f snapcraft.yaml
+	rm -rf snap
 
-appimage: require clean build ## Build the AppImage
+appimage: require clean build-musl ## Build the AppImage
 	# Check for appimagetool
 	@$(APPIMAGETOOL) --version > /dev/null 2>&1 || (echo "ERROR: appimagetool is required"; exit 1)
 	# Check for curl
@@ -120,7 +130,7 @@ appimage: require clean build ## Build the AppImage
 	mkdir -p package-build/squiid.AppDir/usr/bin
 	mkdir -p package-build/squiid.AppDir/usr/share/icons
 	# Copy squiid binary
-	cp target/release/squiid package-build/squiid.AppDir/usr/bin/squiid
+	cp target/x86_64-unknown-linux-musl/release/squiid package-build/squiid.AppDir/usr/bin/squiid
 	# Copy AppRun
 	cp packages/appimage/AppRun package-build/squiid.AppDir/AppRun
 	# Make AppRun executable
@@ -149,7 +159,7 @@ appimage: require clean build ## Build the AppImage
 
 windows-build: require clean ## Cross compile the Windows release
 	# cross compile windows version
-	cargo build --release --target=x86_64-pc-windows-gnu
+	$(CARGO) build --release --target=x86_64-pc-windows-gnu
 
 ifndef skip_build
 windows-installer: windows-build
@@ -181,21 +191,21 @@ ifndef platform
 	exit 1
 endif
 	# check if cargo ndk is installed
-	@cargo ndk --version > /dev/null 2>&1 || (echo "ERROR: cargo-ndk is required. Install it with `cargo install cargo-ndk`"; exit 1)
+	@$(CARGO) ndk --version > /dev/null 2>&1 || (echo "ERROR: cargo-ndk is required. Install it with `cargo install cargo-ndk`"; exit 1)
 
 android-armv8: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android-armv8: android-require ## Build the Android ARMv8 release
 	@echo "Android armv8 building is currently broken"; exit 1
-	RUST_LOG=debug cargo ndk --platform $(platform) --target arm64-v8a build --release
+	RUST_LOG=debug $(CARGO) ndk --platform $(platform) --target arm64-v8a build --release
 
 android-armv7: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android-armv7: ## Build the Android ARMv7 release
-	cargo build --target armv7-linux-androideabi --release
+	$(CARGO) build --target armv7-linux-androideabi --release
 
 android-x86_64: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android-x86_64: android-require ## Build the Android x86_64 release
 	@echo "Android x86_64 building is currently broken"; exit 1
-	cargo ndk --platform $(platform) --target x86_64 build --release
+	$(CARGO) ndk --platform $(platform) --target x86_64 build --release
 
 android: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android: android-armv8 android-armv7 android-x86_64 ## Build all android targets
@@ -208,7 +218,7 @@ aur-metadata: require clean ## Build the AUR metadata files for deployment
 	mkdir -p package-build/
 	@envsubst '$${VERSION}' < packages/arch/PKGBUILD > package-build/PKGBUILD
 	# retrieve sha512sum of source
-	export SHA512SUM=$$(curl -sL $$(cd package-build; makepkg --printsrcinfo | makepkg --printsrcinfo | grep -oP 'source = \K.*') | sha512sum | awk '{print $$1}'); \
+	export SHA512SUM=$$(curl -sL $$(cd package-build; makepkg --printsrcinfo | grep -oP 'source = \K.*') | sha512sum | awk '{print $$1}'); \
 	envsubst '$${SHA512SUM}' < package-build/PKGBUILD > package-build/PKGBUILD-new
 
 	mv package-build/PKGBUILD-new package-build/PKGBUILD
@@ -218,24 +228,19 @@ aur-metadata: require clean ## Build the AUR metadata files for deployment
 arch-package: aur-metadata ## Build an Arch package
 	cd package-build; makepkg -s
 
-deb: require clean
-	@git --version > /dev/null 2>&1 || (echo "ERROR: git is required"; exit 1)
-	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
+homebrew: clean ## Format the homebrew metadata
+	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 
-	ls packages
+	mkdir -p package-build/
+	@envsubst '$${VERSION}' < packages/homebrew/squiid.rb > package-build/squiid.rb
+	# retrieve sha256sum of source
+	export SHA256SUM=$$(curl -sL $$(awk -F '"' '/url/ {print $$2}' package-build/squiid.rb) | sha256sum | awk '{print $$1}'); \
+	envsubst '$${SHA256SUM}' < package-build/squiid.rb > package-build/squiid.new
 
-	mkdir -p package-build
-	cp -r packages/debian ./
+	mv package-build/squiid.new package-build/squiid.rb
 
-	git archive --format=tar.gz -o ../squiid_0.1.0.orig.tar.gz trunk
-
-	debuild $(DEBUILD_OPTIONS)
-
-	ls ..
-
-	mv ../squiid*.deb ../squiid*.build ../squiid*.changes ../squiid*.tar.xz ../squiid*.dsc ../squiid*.buildinfo ./package-build || true
-
-	rm -rf ../squiid_0.1.0.orig.tar.gz debian
+	@echo "squiid.rb can be found in the package-build/ directory"
+	@echo "Commit it to your branch of homebrew-core to update"
 
 rpm: require clean
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
@@ -258,3 +263,31 @@ endif
 	cd "$(forkpath)"; \
 	git add .; \
 	git commit -m 'New version: Squiid version ${VERSION}'
+
+define generate_rule
+setup-deb-files-$(1): clean
+	@git --version > /dev/null 2>&1 || (echo "ERROR: git is required"; exit 1)
+	@tar --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
+	@python3 --version > /dev/null 2>&1 || (echo "ERROR: python is required"; exit 1)
+
+	mkdir -p package-build/
+
+	# create archive for deb and extract it into package-build
+	git archive --format=tar.gz -o squiid_${VERSION}-1.orig.tar.gz --prefix=squiid-${VERSION}-1/ $(2)
+	tar -xzf squiid_${VERSION}-1.orig.tar.gz -C package-build/ --strip-components=1
+
+	cp -r package-build/packages/debian/ package-build/
+	python3 packages/debian/generate_changelog.py $(1) > package-build/debian/changelog
+endef
+
+RELEASES := bionic focal jammy
+$(foreach release,$(RELEASES),$(eval $(call generate_rule,$(release),$(shell git rev-parse --abbrev-ref HEAD))))
+
+deb: setup-deb-files-bionic
+	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
+	# sed -i 's/make build/make build-musl/' package-build/debian/rules
+	cd package-build; dpkg-buildpackage -b -d -us -uc $(DEBUILD_OPTIONS)
+
+ppa: setup-deb-files-bionic
+	@debuild --version > /dev/null 2>&1 || (echo "ERROR: debuild is required"; exit 1)
+	cd package-build; debuild -S -sa $(DEBUILD_OPTIONS)

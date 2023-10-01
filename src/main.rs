@@ -7,7 +7,7 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 mod app;
 use app::{run_app, App};
 
-mod config_handler;
+mod config_utils;
 mod utils;
 
 use crossterm::{
@@ -15,6 +15,7 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
+use squiid_engine::crash_reporter;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let matches = clap::command!()
@@ -51,12 +52,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         .dial(&format!("tcp://127.0.0.1:{}", port_num))
         .is_ok());
 
-    // set panic hook to clean the terminal
-    let original_hook = std::panic::take_hook();
-
-    std::panic::set_hook(Box::new(move |panic| {
+    std::panic::set_hook(Box::new(|panic| {
         reset_terminal().unwrap();
-        original_hook(panic);
+        crash_reporter::crash_report(panic, true);
+        std::process::exit(1);
     }));
 
     // setup terminal
@@ -66,8 +65,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
+    // clear terminal
+    // this is for terminals that aren't smart enough to do it themselves
+    // from whatever ratatui does
+    print!("{}[2J", 27 as char);
+
     // create app and run it
-    let app = App::default();
+    let app = App::new(&socket);
     let res = run_app(&mut terminal, app, &socket, &backend_join_handle);
 
     reset_terminal()?;

@@ -1,7 +1,8 @@
 # Clear (RPN)
 `clear`
 
-This is the documentation for the RPN mode clear command. You can find the algebraic clear command documentation [here](/user/commands/functions/clear)
+!!! note
+    This is the documentation for the RPN mode clear command. You can find the algebraic clear command documentation [here](../functions/clear.md)
 
 The `clear` command will clear the stack.
 

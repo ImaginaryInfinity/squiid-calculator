@@ -1,6 +1,6 @@
 use std::{borrow::BorrowMut, collections::HashMap};
 
-use crate::{engine::Engine, protocol::MessageAction};
+use crate::{engine::Engine, protocol::server_response::MessageAction};
 
 /// Insert a function and reference name into a hashmap
 macro_rules! function_map_entry {
@@ -44,8 +44,8 @@ pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     function_map_entry!(function_map, "eq", eq);
     function_map_entry!(function_map, "gt", gt);
     function_map_entry!(function_map, "lt", lt);
-    function_map_entry!(function_map, "egt", egt);
-    function_map_entry!(function_map, "elt", elt);
+    function_map_entry!(function_map, "leq", geq);
+    function_map_entry!(function_map, "geq", leq);
     function_map_entry!(function_map, "round", round);
     function_map_entry!(function_map, "invert", invert);
     function_map_entry!(function_map, "chs", chs);
@@ -60,8 +60,14 @@ pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     function_map_entry!(function_map, "clear", clear);
     function_map_entry!(function_map, "clear", clear);
     function_map_entry!(function_map, "undo", undo);
+    function_map_entry!(function_map, "redo", redo);
     function_map_entry!(function_map, "commands", list_commands);
     function_map_entry!(function_map, "quit", quit);
+    function_map_entry!(
+        function_map,
+        "update_previous_answer",
+        update_previous_answer
+    );
 
     // manually insert refresh since it doesn't use an engine method
     function_map.insert(

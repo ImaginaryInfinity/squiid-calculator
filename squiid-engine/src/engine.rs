@@ -4,43 +4,49 @@ use rust_decimal::{prelude::ToPrimitive, Decimal, MathematicalOps};
 use rust_decimal_macros::dec;
 
 use crate::{
-    bucket::{Bucket, BucketTypes, ConstantTypes, build_exposed_constants},
+    bucket::{build_exposed_constants, Bucket, BucketTypes, ConstantTypes},
+    config_handler,
+    protocol::server_response::MessageAction,
     utils::{ID_REGEX, NUMERIC_REGEX},
-    MessageAction,
 };
 
 /// Evaluation engine struct
 pub struct Engine {
+    /// The stack of bucket items
     pub stack: Vec<Bucket>,
+    /// Hashmap of set variables
     pub variables: HashMap<String, Bucket>,
-    pub history: VecDeque<Vec<Bucket>>,
-    pub variable_history: VecDeque<HashMap<String, Bucket>>,
+    /// History vecdeque for undo support
+    pub undo_history: VecDeque<Vec<Bucket>>,
+    /// Variables vecdeque for undo support
+    pub undo_variable_history: VecDeque<HashMap<String, Bucket>>,
+    /// Offset pointer to the current index of the undo history.
+    /// Index will be calculated by history.len() - pointer - 1
+    pub undo_state_pointer: u8,
+    /// Previous answer
     pub previous_answer: Bucket,
+    /// Configuration struct
+    pub config: config_handler::Config,
 }
 
 /// Evaluation engine implementation
 impl Engine {
     /// Helper to construct a new engine object
     pub fn new() -> Engine {
+        config_handler::init_config();
         Engine {
-            /// The stack of bucket items
             stack: Vec::new(),
-            /// Hashmap of set variables
             variables: HashMap::new(),
-            /// History vecdeque for undo support
-            history: VecDeque::new(),
-            /// Variables vecdeque for undo support
-            variable_history: VecDeque::new(),
-            /// Previous answer
+            undo_history: VecDeque::new(),
+            undo_variable_history: VecDeque::new(),
+            undo_state_pointer: 0,
             previous_answer: Bucket::from(0),
+            config: config_handler::read_user_config().unwrap(),
         }
     }
 
     /// Add item to stack
-    pub fn add_item_to_stack(
-        &mut self,
-        item: Bucket,
-    ) -> Result<MessageAction, String> {
+    pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<MessageAction, String> {
         // Convert item to string
         let mut item_string = item.to_string();
 
@@ -75,9 +81,7 @@ impl Engine {
             _ => {
                 // test all other options
                 if exposed_constants.contains_key(item_string.as_str()) {
-                    Bucket::from_constant(
-                        *exposed_constants.get(item_string.as_str()).unwrap(),
-                    )
+                    Bucket::from_constant(*exposed_constants.get(item_string.as_str()).unwrap())
                 } else if NUMERIC_REGEX.is_match(&item_string) {
                     Bucket::from(item_string.parse::<f64>().unwrap())
                 } else {
@@ -225,10 +229,10 @@ impl Engine {
 
     /// Update the previous answer variable
     /// TODO: document that this function needs to be called a lot
-    pub fn update_previous_answer(&mut self) -> Result<String, String> {
+    pub fn update_previous_answer(&mut self) -> Result<MessageAction, String> {
         if !self.stack.is_empty() {
             self.previous_answer = self.stack.last().unwrap().clone();
-            Ok(String::from("ok"))
+            Ok(MessageAction::SendPrevAnswer)
         } else {
             Err(String::from("stack is empty"))
         }
@@ -283,7 +287,6 @@ impl Engine {
             // not 2*pi, perform normal mulitplication
             Bucket::from(operands[0] * operands[1])
         };
-
         // Put result on stack
         let _ = self.add_item_to_stack(result);
         Ok(MessageAction::SendStack)
@@ -429,7 +432,6 @@ impl Engine {
     /// Tangent
     pub fn tan(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        // TODO: undefined handling
         let operands = match self.get_operands_raw(1) {
             Ok(content) => content,
             Err(error) => return Err(error),
@@ -665,7 +667,7 @@ impl Engine {
     }
 
     /// Greater than or equal to
-    pub fn egt(&mut self) -> Result<MessageAction, String> {
+    pub fn geq(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -679,7 +681,7 @@ impl Engine {
     }
 
     /// Less than or equal to
-    pub fn elt(&mut self) -> Result<MessageAction, String> {
+    pub fn leq(&mut self) -> Result<MessageAction, String> {
         // Get operands
         let operands = match self.get_operands_as_f(2) {
             Ok(content) => content,
@@ -833,20 +835,40 @@ impl Engine {
         Ok(MessageAction::SendStack)
     }
 
+    /// Update stack and variables from the undo history
+    fn update_engine_from_history(&mut self) {
+        self.stack =
+            self.undo_history[self.undo_history.len() - self.undo_state_pointer as usize].clone();
+        self.variables = self.undo_variable_history
+            [self.undo_variable_history.len() - self.undo_state_pointer as usize]
+            .clone();
+    }
+
     /// Undo last operation
     pub fn undo(&mut self) -> Result<MessageAction, String> {
-        if self.history.len() > 1 {
-            // Throw away current stack
-            _ = self.history.pop_back();
-            // Restore previous stack
-            self.stack = self.history.pop_back().unwrap();
-            // Throw away current state of variables
-            _ = self.variable_history.pop_back();
-            // Restore previous state of variables
-            self.variables = self.variable_history.pop_back().unwrap();
+        if self.undo_state_pointer < self.undo_history.len() as u8 {
+            if self.undo_state_pointer == 0 {
+                // add current stack and variables to hsitory and increment pointer by 1
+                self.undo_history.push_back(self.stack.clone());
+                self.undo_variable_history.push_back(self.variables.clone());
+                self.undo_state_pointer += 1;
+            }
+            self.undo_state_pointer += 1;
+            self.update_engine_from_history();
             Ok(MessageAction::SendStack)
         } else {
             Err(String::from("Cannot undo further"))
+        }
+    }
+
+    /// Redo the last undo
+    pub fn redo(&mut self) -> Result<MessageAction, String> {
+        if self.undo_state_pointer > 1 {
+            self.undo_state_pointer -= 1;
+            self.update_engine_from_history();
+            Ok(MessageAction::SendStack)
+        } else {
+            Err(String::from("Cannot redo further"))
         }
     }
 

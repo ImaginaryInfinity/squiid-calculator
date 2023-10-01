@@ -17,14 +17,22 @@ export DH_VERBOSE = 1
 	dh $@
 
 override_dh_auto_build:
-	# TODO: change to build-musl
-	dh_auto_build -- build
+	# install rust through rustup 
+	@cargo --version >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-override_dh_auto_clean:
-	# stop this step so that it doesn't delete the debian/ directory
+	cat $$HOME/.cargo/env
 
-# override_dh_auto_install:
-# 	dh_auto_install -- BINARY_PATH=target/x86_64-unknown-linux-musl/release/squiid
+	python3 -m pip install scikit-build
+	PIP_ONLY_BINARY=cmake python3 -m pip install cmake
+
+	PATH="$$PATH:$$HOME/.cargo/bin" make build
+
+override_dh_auto_test:
+	PATH="$$PATH:$$HOME/.cargo/bin" dh_auto_test
+
+override_dh_auto_install:
+	PATH="$$PATH:$$HOME/.cargo/bin" dh_auto_install -- BINARY_PATH=target/release/squiid ELEVATE='' EXECUTABLE_PERMISSION='' NORMAL_PERMISSION=''
+
 # dh_make generated override targets
 # This is example for Cmake (See https://bugs.debian.org/641051 )
 #override_dh_auto_configure:

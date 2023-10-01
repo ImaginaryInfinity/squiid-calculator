@@ -1,18 +1,140 @@
-include:
-  - local: '.gitlab/ci/deploy.yml'
-    rules:
-      - if: '$CI_PIPELINE_SOURCE == "web"'
-
 stages:
   - test
   - build
   - deploy
 
 test:
- stage: test
- image: rust:latest
- before_script:
-   - apt update
-   - apt install cmake -y
- script:
-   - RUST_BACKTRACE=1 cargo test -p squiid -p squiid-engine -p squiid-parser --verbose
+  stage: test
+  image: rust:latest
+  before_script:
+    - apt update
+    - apt install cmake -y
+  script:
+    - RUST_BACKTRACE=1 cargo test -p squiid -p squiid-engine -p squiid-parser --verbose
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "schedule"'
+
+
+deploy-snap:
+  stage: deploy
+  image: ubuntudesktop/gnome-3-38-2004
+  before_script:
+    - echo $SNAPCRAFT_LOGIN_FILE | base64 --decode --ignore-garbage > snapcraft.login
+    - snapcraft login --with snapcraft.login
+    - apt update
+    - apt install cargo gettext-base cmake -y
+  script:
+    - make snap
+    - case "$CI_COMMIT_BRANCH" in 
+      "trunk") snapcraft upload --release=stable squiid*.snap; ;;
+      *) snapcraft upload --release=edge squiid*.snap; ;;
+      esac
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
+
+build-appimage:
+  stage: build
+  image: archlinux:latest
+  before_script:
+    - pacman --noconfirm -Syu curl make cmake musl rustup gcc
+    - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o /usr/local/bin/appimagetool
+    - chmod a+rx /usr/local/bin/appimagetool
+    - previous_dir=`pwd`
+    - cd /opt; appimagetool --appimage-extract
+    - cd $previous_dir
+    - mv /opt/squashfs-root /opt/appimagetool.AppDir
+    - rm /usr/local/bin/appimagetool
+    - ln -s /opt/appimagetool.AppDir/AppRun /usr/local/bin/appimagetool
+    - rustup default stable
+    - rustup target add x86_64-unknown-linux-musl
+
+  script:
+    - make appimage
+    - mv package-build/Squiid_Calculator.AppImage Squiid_Calculator.AppImage
+  artifacts:
+    paths:
+      - Squiid_Calculator.AppImage
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
+
+build-musl:
+  stage: build
+  image: clux/muslrust:stable
+  script:
+    - make build
+    - mv target/x86_64-unknown-linux-musl/release/squiid squiid
+  artifacts:
+    paths:
+      - squiid
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
+
+build-windows:
+  stage: build
+  image: alpine:latest
+  before_script:
+    - apk update
+    - apk add curl make cmake gcc mingw-w64-gcc musl-dev gettext
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -t x86_64-pc-windows-gnu -y
+  script:
+    - source "$HOME/.cargo/env"
+    - make windows-build
+    - cp target/x86_64-pc-windows-gnu/release/squiid.exe squiid.exe
+    - make windows-installer skip_build=1
+  artifacts:
+    paths:
+      - ./squiid.exe
+      - package-build/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
+
+build-windows-installer:
+  stage: build
+  needs:
+    - job: build-windows
+      artifacts: true
+  image:
+    name: amake/innosetup
+    entrypoint: [""]
+  script:
+    - cp -r --no-preserve=mode,ownership package-build/ new-package-build/
+    - cd new-package-build/
+    - iscc squiid.iss
+    - mv Output/squiid-installer.exe ../
+    - cd ..
+  artifacts:
+    paths:
+      - squiid-installer.exe
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
+
+# deploy-ppa:
+#   stage: deploy
+#   image: ubuntu:bionic
+#   before_script:
+#     - DEBIAN_FRONTEND=noninteractive apt update
+#     - DEBIAN_FRONTEND=noninteractive apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git gnupg python3-pip curl
+#     - echo "$GPG_PRIVATE_KEY_B64" | base64 --decode | gpg --batch --import
+#     - gpg --list-keys --fingerprint --with-colons | sed -E -n -e 's/^fpr:::::::::([0-9A-F]+):$/\1:6:/p' | gpg --import-ownertrust
+#     - echo -ne "[squiid]\nfqdn = ppa.launchpad.net\nmethod = ftp\nincoming = ~imaginaryinfinity/ubuntu/squiid/\nlogin = squiid\nallow_unsigned_uploads = 0" > ~/.dput.cf
+#   script:
+#     - make ppa DEBUILD_OPTIONS="-p\"gpg --batch --passphrase $GPG_PASSPHRASE --pinentry-mode loopback\""
+#     - echo $LAUNCHPAD_PASS | dput squiid squiid*_*_source.changes
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "web"'
+
+build-deb:
+  stage: build
+  image: ubuntu:bionic
+  before_script:
+    - DEBIAN_FRONTEND=noninteractive apt update
+    - DEBIAN_FRONTEND=noninteractive apt install -y build-essential binutils lintian debhelper dh-make devscripts fakeroot git curl gnupg python3-pip
+    - echo "$GPG_PRIVATE_KEY_B64" | base64 --decode | gpg --batch --import
+    - gpg --list-keys --fingerprint --with-colons | sed -E -n -e 's/^fpr:::::::::([0-9A-F]+):$/\1:6:/p' | gpg --import-ownertrust
+  script:
+    - make deb
+  artifacts:
+    paths:
+      - squiid_*_amd64.deb
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'

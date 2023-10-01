@@ -1,5 +1,5 @@
 # Subtract
-`subtract` / `-` 
+`subtract` / ++minus++
 
 The subtract command will subtract two numbers
 

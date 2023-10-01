@@ -1,4 +1,9 @@
  - Update changelog.md
- - Update `packages/flatpak/net.imaginaryinfinity.Squiid.releases.xml` (`make xmlreleases`)
+ - `cargo update` and retest src and subtrees
+ - Update `packages/flatpak/net.imaginaryinfinity.Squiid.releases.xml` with the Python script
  - Create merge request
+ - Update subtree versions
+ - Push to subtrees
+ - Update documentation on website
  - Run release pipeline
+ - Release non-automatic packages

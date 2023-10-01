@@ -3,7 +3,7 @@ use std::{collections::HashMap, io, thread};
 use lazy_static::lazy_static;
 use squiid_engine::{
     extract_data,
-    protocol::{MessagePayload, MessageType, ServerMessage},
+    protocol::server_response::{ResponsePayload, ResponseType, ServerResponseMessage},
 };
 use unicode_width::UnicodeWidthStr;
 
@@ -21,8 +21,8 @@ use ratatui::{
 };
 
 use crate::{
-    config_handler,
-    utils::{current_char_index, input_buffer_is_sci_notate, send_data},
+    config_utils,
+    utils::{current_char_index, input_buffer_is_sci_notate, send_input_data},
 };
 
 /// The input mode state of the application
@@ -122,9 +122,11 @@ impl StatefulTopPanel {
 }
 
 /// App holds the state of the application
-pub struct App {
+pub struct App<'a> {
     /// Current value of the input box
     input: String,
+    /// Socket used to communicate with the backend
+    pub socket: &'a Socket,
     /// Current input mode
     input_mode: InputMode,
     /// History of recorded messages
@@ -139,15 +141,13 @@ pub struct App {
     left_cursor_offset: u16,
     /// Stack selection state
     top_panel_state: StatefulTopPanel,
-    /// Configuration
-    config: config_handler::Config,
 }
 
-impl Default for App {
-    fn default() -> App {
-        config_handler::init_config();
+impl<'a> App<'a> {
+    pub fn new(socket: &'a Socket) -> App<'a> {
         App {
             input: String::new(),
+            socket,
             input_mode: InputMode::None,
             history: Vec::new(),
             info: vec![
@@ -159,25 +159,23 @@ impl Default for App {
             error: String::new(),
             left_cursor_offset: 0,
             top_panel_state: StatefulTopPanel::with_items(vec![]),
-            config: config_handler::update_user_config().unwrap(),
         }
     }
 }
 
-impl App {
+impl<'a> App<'a> {
     /// Get keybind from config file as string
-    pub fn keybind_from_config(&self, keybind_name: &str) -> &str {
-        self.config
-            .get("keybinds", keybind_name)
-            .unwrap()
+    pub fn keybind_from_config(&mut self, keybind_name: &str) -> String {
+        config_utils::get_key(self, "keybinds", keybind_name)
             .as_str()
             .unwrap()
+            .to_string()
     }
 
     /// Get keycode from config
-    pub fn keycode_from_config(&self, keybind_name: &str) -> KeyCode {
+    pub fn keycode_from_config(&mut self, keybind_name: &str) -> KeyCode {
         let keybind = self.keybind_from_config(keybind_name);
-        match keybind {
+        match keybind.as_str() {
             "backspace" => KeyCode::Backspace,
             "enter" => KeyCode::Enter,
             "left" => KeyCode::Left,
@@ -200,25 +198,25 @@ impl App {
 }
 
 /// Update the stack if msg is not an error. If it is an error, display that error
-fn update_stack_or_error(msg: ServerMessage, app: &mut App) {
+pub fn update_stack_or_error(msg: ServerResponseMessage, app: &mut App) {
     // TODO: make a seperate display for commands
-    match msg.message_type {
-        MessageType::Stack => {
-            app.stack = extract_data!(msg.payload, MessagePayload::Stack)
+    match msg.response_type {
+        ResponseType::Stack => {
+            app.stack = extract_data!(msg.payload, ResponsePayload::Stack)
                 .iter()
                 .map(|item| item.to_string())
                 .collect();
         }
-        MessageType::Error => {
-            app.error = format!(
-                "Error: {}",
-                extract_data!(msg.payload, MessagePayload::Error)
-            );
+        ResponseType::Error => {
+            let error_message = extract_data!(msg.payload, ResponsePayload::Error);
+            app.error = format!("Error: {}", error_message);
         }
-        MessageType::Commands => todo!(),
+        ResponseType::Commands => todo!(),
         // quit doesn't need any special behavior. the frontend quits when
         // the backend server thread finishes
-        MessageType::QuitSig => (),
+        //
+        // configuration return is handeled elsewhere
+        ResponseType::QuitSig | ResponseType::Configuration | ResponseType::PrevAnswer => (),
     }
 }
 
@@ -228,7 +226,7 @@ fn algebraic_eval(app: &mut App, socket: &Socket) {
     let entered_expression: String = app.input.drain(..).collect();
 
     // Clear stack
-    _ = send_data(socket, "clear");
+    _ = send_input_data(socket, "clear");
 
     // Special frontend commands
     if entered_expression.as_str() == "clear" {
@@ -275,12 +273,12 @@ fn algebraic_eval(app: &mut App, socket: &Socket) {
             "==" => "eq",
             ">" => "gt",
             "<" => "lt",
-            ">=" => "egt",
-            "<=" => "elt",
+            ">=" => "geq",
+            "<=" => "leq",
             _ => command_raw,
         };
         // Send command to server
-        let msg = send_data(socket, command);
+        let msg = send_input_data(socket, command);
         // Update stack
         update_stack_or_error(msg, app);
     }
@@ -315,13 +313,13 @@ fn rpn_input(app: &mut App, socket: &Socket, c: char) {
     app.input.insert(index, c);
 
     // query engine for available commands
-    let binding = send_data(socket, "commands");
-    let commands = extract_data!(binding.payload, MessagePayload::Commands);
+    let binding = send_input_data(socket, "commands");
+    let commands = extract_data!(binding.payload, ResponsePayload::Commands);
 
     // Check if input box contains a command, if so, automatically execute it
     if commands.contains(&app.input) {
         // Send command
-        let msg = send_data(socket, app.input.as_str());
+        let msg = send_input_data(socket, app.input.as_str());
         // Update stack display
         update_stack_or_error(msg, app);
         // Clear input
@@ -340,10 +338,10 @@ fn rpn_enter(app: &mut App, socket: &Socket) {
     // Send command if there is one, otherwise duplicate last item in stack
     let msg = if !command.is_empty() {
         // Send to backend and get response
-        send_data(socket, command.as_str())
+        send_input_data(socket, command.as_str())
     } else {
         // Empty input, duplicate
-        send_data(socket, "dup")
+        send_input_data(socket, "dup")
     };
     // Update stack display
     update_stack_or_error(msg, app);
@@ -357,7 +355,7 @@ fn rpn_operator(app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
     app.left_cursor_offset = 0;
     // Send operand to backend if there is one
     if !command.is_empty() {
-        _ = send_data(socket, command.as_str());
+        _ = send_input_data(socket, command.as_str());
     }
 
     // Select operation
@@ -366,7 +364,7 @@ fn rpn_operator(app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
         _ => "there is no way for this to occur",
     };
     // Send operation
-    let msg = send_data(socket, operation);
+    let msg = send_input_data(socket, operation);
     // Update stack display
     update_stack_or_error(msg, app);
 }
@@ -379,12 +377,8 @@ pub fn run_app<B: Backend>(
     backend_join_handle: &thread::JoinHandle<()>,
 ) -> io::Result<()> {
     // set default start mode
-    let start_mode = app
-        .config
-        .get("system", "start_mode")
-        .unwrap()
-        .as_str()
-        .unwrap();
+    let binding = config_utils::get_key(&mut app, "system", "start_mode");
+    let start_mode = binding.as_str().unwrap();
 
     app.input_mode = match start_mode {
         "algebraic" => InputMode::Algebraic,
@@ -423,6 +417,8 @@ pub fn run_app<B: Backend>(
                     match key.code {
                         // Handle enter
                         _ if key.code == app.keycode_from_config("enter") => {
+                            send_input_data(socket, "update_previous_answer");
+
                             if app.top_panel_state.currently_selecting() {
                                 // currently selecting, insert into text
                                 let selected_item = app
@@ -460,23 +456,33 @@ pub fn run_app<B: Backend>(
                         _ if key.code == app.keycode_from_config("rpn_drop")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_data(socket, "drop"), &mut app)
+                            update_stack_or_error(send_input_data(socket, "drop"), &mut app)
                         }
 
                         _ if key.code == app.keycode_from_config("rpn_roll_up")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_data(socket, "rollup"), &mut app)
+                            update_stack_or_error(send_input_data(socket, "rollup"), &mut app)
                         }
                         _ if key.code == app.keycode_from_config("rpn_roll_down")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_data(socket, "rolldown"), &mut app)
+                            update_stack_or_error(send_input_data(socket, "rolldown"), &mut app)
                         }
                         _ if key.code == app.keycode_from_config("rpn_swap")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_data(socket, "swap"), &mut app)
+                            update_stack_or_error(send_input_data(socket, "swap"), &mut app)
+                        }
+                        _ if key.code == app.keycode_from_config("rpn_undo")
+                            && app.input_mode == InputMode::Rpn =>
+                        {
+                            update_stack_or_error(send_input_data(socket, "undo"), &mut app)
+                        }
+                        _ if key.code == app.keycode_from_config("rpn_redo")
+                            && app.input_mode == InputMode::Rpn =>
+                        {
+                            update_stack_or_error(send_input_data(socket, "redo"), &mut app)
                         }
                         // Handle typing characters
                         KeyCode::Char(c) => {
@@ -580,8 +586,8 @@ pub fn run_app<B: Backend>(
         }
         // Update stack if there is currently an error, since the last request will have gotten the error not the stack
         if !app.error.is_empty() {
-            let msg = send_data(socket, "refresh");
-            app.stack = extract_data!(msg.payload, MessagePayload::Stack)
+            let msg = send_input_data(socket, "refresh");
+            app.stack = extract_data!(msg.payload, ResponsePayload::Stack)
                 .iter()
                 .map(|item| item.to_string())
                 .collect();
@@ -703,7 +709,17 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                     app.keybind_from_config("rpn_swap").to_owned(),
                     Style::default().add_modifier(Modifier::BOLD),
                 ),
-                Span::raw(": swap"),
+                Span::raw(": swap  "),
+                Span::styled(
+                    app.keybind_from_config("rpn_undo").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
+                Span::raw(": undo  "),
+                Span::styled(
+                    app.keybind_from_config("rpn_redo").to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
+                Span::raw(": redo"),
             ],
             Style::default(),
         ),
@@ -780,8 +796,37 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     };
 
     if app.input_mode == InputMode::Algebraic || app.input_mode == InputMode::Rpn {
+        let input_width = chunks[2].width as usize - 3; // Account for border characters
+
+        // Determine the starting position of the text to display
+        let mut start_pos = 0;
+        if app.input.len() > input_width {
+            // cursor_pos keeps track of the cursor position within the entire line of text
+            // cursor_position_x keeps track of the x position of the rendered cursor
+            let cursor_pos = app
+                .input
+                .len()
+                .saturating_sub(app.left_cursor_offset as usize);
+            if cursor_pos > input_width {
+                start_pos = cursor_pos - input_width + 1;
+            }
+        }
+
+        // Truncate and scroll the input text as needed
+        let truncated_input = &app.input[start_pos.saturating_sub(1)..];
+
+        // Calculate the cursor position based on the truncated input
+        if app.left_cursor_offset as usize > app.input.len() {
+            app.left_cursor_offset = app.input.len() as u16;
+        }
+
+        // calculate the rendered cursor's x position
+        let cursor_position_x = chunks[2].x
+            + (truncated_input.width() as u16).saturating_sub(app.left_cursor_offset)
+            + 1;
+
         // THIS IS WHERE THE INPUT IS BEING ADDED TO THE PARAGRAPH DISPLAY
-        let input = Paragraph::new(app.input.as_ref())
+        let input = Paragraph::new(truncated_input)
             .style(match app.input_mode {
                 _ if app.top_panel_state.currently_selecting() => Style::default(),
                 InputMode::None => Style::default(),
@@ -790,29 +835,8 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             })
             .block(Block::default().borders(Borders::ALL).title(input_label));
         f.render_widget(input, chunks[2]);
-    }
-    match app.input_mode {
-        InputMode::None =>
-            // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
-            {}
 
-        InputMode::Algebraic | InputMode::Rpn if !app.top_panel_state.currently_selecting() => {
-            // Make the cursor visible and ask ratatui to put it at the specified coordinates after rendering
-
-            let mut cursor_position_x = chunks[2].x + app.input.width() as u16 + 1;
-            if app.left_cursor_offset as usize > app.input.width() {
-                app.left_cursor_offset = app.input.width() as u16;
-            }
-
-            cursor_position_x -= app.left_cursor_offset;
-            f.set_cursor(
-                // Put cursor past the end of the input text
-                cursor_position_x,
-                // Move one line down, from the border to the input line
-                chunks[2].y + 1,
-            )
-        }
-
-        _ => (),
+        // Set the cursor position
+        f.set_cursor(cursor_position_x, chunks[2].y + 1);
     }
 }

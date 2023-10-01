@@ -1,5 +1,5 @@
 # Roll Down (RPN Only)
-`rolldown` / `[page_down]`
+`rolldown` / ++page-down++
 
 The `rolldown` command will rotate all items in the stack down one place. This command is rebindable
 

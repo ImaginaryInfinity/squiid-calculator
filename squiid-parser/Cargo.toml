@@ -1,6 +1,6 @@
 [package]
 name = "squiid-parser"
-version = "1.0.0"
+version = "1.1.0"
 description = "This repository contains the algebraic expression parser for the Squiid Calculator. The parser is implemented using a version of the Shunting-Yard Algorithm"
 repository = "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-parser"
 license = "GPL-3.0"

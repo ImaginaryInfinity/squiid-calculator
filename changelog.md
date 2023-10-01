@@ -1,4 +1,4 @@
-# 1.1.0 (Unreleased)
+# 1.1.0
  - Renamed `elt` and `egt` to `leq` and `geq` (#38)
  - Created flatpak (#43)
  - Updated documentation theme

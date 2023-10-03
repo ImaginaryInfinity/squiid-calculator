@@ -1052,7 +1052,7 @@ checksum = "942b4a808e05215192e39f4ab80813e599068285906cc91aa64f923db842bd5a"
 
 [[package]]
 name = "squiid"
-version = "1.1.0"
+version = "1.1.1"
 dependencies = [
  "clap",
  "crossterm",
@@ -1069,7 +1069,7 @@ dependencies = [
 
 [[package]]
 name = "squiid-engine"
-version = "1.1.0"
+version = "1.1.1"
 dependencies = [
  "anyhow",
  "backtrace",

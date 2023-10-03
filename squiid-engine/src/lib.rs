@@ -113,11 +113,8 @@ pub fn start_server(address: Option<&str>) {
                 ));
             }
             Ok(MessageAction::SendCommands) => {
-                let mut avaiable_commands: Vec<String> =
+                let avaiable_commands: Vec<String> =
                     commands.keys().map(|k| k.to_owned()).collect();
-
-                // add quit since it is a special case not in the commands list
-                avaiable_commands.push(String::from("quit"));
 
                 let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
                     ResponseType::Commands,

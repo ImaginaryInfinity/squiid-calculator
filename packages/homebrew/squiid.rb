@@ -5,6 +5,8 @@ class Squiid < Formula
   sha256 "${SHA256SUM}"
   license "GPL-3.0-or-later"
 
+${BOTTLE}
+
   depends_on "rust" => :build
   depends_on "nng"
 

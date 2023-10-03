@@ -235,7 +235,8 @@ homebrew: clean ## Format the homebrew metadata
 	@envsubst '$${VERSION}' < packages/homebrew/squiid.rb > package-build/squiid.rb
 	# retrieve sha256sum of source
 	export SHA256SUM=$$(curl -sL $$(awk -F '"' '/url/ {print $$2}' package-build/squiid.rb) | sha256sum | awk '{print $$1}'); \
-	envsubst '$${SHA256SUM}' < package-build/squiid.rb > package-build/squiid.new
+	export BOTTLE=$$(curl -sL "https://raw.githubusercontent.com/Homebrew/homebrew-core/master/Formula/s/squiid.rb" | sed -n '/bottle do/, /end/p'); \
+	envsubst '$${SHA256SUM} $${BOTTLE}' < package-build/squiid.rb > package-build/squiid.new
 
 	mv package-build/squiid.new package-build/squiid.rb
 

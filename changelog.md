@@ -1,3 +1,6 @@
+# 1.1.1
+ - Hotfix release to fix `quit` command (#57)
+
 # 1.1.0
  - Renamed `elt` and `egt` to `leq` and `geq` (#38)
  - Created flatpak (#43)

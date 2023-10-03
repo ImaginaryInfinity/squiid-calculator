@@ -1,4 +1,4 @@
-use std::{collections::HashMap, io, thread};
+use std::{collections::HashMap, io};
 
 use lazy_static::lazy_static;
 use squiid_engine::{
@@ -141,6 +141,7 @@ pub struct App<'a> {
     left_cursor_offset: u16,
     /// Stack selection state
     top_panel_state: StatefulTopPanel,
+    quit_app: bool,
 }
 
 impl<'a> App<'a> {
@@ -159,6 +160,7 @@ impl<'a> App<'a> {
             error: String::new(),
             left_cursor_offset: 0,
             top_panel_state: StatefulTopPanel::with_items(vec![]),
+            quit_app: false,
         }
     }
 }
@@ -212,11 +214,9 @@ pub fn update_stack_or_error(msg: ServerResponseMessage, app: &mut App) {
             app.error = format!("Error: {}", error_message);
         }
         ResponseType::Commands => todo!(),
-        // quit doesn't need any special behavior. the frontend quits when
-        // the backend server thread finishes
-        //
+        ResponseType::QuitSig => app.quit_app = true,
         // configuration return is handeled elsewhere
-        ResponseType::QuitSig | ResponseType::Configuration | ResponseType::PrevAnswer => (),
+        ResponseType::Configuration | ResponseType::PrevAnswer => (),
     }
 }
 
@@ -374,7 +374,6 @@ pub fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     mut app: App,
     socket: &Socket,
-    backend_join_handle: &thread::JoinHandle<()>,
 ) -> io::Result<()> {
     // set default start mode
     let binding = config_utils::get_key(&mut app, "system", "start_mode");
@@ -387,11 +386,11 @@ pub fn run_app<B: Backend>(
     };
 
     loop {
-        terminal.draw(|f| ui(f, &mut app))?;
-
-        if backend_join_handle.is_finished() {
+        if app.quit_app {
             return Ok(());
         }
+
+        terminal.draw(|f| ui(f, &mut app))?;
 
         // Handle keypresses
         if let Event::Key(key) = event::read()? {

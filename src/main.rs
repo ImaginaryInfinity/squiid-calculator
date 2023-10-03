@@ -39,7 +39,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     // start evaluation server
-    let backend_join_handle = thread::spawn(move || {
+    let _ = thread::spawn(move || {
         squiid_engine::start_server(Some(&format!("tcp://127.0.0.1:{}", port_num)));
     });
 
@@ -72,7 +72,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // create app and run it
     let app = App::new(&socket);
-    let res = run_app(&mut terminal, app, &socket, &backend_join_handle);
+    let res = run_app(&mut terminal, app, &socket);
 
     reset_terminal()?;
 

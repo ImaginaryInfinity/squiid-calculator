@@ -210,7 +210,7 @@ android-x86_64: android-require ## Build the Android x86_64 release
 android: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android: android-armv8 android-armv7 android-x86_64 ## Build all android targets
 
-aur-metadata: require clean ## Build the AUR metadata files for deployment
+aur-metadata: clean ## Build the AUR metadata files for deployment
 	# check for makepkg
 	@makepkg --version > /dev/null 2>&1 || (echo "ERROR: makepkg is required"; exit 1)
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
@@ -225,7 +225,7 @@ aur-metadata: require clean ## Build the AUR metadata files for deployment
 
 	cd package-build; makepkg --printsrcinfo > .SRCINFO
 
-arch-package: aur-metadata ## Build an Arch package
+arch-package: require aur-metadata ## Build an Arch package
 	cd package-build; makepkg -s
 
 homebrew: clean ## Format the homebrew metadata

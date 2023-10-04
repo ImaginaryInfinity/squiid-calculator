@@ -32,6 +32,31 @@ deploy-snap:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
 
+deploy-aur:
+  stage: deploy
+  image: archlinux:latest
+  before_script:
+    - pacman -Syu openssh base-devel git --noconfirm --needed
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - ssh-keyscan -v -t rsa,dsa,ecdsa,ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
+    - chmod 700 ~/.ssh
+    - git config --global --add safe.directory '*'
+    - git config --global user.name "Squiid Build CI"
+    - git config --global user.email "tabulatejarl8@gmail.com"
+  script:
+    - sudo -u nobody make aur-metadata
+    - git clone ssh://aur@aur.archlinux.org/squiid.git
+    - cp -v package-build/PKGBUILD package-build/.SRCINFO squiid/
+    - cd squiid
+    - git add .
+    - git commit -m "$CI_COMMIT_MESSAGE"
+    - git show-ref
+    - git push
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+
 build-appimage:
   stage: build
   image: archlinux:latest

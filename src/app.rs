@@ -15,7 +15,7 @@ use ratatui::{
     backend::Backend,
     layout::{Constraint, Corner, Direction, Layout},
     style::{Color, Modifier, Style},
-    text::{Span, Spans, Text},
+    text::{Line, Span, Text},
     widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
     Frame, Terminal,
 };
@@ -155,7 +155,8 @@ impl<'a> App<'a> {
                 "     ;dOKNNNKkl.           .c.   ".to_string(),
                 "   :NMXd:;,;lkWWk.        .c.    ".to_string(),
                 "  .WM0        .OXl        :,     ".to_string(),
-                "   NMX.                  ;:  ".to_string() + &format!("Squiid Calculator version {}", env!("CARGO_PKG_VERSION")),
+                "   NMX.                  ;:  ".to_string()
+                    + &format!("Squiid Calculator version {}", env!("CARGO_PKG_VERSION")),
                 "   .kWW0dc:,'.          ,c       ".to_string(),
                 "      ;lxO0XWMXx.      .c.       ".to_string(),
                 "             '0MMl     c'        ".to_string(),
@@ -165,7 +166,7 @@ impl<'a> App<'a> {
                 "     .:oxkOkdl'    .c.           ".to_string(),
                 "                   :,            ".to_string(),
                 "".to_string(),
-               env!("CARGO_PKG_REPOSITORY").to_string()
+                env!("CARGO_PKG_REPOSITORY").to_string(),
             ],
             stack: Vec::new(),
             error: String::new(),
@@ -606,7 +607,7 @@ pub fn run_app<B: Backend>(
 }
 
 /// Create the UI of the app
-fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
+fn ui(f: &mut Frame, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(2)
@@ -759,7 +760,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 m
             );
             app.top_panel_state.items.push(displayed_string.clone());
-            let content = Spans::from(Span::raw(displayed_string));
+            let content = Line::from(Span::raw(displayed_string));
             ListItem::new(content)
         })
         .collect();
@@ -794,7 +795,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         f.render_stateful_widget(top_panel, chunks[0], &mut app.top_panel_state.state);
     }
 
-    let mut text = Text::from(Spans::from(msg));
+    let mut text = Text::from(Line::from(msg));
     text.patch_style(style);
     let help_message = Paragraph::new(text);
     f.render_widget(help_message, chunks[1]);

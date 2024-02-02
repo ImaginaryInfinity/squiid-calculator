@@ -13,10 +13,10 @@ use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 
 use ratatui::{
     backend::Backend,
-    layout::{Constraint, Corner, Direction, Layout},
+    layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     text::{Line, Span, Text},
-    widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
+    widgets::{Block, Borders, List, ListDirection, ListItem, ListState, Paragraph},
     Frame, Terminal,
 };
 
@@ -783,7 +783,7 @@ fn ui(f: &mut Frame, app: &mut App) {
                 .fg(Color::Green),
         )
         .highlight_symbol("> ")
-        .start_corner(Corner::BottomLeft);
+        .direction(ListDirection::BottomToTop);
 
     if app.top_panel_state.currently_selecting() {
         f.render_stateful_widget(

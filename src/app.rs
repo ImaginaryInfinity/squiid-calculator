@@ -13,10 +13,10 @@ use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 
 use ratatui::{
     backend::Backend,
-    layout::{Constraint, Corner, Direction, Layout},
+    layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
-    text::{Span, Spans, Text},
-    widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
+    text::{Line, Span, Text},
+    widgets::{Block, Borders, List, ListDirection, ListItem, ListState, Paragraph},
     Frame, Terminal,
 };
 
@@ -72,7 +72,7 @@ impl StatefulTopPanel {
     }
 
     /// Move the selection to the next item
-    fn next(&mut self, stack: &Vec<String>) {
+    fn next(&mut self, stack: &[String]) {
         let i = match self.state.selected() {
             Some(i) => {
                 if i >= stack.len() - 1 {
@@ -87,7 +87,7 @@ impl StatefulTopPanel {
     }
 
     /// Move the selection to the previous item
-    fn previous(&mut self, stack: &Vec<String>) {
+    fn previous(&mut self, stack: &[String]) {
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {
@@ -152,8 +152,20 @@ impl<'a> App<'a> {
             input_mode: InputMode::None,
             history: Vec::new(),
             info: vec![
-                format!("Squiid Calculator version {}", env!("CARGO_PKG_VERSION")),
-                "Copyright 2023 Connor Sample and Finian Wright".to_string(),
+                "     ;dOKNNNKkl.           .c.   ".to_string(),
+                "   :NMXd:;,;lkWWk.        .c.    ".to_string(),
+                "  .WM0        .OXl        :,     ".to_string(),
+                "   NMX.                  ;:  ".to_string()
+                    + &format!("Squiid Calculator version {}", env!("CARGO_PKG_VERSION")),
+                "   .kWW0dc:,'.          ,c       ".to_string(),
+                "      ;lxO0XWMXx.      .c.       ".to_string(),
+                "             '0MMl     c'        ".to_string(),
+                "   .           NMW    :;     ".to_string() + "        Copyright 2023",
+                "  OMN:        ;WM0   ,:      ".to_string() + "Connor Sample and Finian Wright",
+                "   cXMW0xoodkNMNo   'c.          ".to_string(),
+                "     .:oxkOkdl'    .c.           ".to_string(),
+                "                   :,            ".to_string(),
+                "".to_string(),
                 env!("CARGO_PKG_REPOSITORY").to_string(),
             ],
             stack: Vec::new(),
@@ -595,7 +607,7 @@ pub fn run_app<B: Backend>(
 }
 
 /// Create the UI of the app
-fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
+fn ui(f: &mut Frame, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(2)
@@ -607,7 +619,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             ]
             .as_ref(),
         )
-        .split(f.size());
+        .split(f.area());
 
     // Set help message to display
     let (msg, style) = match app.input_mode {
@@ -748,7 +760,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 m
             );
             app.top_panel_state.items.push(displayed_string.clone());
-            let content = Spans::from(Span::raw(displayed_string));
+            let content = Line::from(Span::raw(displayed_string));
             ListItem::new(content)
         })
         .collect();
@@ -771,7 +783,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 .fg(Color::Green),
         )
         .highlight_symbol("> ")
-        .start_corner(Corner::BottomLeft);
+        .direction(ListDirection::BottomToTop);
 
     if app.top_panel_state.currently_selecting() {
         f.render_stateful_widget(
@@ -783,8 +795,8 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         f.render_stateful_widget(top_panel, chunks[0], &mut app.top_panel_state.state);
     }
 
-    let mut text = Text::from(Spans::from(msg));
-    text.patch_style(style);
+    let mut text = Text::from(Line::from(msg));
+    text = text.patch_style(style);
     let help_message = Paragraph::new(text);
     f.render_widget(help_message, chunks[1]);
 
@@ -836,6 +848,6 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         f.render_widget(input, chunks[2]);
 
         // Set the cursor position
-        f.set_cursor(cursor_position_x, chunks[2].y + 1);
+        f.set_cursor_position((cursor_position_x, chunks[2].y + 1));
     }
 }

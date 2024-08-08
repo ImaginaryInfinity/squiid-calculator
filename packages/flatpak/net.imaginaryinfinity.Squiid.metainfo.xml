@@ -2,28 +2,32 @@
 <component type="console-application">
   <id>net.imaginaryinfinity.Squiid</id>
   <name>Squiid</name>
-  <summary>Do advanced algebraic and RPN calculations</summary>
+  <summary>Advanced algebraic & RPN calculator</summary>
   <url type="homepage">https://imaginaryinfinity.net/projects/squiid/</url>
   <url type="contribute">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid</url>
   <url type="bugtracker">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/issues</url>
   <url type="help">https://imaginaryinfinity.net/docs/squiid</url>
   <content_rating type="oars-1.0" />
+  <branding>
+    <color type="primary" scheme_preference="light">#268bd2</color>
+    <color type="primary" scheme_preference="dark">#134263</color>
+  </branding>
   <screenshots>
     <screenshot type="default">
       <caption>Algebraic Mode</caption>
-      <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-1.png</image>
+      <image xml:lang="en" type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-1.png</image>
     </screenshot>
     <screenshot>
       <caption>RPN Mode</caption>
-      <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-2.png</image>
+      <image xml:lang="en" type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-2.png</image>
     </screenshot>
     <screenshot>
       <caption>Squiid information display page</caption>
-      <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-3.png</image>
+      <image xml:lang="en" type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-3.png</image>
     </screenshot>
     <screenshot>
       <caption>Previous answer selector mode</caption>
-      <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-4.png</image>
+      <image xml:lang="en" type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-4.png</image>
     </screenshot>
   </screenshots>
   <releases>

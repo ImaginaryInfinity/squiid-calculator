@@ -210,7 +210,7 @@ android-x86_64: android-require ## Build the Android x86_64 release
 android: export TARGET_CMAKE_TOOLCHAIN_FILE=/opt/android-ndk/build/cmake/android.toolchain.cmake
 android: android-armv8 android-armv7 android-x86_64 ## Build all android targets
 
-aur-metadata: require clean ## Build the AUR metadata files for deployment
+aur-metadata: clean ## Build the AUR metadata files for deployment
 	# check for makepkg
 	@makepkg --version > /dev/null 2>&1 || (echo "ERROR: makepkg is required"; exit 1)
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
@@ -225,7 +225,7 @@ aur-metadata: require clean ## Build the AUR metadata files for deployment
 
 	cd package-build; makepkg --printsrcinfo > .SRCINFO
 
-arch-package: aur-metadata ## Build an Arch package
+arch-package: require aur-metadata ## Build an Arch package
 	cd package-build; makepkg -s
 
 homebrew: clean ## Format the homebrew metadata
@@ -235,7 +235,8 @@ homebrew: clean ## Format the homebrew metadata
 	@envsubst '$${VERSION}' < packages/homebrew/squiid.rb > package-build/squiid.rb
 	# retrieve sha256sum of source
 	export SHA256SUM=$$(curl -sL $$(awk -F '"' '/url/ {print $$2}' package-build/squiid.rb) | sha256sum | awk '{print $$1}'); \
-	envsubst '$${SHA256SUM}' < package-build/squiid.rb > package-build/squiid.new
+	export BOTTLE=$$(curl -sL "https://raw.githubusercontent.com/Homebrew/homebrew-core/master/Formula/s/squiid.rb" | sed -n '/bottle do/, /end/p'); \
+	envsubst '$${SHA256SUM} $${BOTTLE}' < package-build/squiid.rb > package-build/squiid.new
 
 	mv package-build/squiid.new package-build/squiid.rb
 

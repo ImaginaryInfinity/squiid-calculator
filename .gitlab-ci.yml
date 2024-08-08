@@ -12,7 +12,11 @@ test:
   script:
     - RUST_BACKTRACE=1 cargo test -p squiid -p squiid-engine -p squiid-parser --verbose
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      changes:
+        - '*'
 
 
 deploy-snap:
@@ -25,12 +29,41 @@ deploy-snap:
     - apt install cargo gettext-base cmake -y
   script:
     - make snap
-    - case "$CI_COMMIT_BRANCH" in 
+    - case "$CI_COMMIT_BRANCH" in
       "trunk") snapcraft upload --release=stable squiid*.snap; ;;
       *) snapcraft upload --release=edge squiid*.snap; ;;
       esac
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      changes:
+        - '*'
+
+deploy-aur:
+  stage: deploy
+  image: archlinux:latest
+  before_script:
+    - pacman -Syu openssh base-devel git --noconfirm --needed
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - ssh-keyscan -v -t rsa,dsa,ecdsa,ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
+    - chmod 700 ~/.ssh
+    - git config --global --add safe.directory '*'
+    - git config --global user.name "Squiid Build CI"
+    - git config --global user.email "tabulatejarl8@gmail.com"
+  script:
+    - sudo -u nobody make aur-metadata
+    - git clone ssh://aur@aur.archlinux.org/squiid.git
+    - cp -v package-build/PKGBUILD package-build/.SRCINFO squiid/
+    - cd squiid
+    - git add .
+    - git commit -m "$CI_COMMIT_MESSAGE"
+    - git show-ref
+    - git push
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
 
 build-appimage:
   stage: build
@@ -55,7 +88,11 @@ build-appimage:
     paths:
       - Squiid_Calculator.AppImage
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      changes:
+        - '*'
 
 build-musl:
   stage: build
@@ -67,7 +104,11 @@ build-musl:
     paths:
       - squiid
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      changes:
+        - '*'
 
 build-windows:
   stage: build
@@ -86,7 +127,11 @@ build-windows:
       - ./squiid.exe
       - package-build/
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      changes:
+        - '*'
 
 build-windows-installer:
   stage: build
@@ -106,7 +151,11 @@ build-windows-installer:
     paths:
       - squiid-installer.exe
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      changes:
+        - '*'
 
 # deploy-ppa:
 #   stage: deploy
@@ -137,4 +186,8 @@ build-deb:
     paths:
       - squiid_*_amd64.deb
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      changes:
+        - '*'

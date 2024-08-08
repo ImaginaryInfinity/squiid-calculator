@@ -3,6 +3,7 @@
 - Fix some flatpak issues with the new manifest requirements
 - Update dependencies in hopes of fixing the AUR package
 - Make CI (hopefully) only run when there are changes (#65)
+- Make info screen fancier (98e94d57c886a73f0e68a526d190fe1d4097790b)
 
 # 1.1.1
 

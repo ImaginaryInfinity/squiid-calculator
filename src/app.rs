@@ -619,7 +619,7 @@ fn ui(f: &mut Frame, app: &mut App) {
             ]
             .as_ref(),
         )
-        .split(f.size());
+        .split(f.area());
 
     // Set help message to display
     let (msg, style) = match app.input_mode {
@@ -848,6 +848,6 @@ fn ui(f: &mut Frame, app: &mut App) {
         f.render_widget(input, chunks[2]);
 
         // Set the cursor position
-        f.set_cursor(cursor_position_x, chunks[2].y + 1);
+        f.set_cursor_position((cursor_position_x, chunks[2].y + 1));
     }
 }

@@ -48,7 +48,7 @@ deploy-aur:
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh
-    - ssh-keyscan -v -t rsa,dsa,ecdsa,ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
+    - ssh-keyscan -v -t rsa,ecdsa,ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
     - chmod 700 ~/.ssh
     - git config --global --add safe.directory '*'
     - git config --global user.name "Squiid Build CI"

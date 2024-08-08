@@ -2,7 +2,7 @@
 
 - Fix some flatpak issues with the new manifest requirements
 - Update dependencies in hopes of fixing the AUR package
-- Make CI (hopefully) only run when there are changes
+- Make CI (hopefully) only run when there are changes (#65)
 
 # 1.1.1
 
@@ -55,4 +55,3 @@
 # 1.0.0
 
 Initial release. Includes a functioning TUI frontend and engine/parser components
-

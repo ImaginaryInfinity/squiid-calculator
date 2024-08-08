@@ -72,7 +72,7 @@ impl StatefulTopPanel {
     }
 
     /// Move the selection to the next item
-    fn next(&mut self, stack: &Vec<String>) {
+    fn next(&mut self, stack: &[String]) {
         let i = match self.state.selected() {
             Some(i) => {
                 if i >= stack.len() - 1 {
@@ -87,7 +87,7 @@ impl StatefulTopPanel {
     }
 
     /// Move the selection to the previous item
-    fn previous(&mut self, stack: &Vec<String>) {
+    fn previous(&mut self, stack: &[String]) {
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {

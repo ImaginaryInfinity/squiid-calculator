@@ -3,7 +3,7 @@ use std::{
     fmt,
     fs::File,
     io::Write,
-    panic::{self, PanicInfo},
+    panic::{self, PanicHookInfo},
 };
 
 use crate::config_handler;
@@ -37,7 +37,7 @@ impl fmt::Display for EnvironmentDetails<'_> {
     }
 }
 
-pub fn crash_report(panic_info: &PanicInfo, write_dump_file: bool) {
+pub fn crash_report(panic_info: &PanicHookInfo, write_dump_file: bool) {
     let backtrace = backtrace::Backtrace::new();
 
     // create environment struct

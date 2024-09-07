@@ -23,11 +23,10 @@ deploy-snap:
   stage: deploy
   image: ubuntudesktop/gnome-3-38-2004
   before_script:
-    - echo $SNAPCRAFT_LOGIN_FILE | base64 --decode --ignore-garbage > snapcraft.login
-    - snapcraft login --with snapcraft.login
     - apt update
     - apt install cargo gettext-base cmake -y
   script:
+    # SNAPCRAFT_STORE_CREDENTIALS is set
     - make snap
     - case "$CI_COMMIT_BRANCH" in
       "trunk") snapcraft upload --release=stable squiid*.snap; ;;
@@ -48,7 +47,7 @@ deploy-aur:
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh
-    - ssh-keyscan -v -t rsa,dsa,ecdsa,ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
+    - ssh-keyscan -v -t rsa,ecdsa,ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
     - chmod 700 ~/.ssh
     - git config --global --add safe.directory '*'
     - git config --global user.name "Squiid Build CI"

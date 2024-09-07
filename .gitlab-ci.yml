@@ -23,11 +23,10 @@ deploy-snap:
   stage: deploy
   image: ubuntudesktop/gnome-3-38-2004
   before_script:
-    - echo $SNAPCRAFT_LOGIN_FILE | base64 --decode --ignore-garbage > snapcraft.login
-    - snapcraft login --with snapcraft.login
     - apt update
     - apt install cargo gettext-base cmake -y
   script:
+    # SNAPCRAFT_STORE_CREDENTIALS is set
     - make snap
     - case "$CI_COMMIT_BRANCH" in
       "trunk") snapcraft upload --release=stable squiid*.snap; ;;

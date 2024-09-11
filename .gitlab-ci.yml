@@ -26,7 +26,8 @@ deploy-snap:
     - apt update
     - apt install cargo gettext-base cmake -y
   script:
-    # SNAPCRAFT_STORE_CREDENTIALS is set
+    - echo "$SNAPCRAFT_STORE_CREDENTIALS" > login.priv
+    - snapcraft login --with login.priv
     - make snap
     - case "$CI_COMMIT_BRANCH" in
       "trunk") snapcraft upload --release=stable squiid*.snap; ;;

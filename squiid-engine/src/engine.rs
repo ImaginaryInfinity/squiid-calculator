@@ -586,7 +586,10 @@ impl Engine {
             None => return Err("cannot take log with base of 0 or negative numbers".to_string()),
         };
 
-        let result = top_log / bottom_log;
+        let result = match top_log.checked_div(bottom_log) {
+            Some(value) => value,
+            None => return Err("cannot divide by zero".to_string()),
+        };
 
         // Put result on stack
         let _ = self.add_item_to_stack(result.into());

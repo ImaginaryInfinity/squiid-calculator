@@ -1,6 +1,6 @@
 [package]
 name = "squiid-engine"
-version = "1.1.1"
+version = "1.1.2"
 description = "This repository contains the RPN (postfix) evaluation engine that is used in Squiid Calculator"
 repository = "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-parser"
 license = "GPL-3.0"
@@ -11,7 +11,10 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 backtrace = "0.3.69"
-chrono = { version = "0.4.30", default-features = false, features = ["clock", "std"] }
+chrono = { version = "0.4.30", default-features = false, features = [
+    "clock",
+    "std",
+] }
 colored = "2.0.4"
 directories = "5.0.1"
 lazy_static = "1.4.0"

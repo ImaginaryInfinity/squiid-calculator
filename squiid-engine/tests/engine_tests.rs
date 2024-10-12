@@ -529,6 +529,9 @@ fn test_log() {
 fn test_blog() {
     let mut engine = Engine::new();
 
+    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("1".into());
+
     let _ = engine.add_item_to_stack("27".into());
     let _ = engine.add_item_to_stack("3".into());
 
@@ -541,6 +544,10 @@ fn test_blog() {
 
     let _ = engine.blog();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 3.0);
+
+    // test division by zero error
+    let result = engine.blog();
+    assert!(matches!(result, Err(_)));
 }
 
 #[test]

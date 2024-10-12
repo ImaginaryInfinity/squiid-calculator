@@ -170,7 +170,10 @@ impl Engine {
                     | BucketTypes::Constant(ConstantTypes::SixthPI)
                     | BucketTypes::Constant(ConstantTypes::EighthPI)
                     | BucketTypes::Constant(ConstantTypes::PHI) => {
-                        Decimal::from_str_exact(&operand.value.unwrap()).unwrap()
+                        match Decimal::from_str_exact(&operand.value.unwrap()) {
+                            Ok(value) => value,
+                            Err(e) => return Err(e.to_string()),
+                        }
                     }
                     BucketTypes::String | BucketTypes::Undefined => {
                         return Err(String::from("you should never get this error"))

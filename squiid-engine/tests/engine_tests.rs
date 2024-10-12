@@ -1094,6 +1094,35 @@ fn test_quit() {
 }
 
 #[test]
+fn test_overflow_handled() {
+    let mut engine = Engine::new();
+
+    let _ = engine.add_item_to_stack("99999999999999999999999999999".into());
+    let _ = engine.add_item_to_stack("1".into());
+
+    let _ = engine.add_item_to_stack("99999999999999999999999999999".into());
+    let _ = engine.add_item_to_stack("1".into());
+
+    let _ = engine.add_item_to_stack("99999999999999999999999999999".into());
+    let _ = engine.add_item_to_stack("1".into());
+
+    let _ = engine.add_item_to_stack("99999999999999999999999999999".into());
+    let _ = engine.add_item_to_stack("1".into());
+
+    let result = engine.add();
+    assert!(matches!(result, Err(_)));
+
+    let result = engine.subtract();
+    assert!(matches!(result, Err(_)));
+
+    let result = engine.multiply();
+    assert!(matches!(result, Err(_)));
+
+    let result = engine.divide();
+    assert!(matches!(result, Err(_)));
+}
+
+#[test]
 fn test_all_commands_covered() {
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     d.push("tests/engine_tests.rs");

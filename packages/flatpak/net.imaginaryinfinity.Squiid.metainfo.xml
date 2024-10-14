@@ -2,7 +2,7 @@
 <component type="console-application">
   <id>net.imaginaryinfinity.Squiid</id>
   <name>Squiid</name>
-  <summary>Advanced algebraic & RPN calculator</summary>
+  <summary>Advanced algebraic &amp; RPN calculator</summary>
   <url type="homepage">https://imaginaryinfinity.net/projects/squiid/</url>
   <url type="contribute">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid</url>
   <url type="bugtracker">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/issues</url>
@@ -31,6 +31,12 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="1.1.3" date="2024-10-14">
+      <url>https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/releases/1.1.3</url>
+    </release>
+    <release version="1.1.2" date="2024-08-08">
+      <url>https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/releases/1.1.2</url>
+    </release>
     <release version="1.1.1" date="2023-10-03">
       <url>https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/releases/1.1.1</url>
     </release>

@@ -51,9 +51,11 @@ deploy-aur:
     - ssh-keyscan -v -t rsa,ecdsa,ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
     - chmod 700 ~/.ssh
     - git config --global --add safe.directory '*'
+    - git config --global --add safe.directory '/builds/ImaginaryInfinity/squiid-calculator/squiid'
     - git config --global user.name "Squiid Build CI"
     - git config --global user.email "tabulatejarl8@gmail.com"
   script:
+    - make clean
     - sudo -u nobody make aur-metadata
     - git clone ssh://aur@aur.archlinux.org/squiid.git
     - cp -v package-build/PKGBUILD package-build/.SRCINFO squiid/

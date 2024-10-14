@@ -3,15 +3,15 @@
 PREFIX ?= /usr
 BINDIR ?= $(PREFIX)/bin
 APPLICATIONSDIR ?= $(PREFIX)/share/applications
-ICONSDIR ?= $(PREFIX)/share/icons/hicolor/scalable/apps/
+ICONSDIR ?= $(PREFIX)/share/icons/hicolor/512x512/apps/
 
 BINARY_NAME := squiid
 BINARY_PATH ?= target/release/$(BINARY_NAME)
 DESKTOP_FILE_NAME := squiid.desktop
 DESKTOP_FILE_PATH ?= packages/$(DESKTOP_FILE_NAME)
-ICON_FILE_NAME := squiidsquare.svg
-ICON_FILE_DEST_NAME := squiid.svg
-ICON_FILE_PATH ?= branding/$(ICON_FILE_NAME)
+ICON_FILE_NAME := squiid512.png
+ICON_FILE_DEST_NAME := squiid.png
+ICON_FILE_PATH ?= branding/icons/$(ICON_FILE_NAME)
 
 APPIMAGETOOL ?= appimagetool
 ELEVATE ?= sudo

@@ -1,3 +1,9 @@
+# 1.1.3
+
+- Fix unchecked division in `blog`
+- Fix incorrect icon being installed by Makefile
+- Fix overflows being unhandled
+
 # 1.1.2
 
 - Fix some flatpak issues with the new manifest requirements

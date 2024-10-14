@@ -529,6 +529,9 @@ fn test_log() {
 fn test_blog() {
     let mut engine = Engine::new();
 
+    let _ = engine.add_item_to_stack("2".into());
+    let _ = engine.add_item_to_stack("1".into());
+
     let _ = engine.add_item_to_stack("27".into());
     let _ = engine.add_item_to_stack("3".into());
 
@@ -541,6 +544,10 @@ fn test_blog() {
 
     let _ = engine.blog();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 3.0);
+
+    // test division by zero error
+    let result = engine.blog();
+    assert!(matches!(result, Err(_)));
 }
 
 #[test]
@@ -1084,6 +1091,35 @@ fn test_quit() {
     let result = squiid_engine::handle_data(&mut engine, &commands, "quit");
 
     assert_eq!(result.unwrap(), MessageAction::Quit);
+}
+
+#[test]
+fn test_overflow_handled() {
+    let mut engine = Engine::new();
+
+    let _ = engine.add_item_to_stack("99999999999999999999999999999".into());
+    let _ = engine.add_item_to_stack("1".into());
+
+    let _ = engine.add_item_to_stack("99999999999999999999999999999".into());
+    let _ = engine.add_item_to_stack("1".into());
+
+    let _ = engine.add_item_to_stack("99999999999999999999999999999".into());
+    let _ = engine.add_item_to_stack("1".into());
+
+    let _ = engine.add_item_to_stack("99999999999999999999999999999".into());
+    let _ = engine.add_item_to_stack("1".into());
+
+    let result = engine.add();
+    assert!(matches!(result, Err(_)));
+
+    let result = engine.subtract();
+    assert!(matches!(result, Err(_)));
+
+    let result = engine.multiply();
+    assert!(matches!(result, Err(_)));
+
+    let result = engine.divide();
+    assert!(matches!(result, Err(_)));
 }
 
 #[test]

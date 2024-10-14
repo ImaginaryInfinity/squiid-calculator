@@ -2,6 +2,9 @@
 <component type="console-application">
   <id>net.imaginaryinfinity.Squiid</id>
   <name>Squiid</name>
+  <developer id="net.imaginaryinfinity">
+    <name>ImaginaryInfinity</name>
+  </developer>
   <summary>Advanced algebraic &amp; RPN calculator</summary>
   <url type="homepage">https://imaginaryinfinity.net/projects/squiid/</url>
   <url type="contribute">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid</url>

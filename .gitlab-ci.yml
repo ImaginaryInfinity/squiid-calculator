@@ -57,12 +57,11 @@ deploy-aur:
   script:
     - make clean
     - sudo -u nobody make aur-metadata
-    - git clone ssh://aur@aur.archlinux.org/squiid.git
-    - cp -v package-build/PKGBUILD package-build/.SRCINFO squiid/
-    - cd squiid
+    - git clone ssh://aur@aur.archlinux.org/squiid.git squiid-aur
+    - cp -v package-build/PKGBUILD package-build/.SRCINFO squiid-aur/
+    - cd squiid-aur
     - git add .
     - git commit -m "$CI_COMMIT_MESSAGE"
-    - git show-ref
     - git push
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web"'

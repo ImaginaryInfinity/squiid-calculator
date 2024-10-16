@@ -160,7 +160,7 @@ impl<'a> App<'a> {
                 "   .kWW0dc:,'.          ,c       ".to_string(),
                 "      ;lxO0XWMXx.      .c.       ".to_string(),
                 "             '0MMl     c'        ".to_string(),
-                "   .           NMW    :;     ".to_string() + "        Copyright 2023",
+                "   .           NMW    :;     ".to_string() + "        Copyright 2024",
                 "  OMN:        ;WM0   ,:      ".to_string() + "Connor Sample and Finian Wright",
                 "   cXMW0xoodkNMNo   'c.          ".to_string(),
                 "     .:oxkOkdl'    .c.           ".to_string(),

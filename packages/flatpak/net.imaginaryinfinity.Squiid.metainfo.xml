@@ -79,6 +79,7 @@
     <category>Utility</category>
     <category>Calculator</category>
   </categories>
+  <launchable type="desktop-id">net.imaginaryinfinity.Squiid.desktop</launchable>
   <provides>
     <binary>squiid</binary>
   </provides>

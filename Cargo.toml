@@ -19,7 +19,7 @@ crossterm = "0.28.1"
 directories = "5.0.1"
 lazy_static = "1.4.0"
 nng = "1.0.1"
-ratatui = "0.28.0"
+ratatui = "0.29.0"
 serde = { version = "1.0.159", features = ["derive"] }
 serde_json = "1.0.95"
 squiid-engine = { path = "./squiid-engine", features = [
@@ -27,7 +27,7 @@ squiid-engine = { path = "./squiid-engine", features = [
 ] }
 squiid-parser = { path = "./squiid-parser" }
 toml = "0.8.19"
-unicode-width = "0.1.10"
+unicode-width = "0.2.0"
 
 [target.'cfg(target_os = "windows")'.build-dependencies]
 winresource = "0.1.15"

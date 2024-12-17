@@ -24,8 +24,6 @@ impl ClientRequestMessage {
 pub enum RequestType {
     #[serde(rename = "input")]
     Input,
-    #[serde(rename = "configuration")]
-    Configuration,
 }
 
 /// Types of message payloads to be received from the client
@@ -33,56 +31,6 @@ pub enum RequestType {
 pub enum RequestPayload {
     #[serde(rename = "payload")]
     Input(String),
-    #[serde(rename = "payload")]
-    Configuration(ConfigurationPayload),
-}
-
-/// configuration deserialization struct
-#[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct ConfigurationPayload {
-    pub action_type: ConfigurationActionType,
-    pub section: Option<String>,
-    pub key: Option<String>,
-    pub value: Option<toml::Value>,
-}
-
-impl ConfigurationPayload {
-    pub fn new(
-        action_type: ConfigurationActionType,
-        section: Option<String>,
-        key: Option<String>,
-        value: Option<toml::Value>,
-    ) -> Self {
-        Self {
-            action_type,
-            section,
-            key,
-            value,
-        }
-    }
-}
-
-/// configuration request action types
-#[derive(Deserialize, Serialize, Debug, Clone)]
-pub enum ConfigurationActionType {
-    #[serde(rename = "get_key")]
-    GetKey,
-    #[serde(rename = "list_sections")]
-    ListSections,
-    #[serde(rename = "list_keys")]
-    ListKeys,
-    #[serde(rename = "list_values")]
-    ListValues,
-    #[serde(rename = "list_items")]
-    ListItems,
-    #[serde(rename = "set_key")]
-    SetKey,
-    #[serde(rename = "create_section")]
-    CreateSection,
-    #[serde(rename = "delete_section")]
-    DeleteSection,
-    #[serde(rename = "delete_key")]
-    DeleteKey,
 }
 
 /// custom deserializer for the ClientRequestMessage
@@ -112,20 +60,6 @@ impl<'de> Deserialize<'de> for ClientRequestMessage {
                         Ok(ClientRequestMessage {
                             request_type: RequestType::Input,
                             payload: RequestPayload::Input(payload_str.to_string()),
-                        })
-                    }
-                    RequestType::Configuration => {
-                        let payload_value = json_value.get("payload").ok_or_else(|| {
-                            serde::de::Error::custom(
-                                "Missing payload for RequestType::Configuration",
-                            )
-                        })?;
-                        let payload: ConfigurationPayload =
-                            serde_json::from_value(payload_value.clone())
-                                .map_err(serde::de::Error::custom)?;
-                        Ok(ClientRequestMessage {
-                            request_type: RequestType::Configuration,
-                            payload: RequestPayload::Configuration(payload),
                         })
                     }
                 }

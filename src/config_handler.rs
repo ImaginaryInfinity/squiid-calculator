@@ -1,8 +1,6 @@
 use directories::{BaseDirs, ProjectDirs};
-use std::{fs, io::Write, path::PathBuf};
+use std::{fmt::Display, fs, io::Write, path::PathBuf};
 use toml::Value;
-
-use crate::protocol::server_response::ConfigValue;
 
 /// Wrapper for the config
 #[derive(Debug, Clone)]
@@ -17,6 +15,84 @@ impl From<Value> for Config {
     }
 }
 
+#[derive(Debug, PartialEq)]
+pub enum ConfigValue {
+    Value(toml::Value),
+    StringList(Vec<String>),
+    ValueList(Vec<toml::Value>),
+    KeyValueList(Vec<(String, toml::Value)>),
+    None(()),
+}
+
+impl Display for ConfigValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ConfigValue::Value(value) => match value {
+                Value::String(val) => write!(f, "{}", val),
+                Value::Integer(val) => write!(f, "{}", val),
+                Value::Float(val) => write!(f, "{}", val),
+                Value::Boolean(val) => write!(f, "{}", val),
+                Value::Datetime(datetime) => write!(f, "{}", datetime),
+                Value::Array(vec) => write!(f, "{:?}", vec),
+                Value::Table(map) => write!(f, "{:?}", map),
+            },
+            ConfigValue::StringList(vec) => write!(f, "{:?}", vec),
+            ConfigValue::ValueList(vec) => write!(f, "{:?}", vec),
+            ConfigValue::KeyValueList(vec) => write!(f, "{:?}", vec),
+            ConfigValue::None(_) => Ok(()),
+        }
+    }
+}
+
+impl From<ConfigValue> for serde_json::Value {
+    fn from(val: ConfigValue) -> Self {
+        match val {
+            ConfigValue::Value(item) => toml_to_serde_json_value(&item),
+            ConfigValue::StringList(string_list) => serde_json::Value::Array(
+                string_list
+                    .into_iter()
+                    .map(|s| serde_json::Value::String(s.clone()))
+                    .collect(),
+            ),
+            ConfigValue::ValueList(toml_value_list) => serde_json::Value::Array(
+                toml_value_list
+                    .into_iter()
+                    .map(|v| toml_to_serde_json_value(&v))
+                    .collect(),
+            ),
+            ConfigValue::KeyValueList(key_value_list) => serde_json::Value::Object(
+                key_value_list
+                    .into_iter()
+                    .map(|(k, v)| (k.clone(), toml_to_serde_json_value(&v)))
+                    .collect(),
+            ),
+            ConfigValue::None(_) => serde_json::Value::Null,
+        }
+    }
+}
+
+// Convert a toml Value to a serde_json Value
+fn toml_to_serde_json_value(toml_value: &toml::Value) -> serde_json::Value {
+    match toml_value {
+        toml::Value::String(s) => serde_json::Value::String(s.clone()),
+        toml::Value::Integer(i) => serde_json::Value::Number((*i).into()),
+        toml::Value::Float(f) => serde_json::Value::from(*f),
+        toml::Value::Boolean(b) => serde_json::Value::Bool(*b),
+        toml::Value::Datetime(dt) => serde_json::Value::String(dt.to_string()),
+        toml::Value::Array(arr) => {
+            serde_json::Value::Array(arr.iter().map(toml_to_serde_json_value).collect())
+        }
+        toml::Value::Table(table) => {
+            let object: serde_json::Map<String, serde_json::Value> = table
+                .iter()
+                .map(|(k, v)| (k.clone(), toml_to_serde_json_value(v)))
+                .collect();
+            serde_json::Value::Object(object)
+        }
+    }
+}
+
+#[allow(dead_code)]
 impl Config {
     /// Get a section/key from the config
     pub fn get_key(&self, section: &str, key: &str) -> Result<ConfigValue, String> {
@@ -218,10 +294,7 @@ fn write_config(config: Config, config_path: PathBuf) {
 /// that may have been added to the system config file
 pub fn read_user_config() -> Option<Config> {
     let config_path = determine_config_path();
-    let mut user_config = match read_config(config_path.clone()) {
-        Some(config) => config,
-        None => return None,
-    };
+    let mut user_config = read_config(config_path.clone())?;
 
     let system_config: Value = toml::from_str(include_str!("config.toml")).unwrap();
 

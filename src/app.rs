@@ -1,7 +1,10 @@
 use std::{collections::HashMap, io};
 
 use lazy_static::lazy_static;
-use squiid_engine::protocol::server_response::{ResponsePayload, ServerResponseMessage};
+use squiid_engine::{
+    extract_data,
+    protocol::server_response::{ResponsePayload, ResponseType, ServerResponseMessage},
+};
 use unicode_width::UnicodeWidthStr;
 
 use nng::Socket;
@@ -18,12 +21,12 @@ use ratatui::{
 };
 
 use crate::{
-    config_handler::{self, Config},
+    config_utils,
     utils::{current_char_index, input_buffer_is_sci_notate, send_input_data},
 };
 
 /// The input mode state of the application
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq)]
 enum InputMode {
     /// No input mode (select, info view, etc.)
     None,
@@ -119,9 +122,11 @@ impl StatefulTopPanel {
 }
 
 /// App holds the state of the application
-pub struct App {
+pub struct App<'a> {
     /// Current value of the input box
     input: String,
+    /// Socket used to communicate with the backend
+    pub socket: &'a Socket,
     /// Current input mode
     input_mode: InputMode,
     /// History of recorded messages
@@ -137,14 +142,13 @@ pub struct App {
     /// Stack selection state
     top_panel_state: StatefulTopPanel,
     quit_app: bool,
-    pub config: Config,
 }
 
-impl App {
-    pub fn new() -> App {
-        config_handler::init_config();
+impl<'a> App<'a> {
+    pub fn new(socket: &'a Socket) -> App<'a> {
         App {
             input: String::new(),
+            socket,
             input_mode: InputMode::None,
             history: Vec::new(),
             info: vec![
@@ -156,7 +160,7 @@ impl App {
                 "   .kWW0dc:,'.          ,c       ".to_string(),
                 "      ;lxO0XWMXx.      .c.       ".to_string(),
                 "             '0MMl     c'        ".to_string(),
-                "   .           NMW    :;     ".to_string() + "        Copyright 2024",
+                "   .           NMW    :;     ".to_string() + "        Copyright 2023",
                 "  OMN:        ;WM0   ,:      ".to_string() + "Connor Sample and Finian Wright",
                 "   cXMW0xoodkNMNo   'c.          ".to_string(),
                 "     .:oxkOkdl'    .c.           ".to_string(),
@@ -169,14 +173,15 @@ impl App {
             left_cursor_offset: 0,
             top_panel_state: StatefulTopPanel::with_items(vec![]),
             quit_app: false,
-            config: config_handler::read_user_config().expect("config should've been initialized"),
         }
     }
+}
 
+impl<'a> App<'a> {
     /// Get keybind from config file as string
     pub fn keybind_from_config(&mut self, keybind_name: &str) -> String {
-        self.config
-            .get_key("keybinds", keybind_name)
+        config_utils::get_key(self, "keybinds", keybind_name)
+            .as_str()
             .unwrap()
             .to_string()
     }
@@ -209,16 +214,21 @@ impl App {
 /// Update the stack if msg is not an error. If it is an error, display that error
 pub fn update_stack_or_error(msg: ServerResponseMessage, app: &mut App) {
     // TODO: make a seperate display for commands
-    match msg.payload {
-        ResponsePayload::Stack(vec) => {
-            app.stack = vec.iter().map(|item| item.to_string()).collect();
+    match msg.response_type {
+        ResponseType::Stack => {
+            app.stack = extract_data!(msg.payload, ResponsePayload::Stack)
+                .iter()
+                .map(|item| item.to_string())
+                .collect();
         }
-        ResponsePayload::Error(e) => {
-            app.error = format!("Error: {}", e);
+        ResponseType::Error => {
+            let error_message = extract_data!(msg.payload, ResponsePayload::Error);
+            app.error = format!("Error: {}", error_message);
         }
-        ResponsePayload::Commands(_) => todo!(),
-        ResponsePayload::QuitSig(_) => app.quit_app = true,
-        ResponsePayload::PrevAnswer(_) => (),
+        ResponseType::Commands => todo!(),
+        ResponseType::QuitSig => app.quit_app = true,
+        // configuration return is handeled elsewhere
+        ResponseType::Configuration | ResponseType::PrevAnswer => (),
     }
 }
 
@@ -316,13 +326,7 @@ fn rpn_input(app: &mut App, socket: &Socket, c: char) {
 
     // query engine for available commands
     let binding = send_input_data(socket, "commands");
-    let commands = match binding.payload {
-        ResponsePayload::Commands(vec) => vec,
-        ResponsePayload::Stack(_)
-        | ResponsePayload::Error(_)
-        | ResponsePayload::QuitSig(_)
-        | ResponsePayload::PrevAnswer(_) => unreachable!("this should never happen"),
-    };
+    let commands = extract_data!(binding.payload, ResponsePayload::Commands);
 
     // Check if input box contains a command, if so, automatically execute it
     if commands.contains(&app.input) {
@@ -384,11 +388,8 @@ pub fn run_app<B: Backend>(
     socket: &Socket,
 ) -> io::Result<()> {
     // set default start mode
-    let binding = app.config.get_key("system", "start_mode");
-    let start_mode = match binding {
-        Ok(val) => &val.to_string(),
-        Err(_) => "algebraic",
-    };
+    let binding = config_utils::get_key(&mut app, "system", "start_mode");
+    let start_mode = binding.as_str().unwrap();
 
     app.input_mode = match start_mode {
         "algebraic" => InputMode::Algebraic,
@@ -597,15 +598,10 @@ pub fn run_app<B: Backend>(
         // Update stack if there is currently an error, since the last request will have gotten the error not the stack
         if !app.error.is_empty() {
             let msg = send_input_data(socket, "refresh");
-            app.stack = match msg.payload {
-                ResponsePayload::Stack(vec) => vec.iter().map(|item| item.to_string()).collect(),
-                ResponsePayload::Commands(_)
-                | ResponsePayload::Error(_)
-                | ResponsePayload::QuitSig(_)
-                | ResponsePayload::PrevAnswer(_) => {
-                    unreachable!("server didnt send a stack as response")
-                }
-            }
+            app.stack = extract_data!(msg.payload, ResponsePayload::Stack)
+                .iter()
+                .map(|item| item.to_string())
+                .collect();
         }
     }
 }

@@ -65,6 +65,7 @@ nav:
     - Developer Documentation:
         - Cross Compiling: dev/cross_compiling.md
         - Communication Protocol: dev/comm_prot.md
+        - Configuration Protocol: dev/configuration_protocol.md
         - Adding an IPC Backend: dev/adding_ipc_backend.md
         - Squiid Parser: dev/parser.md
         - Squiid Engine: dev/engine.md
@@ -96,7 +97,7 @@ markdown_extensions:
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
-      alternate_style: true
+      alternate_style: true 
   - pymdownx.betterem
   - pymdownx.inlinehilite
   - pymdownx.snippets

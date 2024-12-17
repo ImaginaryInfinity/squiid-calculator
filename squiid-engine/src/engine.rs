@@ -5,6 +5,7 @@ use rust_decimal_macros::dec;
 
 use crate::{
     bucket::{build_exposed_constants, Bucket, BucketTypes, ConstantTypes},
+    config_handler,
     protocol::server_response::MessageAction,
     utils::{ID_REGEX, NUMERIC_REGEX},
 };
@@ -24,12 +25,15 @@ pub struct Engine {
     pub undo_state_pointer: u8,
     /// Previous answer
     pub previous_answer: Bucket,
+    /// Configuration struct
+    pub config: config_handler::Config,
 }
 
 /// Evaluation engine implementation
 impl Engine {
     /// Helper to construct a new engine object
     pub fn new() -> Engine {
+        config_handler::init_config();
         Engine {
             stack: Vec::new(),
             variables: HashMap::new(),
@@ -37,6 +41,7 @@ impl Engine {
             undo_variable_history: VecDeque::new(),
             undo_state_pointer: 0,
             previous_answer: Bucket::from(0),
+            config: config_handler::read_user_config().unwrap(),
         }
     }
 

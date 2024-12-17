@@ -2,6 +2,9 @@
 <component type="console-application">
   <id>net.imaginaryinfinity.Squiid</id>
   <name>Squiid</name>
+  <developer id="net.imaginaryinfinity">
+    <name>ImaginaryInfinity</name>
+  </developer>
   <summary>Advanced algebraic &amp; RPN calculator</summary>
   <url type="homepage">https://imaginaryinfinity.net/projects/squiid/</url>
   <url type="contribute">https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid</url>
@@ -15,22 +18,25 @@
   <screenshots>
     <screenshot type="default">
       <caption>Algebraic Mode</caption>
-      <image xml:lang="en" type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-1.png</image>
+      <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-1.png</image>
     </screenshot>
     <screenshot>
       <caption>RPN Mode</caption>
-      <image xml:lang="en" type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-2.png</image>
+      <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-2.png</image>
     </screenshot>
     <screenshot>
       <caption>Squiid information display page</caption>
-      <image xml:lang="en" type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-3.png</image>
+      <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-3.png</image>
     </screenshot>
     <screenshot>
       <caption>Previous answer selector mode</caption>
-      <image xml:lang="en" type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-4.png</image>
+      <image type="source" width="1960" height="1120">https://imaginaryinfinity.net/img/showcase/squiid-4.png</image>
     </screenshot>
   </screenshots>
   <releases>
+    <release version="1.2.0" date="2024-12-17">
+      <url>https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/releases/1.2.0</url>
+    </release>
     <release version="1.1.3" date="2024-10-14">
       <url>https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/releases/1.1.3</url>
     </release>
@@ -76,6 +82,7 @@
     <category>Utility</category>
     <category>Calculator</category>
   </categories>
+  <launchable type="desktop-id">net.imaginaryinfinity.Squiid.desktop</launchable>
   <provides>
     <binary>squiid</binary>
   </provides>

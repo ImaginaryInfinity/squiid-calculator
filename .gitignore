@@ -15,3 +15,4 @@ flatpak-cargo-generator.py
 .gitlab-ci-local-variables.yml
 .vscode
 site/
+venv/

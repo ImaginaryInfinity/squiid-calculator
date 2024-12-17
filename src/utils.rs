@@ -41,11 +41,7 @@ fn deserialize_message(msg: Message) -> ServerResponseMessage {
 
 /// Get current character index based on cursor position and text length
 pub fn current_char_index(left_cursor_offset: usize, input_len: usize) -> usize {
-    if left_cursor_offset > input_len {
-        0
-    } else {
-        input_len - left_cursor_offset
-    }
+    input_len.saturating_sub(left_cursor_offset)
 }
 
 /// Find the first available port in a provided range
@@ -75,7 +71,7 @@ pub fn input_buffer_is_sci_notate(buffer: &str) -> bool {
         Ok(tokens) => {
             // test if the last token before the trailing 'e' is an int or float
             let last_token = &tokens[tokens.len() - 1];
-            return *last_token == Token::Float("_") || *last_token == Token::Int("_");
+            *last_token == Token::Float("_") || *last_token == Token::Int("_")
         }
         Err(_) => false,
     }

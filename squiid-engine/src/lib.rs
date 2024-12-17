@@ -1,6 +1,5 @@
 pub mod bucket;
 pub mod command_mappings;
-pub mod config_handler;
 pub mod crash_reporter;
 pub mod engine;
 pub mod utils;
@@ -18,13 +17,15 @@ pub mod ipc;
 
 use std::{borrow::BorrowMut, panic};
 
+use std::path::PathBuf;
+
 use bucket::Bucket;
 use command_mappings::CommandsMap;
 use engine::Engine;
 
 #[cfg(feature = "ipc")]
 use crate::protocol::{
-    client_request::{ConfigurationActionType, ConfigurationPayload, RequestPayload, RequestType},
+    client_request::RequestPayload,
     server_response::{MessageAction, ResponsePayload, ResponseType},
 };
 
@@ -34,13 +35,15 @@ const DEFAULT_ADDRESS: &str = "tcp://*:33242";
 
 #[cfg(feature = "ipc")]
 /// Start the server at the given address (default is DEFAULT_ADDRESS)
-pub fn start_server(address: Option<&str>) {
+pub fn start_server(address: Option<&str>, crash_report_directory: Option<PathBuf>) {
     //TODO: document features
 
-    use crate::{ipc::IPCBackend, protocol::server_response::ServerResponseMessage};
-    #[cfg(not(feature = "disable-crash-reports"))]
-    panic::set_hook(Box::new(|panic_info| {
-        crash_reporter::crash_report(panic_info, true);
+    use protocol::server_response::ServerResponseMessage;
+
+    use crate::ipc::IPCBackend;
+    // #[cfg(not(feature = "disable-crash-reports"))]
+    panic::set_hook(Box::new(move |panic_info| {
+        crash_reporter::crash_report(panic_info, crash_report_directory.clone());
 
         // propegate panic for frontend to handle
         // TODO: document this
@@ -87,16 +90,8 @@ pub fn start_server(address: Option<&str>) {
             }
         };
 
-        let result = match recieved.request_type {
-            RequestType::Input => handle_data(
-                &mut engine,
-                &commands,
-                extract_data!(&recieved.payload, RequestPayload::Input),
-            ),
-            RequestType::Configuration => handle_config_data(
-                &mut engine,
-                extract_data!(recieved.payload.clone(), RequestPayload::Configuration),
-            ),
+        let result = match &recieved.payload {
+            RequestPayload::Input(val) => handle_data(&mut engine, &commands, val),
         };
 
         match result {
@@ -104,12 +99,6 @@ pub fn start_server(address: Option<&str>) {
                 let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
                     ResponseType::Stack,
                     ResponsePayload::Stack(engine.stack.clone()),
-                ));
-            }
-            Ok(MessageAction::SendConfigValue(config_value)) => {
-                let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
-                    ResponseType::Configuration,
-                    ResponsePayload::Configuration(config_value.into()),
                 ));
             }
             Ok(MessageAction::SendCommands) => {
@@ -197,87 +186,4 @@ pub fn handle_data(
     };
 
     result
-}
-
-/// handle config data sent to the server
-pub fn handle_config_data(
-    engine: &mut Engine,
-    data: ConfigurationPayload,
-) -> Result<MessageAction, String> {
-    let value_option = match data.action_type {
-        ConfigurationActionType::GetKey => {
-            if data.section.is_none() {
-                return Err("config section not provided in GetKey".to_string());
-            }
-            if data.key.is_none() {
-                return Err("config key not provided in GetKey".to_string());
-            }
-            engine
-                .config
-                .get_key(&data.section.unwrap(), &data.key.unwrap())
-        }
-        ConfigurationActionType::ListSections => engine.config.list_sections(),
-        ConfigurationActionType::ListKeys => {
-            if data.section.is_none() {
-                return Err("config section not provided in ListKeys".to_string());
-            }
-            engine.config.list_keys(&data.section.unwrap())
-        }
-        ConfigurationActionType::ListValues => {
-            if data.section.is_none() {
-                return Err("config section not provided in ListValues".to_string());
-            }
-            engine.config.list_values(&data.section.unwrap())
-        }
-        ConfigurationActionType::ListItems => {
-            if data.section.is_none() {
-                return Err("config section not provided in ListItems".to_string());
-            }
-            engine.config.list_items(&data.section.unwrap())
-        }
-        ConfigurationActionType::SetKey => {
-            if data.section.is_none() {
-                return Err("config section not provided in SetKey".to_string());
-            }
-            if data.key.is_none() {
-                return Err("config key not provided in SetKey".to_string());
-            }
-            if data.value.is_none() {
-                return Err("config value not provided in SetKey".to_string());
-            }
-            engine.config.set_key(
-                &data.section.unwrap(),
-                &data.key.unwrap(),
-                data.value.unwrap(),
-            )
-        }
-        ConfigurationActionType::CreateSection => {
-            if data.section.is_none() {
-                return Err("config section not provided in CreateSection".to_string());
-            }
-            engine.config.create_section(&data.section.unwrap())
-        }
-        ConfigurationActionType::DeleteSection => {
-            if data.section.is_none() {
-                return Err("config section not provided in DeleteSection".to_string());
-            }
-            engine.config.delete_section(&data.section.unwrap())
-        }
-        ConfigurationActionType::DeleteKey => {
-            if data.section.is_none() {
-                return Err("config section not provided in DeleteKey".to_string());
-            }
-            if data.key.is_none() {
-                return Err("config key not provided in DeleteKey".to_string());
-            }
-            engine
-                .config
-                .delete_key(&data.section.unwrap(), &data.key.unwrap())
-        }
-    };
-
-    match value_option {
-        Ok(item) => Ok(MessageAction::SendConfigValue(item)),
-        Err(e) => Err(e),
-    }
 }

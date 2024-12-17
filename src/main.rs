@@ -7,7 +7,7 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 mod app;
 use app::{run_app, App};
 
-mod config_utils;
+mod config_handler;
 mod utils;
 
 use crossterm::{
@@ -21,6 +21,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matches = clap::command!()
         .args(&[arg!(-p --port [PORT] "an optional port number to use")])
         .get_matches();
+
+    config_handler::init_config();
 
     let specified_port = matches.get_one::<String>("port");
 
@@ -40,7 +42,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // start evaluation server
     let _ = thread::spawn(move || {
-        squiid_engine::start_server(Some(&format!("tcp://127.0.0.1:{}", port_num)));
+        squiid_engine::start_server(Some(&format!("tcp://127.0.0.1:{}", port_num)), None);
     });
 
     // Wait for server to start
@@ -54,7 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     std::panic::set_hook(Box::new(|panic| {
         reset_terminal().unwrap();
-        crash_reporter::crash_report(panic, true);
+        crash_reporter::crash_report(panic, Some(config_handler::determine_config_path()));
         std::process::exit(1);
     }));
 
@@ -71,7 +73,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     print!("{}[2J", 27 as char);
 
     // create app and run it
-    let app = App::new(&socket);
+    let app = App::new();
     let res = run_app(&mut terminal, app, &socket);
 
     reset_terminal()?;

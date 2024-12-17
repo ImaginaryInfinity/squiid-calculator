@@ -43,3 +43,14 @@ pub fn recv_data(socket: &Socket) -> Result<ClientRequestMessage, serde_json::Er
     let client_response: ClientRequestMessage = serde_json::from_str(recieved).unwrap();
     Ok(client_response)
 }
+
+/// Macro for getting data out of message payload
+#[macro_export]
+macro_rules! extract_data {
+    ($payload:expr, $variant:path) => {
+        match $payload {
+            $variant(data) => data,
+            _ => panic!("Invalid data type provided for payload: {:?}", $payload),
+        }
+    };
+}

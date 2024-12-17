@@ -7,8 +7,66 @@ use crate::bucket::Bucket;
 pub enum MessageAction {
     SendStack,
     SendCommands,
+    SendConfigValue(ConfigValue),
     SendPrevAnswer,
     Quit,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum ConfigValue {
+    Value(toml::Value),
+    StringList(Vec<String>),
+    ValueList(Vec<toml::Value>),
+    KeyValueList(Vec<(String, toml::Value)>),
+    None(()),
+}
+
+impl From<ConfigValue> for serde_json::Value {
+    fn from(val: ConfigValue) -> Self {
+        match val {
+            ConfigValue::Value(item) => toml_to_serde_json_value(&item),
+            ConfigValue::StringList(string_list) => serde_json::Value::Array(
+                string_list
+                    .into_iter()
+                    .map(|s| serde_json::Value::String(s.clone()))
+                    .collect(),
+            ),
+            ConfigValue::ValueList(toml_value_list) => serde_json::Value::Array(
+                toml_value_list
+                    .into_iter()
+                    .map(|v| toml_to_serde_json_value(&v))
+                    .collect(),
+            ),
+            ConfigValue::KeyValueList(key_value_list) => serde_json::Value::Object(
+                key_value_list
+                    .into_iter()
+                    .map(|(k, v)| (k.clone(), toml_to_serde_json_value(&v)))
+                    .collect(),
+            ),
+            ConfigValue::None(_) => serde_json::Value::Null,
+        }
+    }
+}
+
+// Convert a toml Value to a serde_json Value
+fn toml_to_serde_json_value(toml_value: &toml::Value) -> serde_json::Value {
+    match toml_value {
+        toml::Value::String(s) => serde_json::Value::String(s.clone()),
+        toml::Value::Integer(i) => serde_json::Value::Number((*i).into()),
+        toml::Value::Float(f) => serde_json::Value::from(*f),
+        toml::Value::Boolean(b) => serde_json::Value::Bool(*b),
+        toml::Value::Datetime(dt) => serde_json::Value::String(dt.to_string()),
+        toml::Value::Array(arr) => {
+            serde_json::Value::Array(arr.iter().map(toml_to_serde_json_value).collect())
+        }
+        toml::Value::Table(table) => {
+            let object: serde_json::Map<String, serde_json::Value> = table
+                .iter()
+                .map(|(k, v)| (k.clone(), toml_to_serde_json_value(v)))
+                .collect();
+            serde_json::Value::Object(object)
+        }
+    }
 }
 
 /// Response struct
@@ -38,6 +96,8 @@ pub enum ResponseType {
     Commands,
     #[serde(rename = "quitsig")]
     QuitSig,
+    #[serde(rename = "configuration")]
+    Configuration,
     #[serde(rename = "previous_answer")]
     PrevAnswer,
 }
@@ -54,6 +114,8 @@ pub enum ResponsePayload {
     /// This should always be set to None
     #[serde(rename = "quitsig")]
     QuitSig(Option<u8>),
+    #[serde(rename = "configuration")]
+    Configuration(serde_json::Value),
     #[serde(rename = "previous_answer")]
     PrevAnswer(Bucket),
 }

@@ -9,5 +9,5 @@ fn main() {
     if args.len() > 1 {
         address = &args[1];
     }
-    start_server(Some(address), None);
+    start_server(Some(address));
 }

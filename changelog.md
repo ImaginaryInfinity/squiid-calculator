@@ -1,11 +1,3 @@
-# 1.2.0
-
-- Update some flatpak metadata issues
-- Update copyright year in app.rs
-- Fix a typo in the documentation
-- Fix icon not showing on installed Windows version (#68)
-- Move the config from the backend into the frontend (#55)
-
 # 1.1.3
 
 - Fix unchecked division in `blog`

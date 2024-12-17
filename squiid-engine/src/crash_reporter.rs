@@ -3,9 +3,10 @@ use std::{
     fmt,
     fs::File,
     io::Write,
-    panic::{self, PanicHookInfo},
-    path::PathBuf,
+    panic::{self, PanicInfo},
 };
+
+use crate::config_handler;
 
 #[derive(Debug)]
 struct EnvironmentDetails<'a> {
@@ -36,7 +37,7 @@ impl fmt::Display for EnvironmentDetails<'_> {
     }
 }
 
-pub fn crash_report(panic_info: &PanicHookInfo, config_path: Option<PathBuf>) {
+pub fn crash_report(panic_info: &PanicInfo, write_dump_file: bool) {
     let backtrace = backtrace::Backtrace::new();
 
     // create environment struct
@@ -62,8 +63,8 @@ pub fn crash_report(panic_info: &PanicHookInfo, config_path: Option<PathBuf>) {
     );
 
     // determine the config directory to write the crash to
-    if let Some(write_path) = config_path {
-        let result = panic::catch_unwind(|| write_path);
+    if write_dump_file {
+        let result = panic::catch_unwind(config_handler::determine_config_path);
 
         let config_directory = match result {
             Ok(value) => value.parent().map(|path| path.to_path_buf()),

@@ -1,0 +1,13 @@
+# Template file for 'squiid'
+pkgname=squiid
+version=${VERSION}
+revision=1
+build_style=cargo
+short_desc="Do advanced algebraic and RPN calculators"
+maintainer="Connor Sample <tabulatejarl8@gmail.com>"
+makedepends="cmake"
+license="GPL-3.0-or-later"
+homepage="https://imaginaryinfinity.net/squiid"
+distfiles="https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/archive/$version/$pkgname-$version.tar.gz"
+checksum="2534e01d7b7a5b1793bb3cb5f6ebe4a404a5d8e131f87595ff8afb98a4838367"
+

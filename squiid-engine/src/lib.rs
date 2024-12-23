@@ -1,8 +1,10 @@
 pub mod bucket;
 pub mod command_mappings;
-pub mod crash_reporter;
 pub mod engine;
 pub mod utils;
+
+#[cfg(feature = "crash-reporting")]
+pub mod crash_reporter;
 
 pub mod protocol {
     pub mod client_request;
@@ -41,7 +43,7 @@ pub fn start_server(address: Option<&str>, crash_report_directory: Option<PathBu
     use protocol::server_response::ServerResponseMessage;
 
     use crate::ipc::IPCBackend;
-    // #[cfg(not(feature = "disable-crash-reports"))]
+    #[cfg(feature = "crash-reporting")]
     panic::set_hook(Box::new(move |panic_info| {
         crash_reporter::crash_report(panic_info, crash_report_directory.clone());
 

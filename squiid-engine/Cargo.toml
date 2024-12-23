@@ -10,12 +10,12 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.75"
-backtrace = "0.3.69"
-chrono = { version = "0.4.30", default-features = false, features = [
+backtrace = { version = "0.3.69", optional = true }
+chrono = { version = "0.4.30", default-features = false, optional = true, features = [
     "clock",
     "std",
 ] }
-colored = "2.0.4"
+colored = { version = "2.0.4", optional = true }
 lazy_static = "1.4.0"
 nng = { version = "1.0.1", optional = true }
 regex = "1.7.3"
@@ -29,11 +29,11 @@ strip = "symbols"
 lto = true
 
 [features]
-default = ["nng"]
+default = ["nng", "crash-reporting"]
 # enable IPC support with NNG
 ipc = []
 nng = ["ipc", "dep:nng"]
-disable-crash-reports = []
+crash-reporting = ["dep:backtrace", "dep:chrono", "dep:colored"]
 
 [lib]
 name = "squiid_engine"

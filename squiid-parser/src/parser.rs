@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+#[cfg(feature = "logging")]
 use log::debug;
 
 use crate::tokens::Token::{self, *};
@@ -106,6 +107,7 @@ pub fn parse_implicit_multiplication(tokens: &mut Vec<Token>) {
 
 /// Parse a Vec of tokens using an implementation of the shunting yard algorithm
 pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, String> {
+    #[cfg(feature = "logging")]
     debug!("{:?}", tokens);
 
     let mut output_queue: Vec<&'a str> = Vec::new();
@@ -137,6 +139,7 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
     let mut peekable_tokens = tokens.iter().peekable();
 
     while let Some(token) = peekable_tokens.next() {
+        #[cfg(feature = "logging")]
         debug!(
             "output: {:?}, operator: {:?}, chs_function: {:?}",
             output_queue, operator_stack, chs_parenthesis

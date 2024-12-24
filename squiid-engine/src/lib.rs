@@ -11,135 +11,35 @@ pub mod protocol {
     pub mod server_response;
 }
 
-#[cfg(feature = "ipc")]
 pub mod ffi;
 
-#[cfg(feature = "ipc")]
-pub mod ipc;
-
-use std::{borrow::BorrowMut, panic};
-
-use std::path::PathBuf;
+use std::{
+    borrow::BorrowMut,
+    sync::{LazyLock, Mutex, MutexGuard, TryLockError},
+};
 
 use bucket::Bucket;
 use command_mappings::CommandsMap;
 use engine::Engine;
+use protocol::server_response::MessageAction;
+use thiserror::Error;
 
-#[cfg(feature = "ipc")]
-use crate::protocol::{
-    client_request::RequestPayload,
-    server_response::{MessageAction, ResponsePayload, ResponseType},
-};
+static ENGINE: LazyLock<Mutex<Engine>> = LazyLock::new(|| Mutex::new(Engine::new()));
+static COMMAND_MAPPINGS: LazyLock<CommandsMap> =
+    LazyLock::new(command_mappings::create_function_map);
 
-#[cfg(feature = "ipc")]
-/// The default address to start the server on
-const DEFAULT_ADDRESS: &str = "tcp://*:33242";
-
-#[cfg(feature = "ipc")]
-/// Start the server at the given address (default is DEFAULT_ADDRESS)
-pub fn start_server(address: Option<&str>, crash_report_directory: Option<PathBuf>) {
-    //TODO: document features
-
-    use protocol::server_response::ServerResponseMessage;
-
-    use crate::ipc::IPCBackend;
-    #[cfg(feature = "crash-reporting")]
-    panic::set_hook(Box::new(move |panic_info| {
-        crash_reporter::crash_report(panic_info, crash_report_directory.clone());
-
-        // propegate panic for frontend to handle
-        // TODO: document this
-        std::process::exit(2);
-    }));
-
-    // Use default address unless one was specified from the command line
-
-    let address_to_bind = match address {
-        Some(adr) => adr,
-        None => DEFAULT_ADDRESS,
-    };
-
-    // create nng IPC wrapper
-    let ipc_wrapper = ipc::nng::NanoMsg::new();
-
-    // Print and bind to selected port
-    assert!(
-        ipc_wrapper.bind_and_listen(address_to_bind).is_ok(),
-        "could not bind to address {:?}. if you're using this as a shared object file, are you encoding the input to utf-8 bytes?",
-        address_to_bind
-    );
-
-    // create message variable and engine
-    let mut engine = Engine::new();
-
-    // create hashmap of available commands
-    let commands = command_mappings::create_function_map();
-
-    // listen forever
-    loop {
-        // recieve message from client
-        let data = ipc_wrapper.recv_data();
-        // check if error was encountered when parsing JSON
-        let recieved = match data {
-            Ok(ref value) => value,
-            Err(_) => {
-                // send error back to client and continue loop
-                let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
-                    ResponseType::Error,
-                    ResponsePayload::Error("invalid JSON data was sent to the server".to_string()),
-                ));
-                continue;
-            }
-        };
-
-        let result = match &recieved.payload {
-            RequestPayload::Input(val) => handle_data(&mut engine, &commands, val),
-        };
-
-        match result {
-            Ok(MessageAction::SendStack) => {
-                let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
-                    ResponseType::Stack,
-                    ResponsePayload::Stack(engine.stack.clone()),
-                ));
-            }
-            Ok(MessageAction::SendCommands) => {
-                let avaiable_commands: Vec<String> =
-                    commands.keys().map(|k| k.to_owned()).collect();
-
-                let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
-                    ResponseType::Commands,
-                    ResponsePayload::Commands(avaiable_commands),
-                ));
-            }
-            Ok(MessageAction::SendPrevAnswer) => {
-                let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
-                    ResponseType::PrevAnswer,
-                    ResponsePayload::PrevAnswer(engine.previous_answer.clone()),
-                ));
-            }
-            Ok(MessageAction::Quit) => break,
-            Err(error) => {
-                let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
-                    ResponseType::Error,
-                    ResponsePayload::Error(error.to_string()),
-                ));
-            }
-        }
-    }
-
-    // send quit message to client
-    let _ = ipc_wrapper.send_data(ServerResponseMessage::new(
-        ResponseType::QuitSig,
-        ResponsePayload::QuitSig(None),
-    ));
-}
-
-pub fn handle_data(
-    engine: &mut Engine,
-    commands: &CommandsMap,
-    data: &str,
-) -> Result<MessageAction, String> {
+/// This function is an abstraction which allows you to run one RPN operation on an engine.
+///
+/// # Arguments
+///
+/// * `engine` - The engine to use
+/// * `data` - The data (command or number) to execute.
+///
+/// # Errors
+///
+/// When the command which was input creates an invalid state in the engine, such as when an
+/// undefined variable is referenced.
+pub fn handle_data(engine: &mut Engine, data: &str) -> Result<MessageAction, String> {
     if engine.undo_history.len() > 20 {
         _ = engine.undo_history.pop_front();
         _ = engine.undo_variable_history.pop_front();
@@ -179,7 +79,7 @@ pub fn handle_data(
             .push_back(engine.variables.clone());
     }
 
-    let result = match commands.get(data) {
+    let result = match COMMAND_MAPPINGS.get(data) {
         Some(func) => func(engine.borrow_mut()),
         None => {
             // return result value of adding item to stack
@@ -188,4 +88,130 @@ pub fn handle_data(
     };
 
     result
+}
+
+// /// Error type for submitting commands to the Engine
+// #[derive(Error, Debug)]
+// pub enum ExecutionError {
+//     #[error("{0}")]
+//     EngineError(String),
+//
+//     #[error("Failed to aquire lock on engine")]
+//     LockError,
+// }
+
+/// Struct to identify which MessageActions were triggered during the submission of multiple
+/// commands to the engine (usually in `execute_rpn_data`)
+#[derive(Debug, Default, Clone)]
+pub struct MessageActionSet {
+    /// This is set if the `get_stack` method should be called to retrieve the new stack
+    get_stack: bool,
+    /// This is set if the `get_commands` method should be called to retrieve the valid engine
+    /// commands
+    get_commands: bool,
+    /// This is set if the `get_prev_answer` method should be called to retrieve the new previous
+    /// answer
+    get_prev_answer: bool,
+    /// This is set if the frontend should quit
+    quit: bool,
+    /// This is set if there was an error while putting data into the engine
+    error: Option<String>,
+}
+
+impl MessageActionSet {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Given a result of an action, merge it into the set. This is a convinience method to easily
+    /// set fields if the client should get a data structure from the engine.
+    ///
+    /// # Arguments
+    ///
+    /// * `action` - The action to merge into the set
+    pub fn merge(&mut self, action: Result<MessageAction, String>) {
+        match action {
+            Ok(v) => match v {
+                MessageAction::SendStack => self.get_stack = true,
+                MessageAction::SendCommands => self.get_commands = true,
+                MessageAction::SendPrevAnswer => self.get_prev_answer = true,
+                MessageAction::Quit => self.quit = true,
+            },
+            Err(e) => self.error = Some(e),
+        }
+    }
+
+    pub fn should_get_stack(&self) -> bool {
+        self.get_stack
+    }
+    pub fn should_get_commands(&self) -> bool {
+        self.get_commands
+    }
+    pub fn should_get_prev_answer(&self) -> bool {
+        self.get_prev_answer
+    }
+    pub fn should_quit(&self) -> bool {
+        self.quit
+    }
+    pub fn get_error(&self) -> Option<String> {
+        self.error.clone()
+    }
+}
+
+/// Execute multiple RPN commands in the engine at once.
+///
+/// # Arguments
+///
+/// * `rpn_data` - The list of RPN data to execute
+///
+/// # Errors
+///
+/// This function errors if locking the engine mutex fails
+pub fn execute_rpn_data(
+    rpn_data: Vec<&str>,
+) -> Result<MessageActionSet, TryLockError<MutexGuard<Engine>>> {
+    let mut engine = ENGINE.try_lock()?;
+
+    let mut message_actions = MessageActionSet::new();
+
+    for item in rpn_data {
+        // submit each piece of data to the engine
+        let response = handle_data(&mut engine, item);
+        // merge the response into the actions set
+        message_actions.merge(response);
+
+        // if an error was encountered, terminate early
+        if message_actions.get_error().is_some() {
+            return Ok(message_actions);
+        }
+    }
+
+    Ok(message_actions)
+}
+
+/// Get the current stack from the engine.
+///
+/// # Errors
+///
+/// This function errors if locking the engine mutex fails
+pub fn get_stack() -> Result<Vec<Bucket>, TryLockError<MutexGuard<'static, Engine>>> {
+    let engine = ENGINE.try_lock()?;
+
+    Ok(engine.stack.clone())
+}
+
+/// Get a list of valid commands that the engine accepts
+pub fn get_commands() -> Vec<String> {
+    COMMAND_MAPPINGS.keys().map(|s| s.to_owned()).collect()
+}
+
+/// Get the current previous answer from the engine.
+///
+/// # Errors
+///
+/// This function errors if locking the engine mutex fails
+pub fn get_prev_answer() -> Result<Bucket, TryLockError<MutexGuard<'static, Engine>>> {
+    let engine = ENGINE.try_lock()?;
+
+    Ok(engine.previous_answer.clone())
 }

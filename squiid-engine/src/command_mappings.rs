@@ -12,8 +12,8 @@ macro_rules! function_map_entry {
     };
 }
 
-type EngineFunction = dyn Fn(&mut Engine) -> Result<MessageAction, String>;
-pub type CommandsMap = HashMap<String, Box<dyn Fn(&mut Engine) -> Result<MessageAction, String>>>;
+type EngineFunction = dyn Fn(&mut Engine) -> Result<MessageAction, String> + Send + Sync + 'static;
+pub type CommandsMap = HashMap<String, Box<EngineFunction>>;
 
 /// Create a map of every available function and it's respective command
 pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {

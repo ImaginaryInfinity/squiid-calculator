@@ -13,9 +13,9 @@ fn test_bucket_creation() {
         BucketTypes::String
     );
 
-    assert_eq!(Bucket::from(3 as u8).bucket_type, BucketTypes::Float);
+    assert_eq!(Bucket::from(3_u8).bucket_type, BucketTypes::Float);
 
-    assert_eq!(Bucket::from(3 as i64).bucket_type, BucketTypes::Float);
+    assert_eq!(Bucket::from(3_i64).bucket_type, BucketTypes::Float);
 
     assert_eq!(Bucket::from(-3).bucket_type, BucketTypes::Float);
 

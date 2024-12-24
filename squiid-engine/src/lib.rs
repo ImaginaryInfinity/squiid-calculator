@@ -15,14 +15,13 @@ pub mod ffi;
 
 use std::{
     borrow::BorrowMut,
-    sync::{LazyLock, Mutex, MutexGuard, TryLockError},
+    sync::{LazyLock, Mutex},
 };
 
 use bucket::Bucket;
 use command_mappings::CommandsMap;
 use engine::Engine;
 use protocol::server_response::MessageAction;
-use thiserror::Error;
 
 static ENGINE: LazyLock<Mutex<Engine>> = LazyLock::new(|| Mutex::new(Engine::new()));
 static COMMAND_MAPPINGS: LazyLock<CommandsMap> =
@@ -167,10 +166,8 @@ impl MessageActionSet {
 /// # Errors
 ///
 /// This function errors if locking the engine mutex fails
-pub fn execute_rpn_data(
-    rpn_data: Vec<&str>,
-) -> Result<MessageActionSet, TryLockError<MutexGuard<Engine>>> {
-    let mut engine = ENGINE.try_lock()?;
+pub fn execute_rpn_data(rpn_data: Vec<&str>) -> MessageActionSet {
+    let mut engine = ENGINE.lock().unwrap();
 
     let mut message_actions = MessageActionSet::new();
 
@@ -182,11 +179,18 @@ pub fn execute_rpn_data(
 
         // if an error was encountered, terminate early
         if message_actions.get_error().is_some() {
-            return Ok(message_actions);
+            return message_actions;
         }
     }
 
-    Ok(message_actions)
+    message_actions
+}
+
+#[macro_export]
+macro_rules! execute_single_rpn {
+    ($i:expr) => {
+        execute_rpn_data(vec![$i])
+    };
 }
 
 /// Get the current stack from the engine.
@@ -194,10 +198,10 @@ pub fn execute_rpn_data(
 /// # Errors
 ///
 /// This function errors if locking the engine mutex fails
-pub fn get_stack() -> Result<Vec<Bucket>, TryLockError<MutexGuard<'static, Engine>>> {
-    let engine = ENGINE.try_lock()?;
+pub fn get_stack() -> Vec<Bucket> {
+    let engine = ENGINE.lock().unwrap();
 
-    Ok(engine.stack.clone())
+    engine.stack.clone()
 }
 
 /// Get a list of valid commands that the engine accepts
@@ -210,8 +214,8 @@ pub fn get_commands() -> Vec<String> {
 /// # Errors
 ///
 /// This function errors if locking the engine mutex fails
-pub fn get_prev_answer() -> Result<Bucket, TryLockError<MutexGuard<'static, Engine>>> {
-    let engine = ENGINE.try_lock()?;
+pub fn get_prev_answer() -> Bucket {
+    let engine = ENGINE.lock().unwrap();
 
-    Ok(engine.previous_answer.clone())
+    engine.previous_answer.clone()
 }

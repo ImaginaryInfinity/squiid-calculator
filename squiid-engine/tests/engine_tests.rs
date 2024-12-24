@@ -54,7 +54,7 @@ fn test_add_undefined_variable_to_stack() {
 
     let result = engine.add_item_to_stack("$a".into());
 
-    assert!(matches!(result, Err(_)));
+    assert!(result.is_err());
 }
 
 #[test]
@@ -109,7 +109,7 @@ fn test_get_operands() {
 
     assert_eq!(strings, Ok(vec![String::from("abc"), String::from("1.5"),]));
 
-    assert!(matches!(invalid_float, Err(_)));
+    assert!(invalid_float.is_err());
 
     assert_eq!(valid_floats, Ok(vec![1.0, 1.5,]));
 }
@@ -204,7 +204,7 @@ fn test_divide() {
 
     // evaluate from last stack entries to first
     let result = engine.divide();
-    assert!(matches!(result, Err(_)));
+    assert!(result.is_err());
 
     let _ = engine.divide();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
@@ -547,7 +547,7 @@ fn test_blog() {
 
     // test division by zero error
     let result = engine.blog();
-    assert!(matches!(result, Err(_)));
+    assert!(result.is_err());
 }
 
 #[test]
@@ -806,7 +806,7 @@ fn test_rolldown() {
     let _ = engine.clear();
     let result = engine.roll_down();
 
-    assert!(matches!(result, Err(_)));
+    assert!(result.is_err());
 }
 
 #[test]
@@ -826,7 +826,7 @@ fn test_rollup() {
     let _ = engine.clear();
     let result = engine.roll_up();
 
-    assert!(matches!(result, Err(_)));
+    assert!(result.is_err());
 }
 
 #[test]
@@ -845,7 +845,7 @@ fn test_store() {
 
     // test invalid variable assignment
     let result = engine.store();
-    assert!(matches!(result, Err(_)));
+    assert!(result.is_err());
 }
 
 #[test]
@@ -865,11 +865,11 @@ fn test_purge() {
     let _ = engine.purge();
 
     // test that variable was deleted
-    assert!(engine.variables.get("a").is_none());
+    assert!(!engine.variables.contains_key("a"));
 
     // test invalid variable deletion
     let result = engine.purge();
-    assert!(matches!(result, Err(_)));
+    assert!(result.is_err());
 }
 
 #[test]
@@ -903,32 +903,31 @@ fn test_undo() {
     let mut engine = Engine::new();
 
     // after each command, we must push a copy of the stack to the engine history
-    let commands = command_mappings::create_function_map();
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "1");
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "2");
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "test");
+    let _ = squiid_engine::handle_data(&mut engine, "1");
+    let _ = squiid_engine::handle_data(&mut engine, "2");
+    let _ = squiid_engine::handle_data(&mut engine, "test");
 
     // test undo of adding something to the stack
     let _ = engine.undo();
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     // test undo of operation
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "add");
+    let _ = squiid_engine::handle_data(&mut engine, "add");
     assert_eq!(engine.stack, vec![Bucket::from(3),]);
 
     let _ = engine.undo();
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     // test undo of clear
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "clear");
+    let _ = squiid_engine::handle_data(&mut engine, "clear");
     assert_eq!(engine.stack, vec![]);
 
     let _ = engine.undo();
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     // test undo of variable assignment
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "a");
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "store");
+    let _ = squiid_engine::handle_data(&mut engine, "a");
+    let _ = squiid_engine::handle_data(&mut engine, "store");
 
     assert_eq!(engine.stack, vec![Bucket::from(1),]);
     assert_eq!(*engine.variables.get("a").unwrap(), Bucket::from(2));
@@ -951,10 +950,9 @@ fn test_redo() {
     let mut engine = Engine::new();
 
     // after each command, we must push a copy of the stack to the engine history
-    let commands = command_mappings::create_function_map();
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "1");
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "2");
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "test");
+    let _ = squiid_engine::handle_data(&mut engine, "1");
+    let _ = squiid_engine::handle_data(&mut engine, "2");
+    let _ = squiid_engine::handle_data(&mut engine, "test");
 
     // undo adding something to the stack
     let _ = engine.undo();
@@ -967,7 +965,7 @@ fn test_redo() {
     );
 
     // undo drop
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "drop");
+    let _ = squiid_engine::handle_data(&mut engine, "drop");
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     let _ = engine.undo();
@@ -981,7 +979,7 @@ fn test_redo() {
     assert_eq!(engine.stack, vec![Bucket::from(1), Bucket::from(2),]);
 
     // undo an operation
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "add");
+    let _ = squiid_engine::handle_data(&mut engine, "add");
     assert_eq!(engine.stack, vec![Bucket::from(3),]);
 
     let _ = engine.undo();
@@ -992,7 +990,7 @@ fn test_redo() {
     assert_eq!(engine.stack, vec![Bucket::from(3),]);
 
     // undo clear
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "clear");
+    let _ = squiid_engine::handle_data(&mut engine, "clear");
     assert_eq!(engine.stack, vec![]);
 
     let _ = engine.undo();
@@ -1003,10 +1001,10 @@ fn test_redo() {
     assert_eq!(engine.stack, vec![]);
 
     // undo variable assignment
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "1");
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "2");
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "a");
-    let _ = squiid_engine::handle_data(&mut engine, &commands, "store");
+    let _ = squiid_engine::handle_data(&mut engine, "1");
+    let _ = squiid_engine::handle_data(&mut engine, "2");
+    let _ = squiid_engine::handle_data(&mut engine, "a");
+    let _ = squiid_engine::handle_data(&mut engine, "store");
 
     assert_eq!(engine.stack, vec![Bucket::from(1),]);
     assert_eq!(*engine.variables.get("a").unwrap(), Bucket::from(2));
@@ -1064,9 +1062,7 @@ fn test_update_previous_answer() {
 fn test_commands() {
     let mut engine = Engine::new();
 
-    let commands = command_mappings::create_function_map();
-
-    let result = squiid_engine::handle_data(&mut engine, &commands, "commands");
+    let result = squiid_engine::handle_data(&mut engine, "commands");
 
     assert_eq!(result.unwrap(), MessageAction::SendCommands);
 }
@@ -1075,9 +1071,7 @@ fn test_commands() {
 fn test_refresh() {
     let mut engine = Engine::new();
 
-    let commands = command_mappings::create_function_map();
-
-    let result = squiid_engine::handle_data(&mut engine, &commands, "refresh");
+    let result = squiid_engine::handle_data(&mut engine, "refresh");
 
     assert_eq!(result.unwrap(), MessageAction::SendStack);
 }
@@ -1086,9 +1080,7 @@ fn test_refresh() {
 fn test_quit() {
     let mut engine = Engine::new();
 
-    let commands = command_mappings::create_function_map();
-
-    let result = squiid_engine::handle_data(&mut engine, &commands, "quit");
+    let result = squiid_engine::handle_data(&mut engine, "quit");
 
     assert_eq!(result.unwrap(), MessageAction::Quit);
 }
@@ -1110,16 +1102,16 @@ fn test_overflow_handled() {
     let _ = engine.add_item_to_stack("1".into());
 
     let result = engine.add();
-    assert!(matches!(result, Err(_)));
+    assert!(result.is_err());
 
     let result = engine.subtract();
-    assert!(matches!(result, Err(_)));
+    assert!(result.is_err());
 
     let result = engine.multiply();
-    assert!(matches!(result, Err(_)));
+    assert!(result.is_err());
 
     let result = engine.divide();
-    assert!(matches!(result, Err(_)));
+    assert!(result.is_err());
 }
 
 #[test]

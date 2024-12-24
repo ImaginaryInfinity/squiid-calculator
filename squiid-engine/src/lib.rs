@@ -6,11 +6,6 @@ pub mod utils;
 #[cfg(feature = "crash-reporting")]
 pub mod crash_reporter;
 
-pub mod protocol {
-    pub mod client_request;
-    pub mod server_response;
-}
-
 pub mod ffi;
 
 use std::{
@@ -21,11 +16,19 @@ use std::{
 use bucket::Bucket;
 use command_mappings::CommandsMap;
 use engine::Engine;
-use protocol::server_response::MessageAction;
 
 static ENGINE: LazyLock<Mutex<Engine>> = LazyLock::new(|| Mutex::new(Engine::new()));
 static COMMAND_MAPPINGS: LazyLock<CommandsMap> =
     LazyLock::new(command_mappings::create_function_map);
+
+/// Server response type for internal handling
+#[derive(Debug, PartialEq)]
+pub enum MessageAction {
+    SendStack,
+    SendCommands,
+    SendPrevAnswer,
+    Quit,
+}
 
 /// This function is an abstraction which allows you to run one RPN operation on an engine.
 ///
@@ -88,16 +91,6 @@ pub fn handle_data(engine: &mut Engine, data: &str) -> Result<MessageAction, Str
 
     result
 }
-
-// /// Error type for submitting commands to the Engine
-// #[derive(Error, Debug)]
-// pub enum ExecutionError {
-//     #[error("{0}")]
-//     EngineError(String),
-//
-//     #[error("Failed to aquire lock on engine")]
-//     LockError,
-// }
 
 /// Struct to identify which MessageActions were triggered during the submission of multiple
 /// commands to the engine (usually in `execute_rpn_data`)

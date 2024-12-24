@@ -4,7 +4,7 @@ use squiid_engine::{
     bucket::{Bucket, BucketTypes, ConstantTypes},
     command_mappings,
     engine::*,
-    protocol::server_response::MessageAction,
+    MessageAction,
 };
 
 #[test]
@@ -754,10 +754,7 @@ fn test_drop() {
     assert_eq!(engine.stack, vec![]);
 
     let result = engine.drop();
-    assert_eq!(
-        result,
-        Ok(squiid_engine::protocol::server_response::MessageAction::SendStack)
-    );
+    assert_eq!(result, Ok(MessageAction::SendStack));
 }
 
 #[test]
@@ -1033,7 +1030,7 @@ fn test_list_commands() {
 
     assert!(matches!(
         engine.list_commands().unwrap(),
-        squiid_engine::protocol::server_response::MessageAction::SendCommands
+        MessageAction::SendCommands
     ));
 }
 

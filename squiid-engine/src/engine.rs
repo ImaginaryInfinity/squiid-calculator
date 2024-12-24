@@ -238,10 +238,7 @@ impl Engine {
 
     /// Add
     pub fn add(&mut self) -> Result<MessageAction, String> {
-        let operands = match self.get_operands_as_dec(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_dec(2)?;
 
         // Put result on stack
         let result = operands[0] + operands[1];
@@ -252,10 +249,7 @@ impl Engine {
     /// Subtract
     pub fn subtract(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_dec(2)?;
 
         // Put result on stack
         let result = operands[0] - operands[1];
@@ -266,10 +260,7 @@ impl Engine {
     /// Multiply
     pub fn multiply(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_dec(2)?;
 
         // manual handling for 2PI precision
         let check_pi = HashSet::from([Decimal::PI, dec!(2.0)]);
@@ -293,10 +284,7 @@ impl Engine {
     /// Divide
     pub fn divide(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_dec(2)?;
 
         if operands[1] == dec!(0.0) {
             return Err("cannot divide by 0".to_string());
@@ -336,10 +324,7 @@ impl Engine {
     /// Power
     pub fn power(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_dec(2)?;
 
         let base = operands[0];
         let exponent = operands[1];
@@ -365,10 +350,7 @@ impl Engine {
     /// Square root
     pub fn sqrt(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_dec(1)?;
 
         // Put result on stack
         let result = match operands[0].sqrt() {
@@ -382,10 +364,7 @@ impl Engine {
     /// Modulo
     pub fn modulo(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_f(2)?;
 
         // Put result on stack
         let result = operands[0] % operands[1];
@@ -396,10 +375,7 @@ impl Engine {
     /// Sine
     pub fn sin(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_raw(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
         let result = match operands[0].sin() {
@@ -413,10 +389,7 @@ impl Engine {
     /// Cosine
     pub fn cos(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_raw(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
         let result = match operands[0].cos() {
@@ -430,10 +403,7 @@ impl Engine {
     /// Tangent
     pub fn tan(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_raw(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_raw(1)?;
         // Put result on stack
         let result = match operands[0].tan() {
             Some(value) => value,
@@ -446,10 +416,7 @@ impl Engine {
     /// Secant
     pub fn sec(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_raw(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
         let result = match operands[0].sec() {
@@ -463,10 +430,7 @@ impl Engine {
     /// Cosecant
     pub fn csc(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_raw(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
         let result = match operands[0].csc() {
@@ -480,10 +444,7 @@ impl Engine {
     /// Cotangent
     pub fn cot(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_raw(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
         let result = match operands[0].cot() {
@@ -497,10 +458,7 @@ impl Engine {
     /// Asin
     pub fn asin(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].asin().into());
@@ -510,10 +468,7 @@ impl Engine {
     /// Acos
     pub fn acos(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].acos().into());
@@ -523,10 +478,7 @@ impl Engine {
     /// Atan
     pub fn atan(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].atan().into());
@@ -536,10 +488,7 @@ impl Engine {
     /// Change sign
     pub fn chs(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let result = operands[0] * -1.0;
@@ -550,10 +499,7 @@ impl Engine {
     /// Logarithm
     pub fn log(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_dec(1)?;
 
         // Put result on stack
         let result = match operands[0].checked_log10() {
@@ -567,10 +513,7 @@ impl Engine {
     /// Logarithm with custom base using the change of base formula
     pub fn blog(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_dec(2)?;
 
         // change of base formula is defined as follows:
         // log_b(a) = (log_d(a))/(log_d(b))
@@ -597,10 +540,7 @@ impl Engine {
     /// Natural logarihm
     pub fn ln(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_dec(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_dec(1)?;
 
         // Put result on stack
         let result = match operands[0].checked_ln() {
@@ -614,10 +554,7 @@ impl Engine {
     /// Absolute value
     pub fn abs(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].abs().into());
@@ -628,10 +565,7 @@ impl Engine {
     pub fn eq(&mut self) -> Result<MessageAction, String> {
         // Get operands
         // TODO: maybe make this work with strings
-        let operands = match self.get_operands_as_f(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_f(2)?;
 
         // Put result on stack
         let result = (operands[0] == operands[1]) as u32;
@@ -642,10 +576,7 @@ impl Engine {
     /// Greater than
     pub fn gt(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_f(2)?;
 
         // Put result on stack
         let result = (operands[0] > operands[1]) as u32;
@@ -656,10 +587,7 @@ impl Engine {
     /// Less than
     pub fn lt(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_f(2)?;
 
         // Put result on stack
         let result = (operands[0] < operands[1]) as u32;
@@ -670,10 +598,7 @@ impl Engine {
     /// Greater than or equal to
     pub fn geq(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_f(2)?;
 
         // Put result on stack
         let result = (operands[0] >= operands[1]) as u32;
@@ -684,10 +609,7 @@ impl Engine {
     /// Less than or equal to
     pub fn leq(&mut self) -> Result<MessageAction, String> {
         // Get operands
-        let operands = match self.get_operands_as_f(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_f(2)?;
 
         // Put result on stack
         let result = (operands[0] <= operands[1]) as u32;
@@ -698,10 +620,7 @@ impl Engine {
     /// Round to nearest int
     pub fn round(&mut self) -> Result<MessageAction, String> {
         // Get operand
-        let operands = match self.get_operands_as_f(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].round().into());
@@ -711,10 +630,7 @@ impl Engine {
     /// Calculate 1/x
     pub fn invert(&mut self) -> Result<MessageAction, String> {
         // Get operand
-        let operands = match self.get_operands_as_f(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let _ = self.add_item_to_stack((1_f64 / operands[0]).into());
@@ -731,10 +647,7 @@ impl Engine {
     /// Swap last two items on stack
     pub fn swap(&mut self) -> Result<MessageAction, String> {
         // Get last two values from stack
-        let operands = match self.get_operands_raw(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_raw(2)?;
 
         // Insert in reverse order
         let _ = self.add_item_to_stack(operands[1].clone());
@@ -745,10 +658,7 @@ impl Engine {
     /// Duplicate the last item of the stack
     pub fn dup(&mut self) -> Result<MessageAction, String> {
         // Get the last value from the stack
-        let operands = match self.get_operands_raw(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_raw(1)?;
 
         // Insert twice
         let _ = self.add_item_to_stack(operands[0].clone());
@@ -781,10 +691,7 @@ impl Engine {
     /// Store value in variable
     pub fn store(&mut self) -> Result<MessageAction, String> {
         // Get 2 operands from stack
-        let operands = match self.get_operands_raw(2) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_raw(2)?;
 
         // Only store if matches the identifier pattern
         let varname = operands[1].to_string();
@@ -801,10 +708,7 @@ impl Engine {
     /// Delete variable
     pub fn purge(&mut self) -> Result<MessageAction, String> {
         // Get operand from stack
-        let operands = match self.get_operands_raw(1) {
-            Ok(content) => content,
-            Err(error) => return Err(error),
-        };
+        let operands = self.get_operands_raw(1)?;
 
         let varname = operands[0].to_string();
         if ID_REGEX.is_match(&varname) {

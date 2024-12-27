@@ -9,18 +9,18 @@ use serde::{de::Visitor, Deserialize, Serialize};
 /// Types of constants
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ConstantTypes {
-    PI,
-    HalfPI,
-    ThirdPI,
-    QuarterPI,
-    SixthPI,
-    EighthPI,
-    TwoPI,
+    Pi,
+    HalfPi,
+    ThirdPi,
+    QuarterPi,
+    SixthPi,
+    EighthPi,
+    TwoPi,
     E,
-    TAU,
+    Tau,
     C,
     G,
-    PHI,
+    Phi,
 }
 
 // Define the exposed constants
@@ -31,18 +31,18 @@ pub trait ExposedConstant {
 impl ExposedConstant for ConstantTypes {
     fn name(&self) -> &'static str {
         match self {
-            ConstantTypes::PI => "#pi",
+            ConstantTypes::Pi => "#pi",
             ConstantTypes::E => "#e",
-            ConstantTypes::TAU => "#tau",
+            ConstantTypes::Tau => "#tau",
             ConstantTypes::C => "#c",
             ConstantTypes::G => "#G",
-            ConstantTypes::PHI => "#phi",
-            ConstantTypes::HalfPI => "#halfpi",
-            ConstantTypes::ThirdPI => "#thirdpi",
-            ConstantTypes::QuarterPI => "#quarterpi",
-            ConstantTypes::SixthPI => "#sixthpi",
-            ConstantTypes::EighthPI => "#eighthpi",
-            ConstantTypes::TwoPI => "#twopi",
+            ConstantTypes::Phi => "#phi",
+            ConstantTypes::HalfPi => "#halfpi",
+            ConstantTypes::ThirdPi => "#thirdpi",
+            ConstantTypes::QuarterPi => "#quarterpi",
+            ConstantTypes::SixthPi => "#sixthpi",
+            ConstantTypes::EighthPi => "#eighthpi",
+            ConstantTypes::TwoPi => "#twopi",
         }
     }
 }
@@ -53,12 +53,12 @@ pub fn build_exposed_constants() -> HashMap<&'static str, ConstantTypes> {
     let mut exposed_constants = HashMap::new();
 
     // Add each constant to the hashmap
-    exposed_constants.insert(ConstantTypes::PI.name(), ConstantTypes::PI);
+    exposed_constants.insert(ConstantTypes::Pi.name(), ConstantTypes::Pi);
     exposed_constants.insert(ConstantTypes::E.name(), ConstantTypes::E);
-    exposed_constants.insert(ConstantTypes::TAU.name(), ConstantTypes::TAU);
+    exposed_constants.insert(ConstantTypes::Tau.name(), ConstantTypes::Tau);
     exposed_constants.insert(ConstantTypes::C.name(), ConstantTypes::C);
     exposed_constants.insert(ConstantTypes::G.name(), ConstantTypes::G);
-    exposed_constants.insert(ConstantTypes::PHI.name(), ConstantTypes::PHI);
+    exposed_constants.insert(ConstantTypes::Phi.name(), ConstantTypes::Phi);
 
     exposed_constants
 }
@@ -94,18 +94,18 @@ impl Bucket {
     /// Create a Bucket from a constant
     pub fn from_constant(constant_type: ConstantTypes) -> Self {
         let value = match constant_type {
-            ConstantTypes::PI => consts::PI,
-            ConstantTypes::HalfPI => consts::FRAC_PI_2,
-            ConstantTypes::ThirdPI => consts::FRAC_PI_3,
-            ConstantTypes::QuarterPI => consts::FRAC_PI_4,
-            ConstantTypes::SixthPI => consts::FRAC_PI_6,
-            ConstantTypes::EighthPI => consts::FRAC_PI_8,
-            ConstantTypes::TwoPI => consts::PI * 2.0,
+            ConstantTypes::Pi => consts::PI,
+            ConstantTypes::HalfPi => consts::FRAC_PI_2,
+            ConstantTypes::ThirdPi => consts::FRAC_PI_3,
+            ConstantTypes::QuarterPi => consts::FRAC_PI_4,
+            ConstantTypes::SixthPi => consts::FRAC_PI_6,
+            ConstantTypes::EighthPi => consts::FRAC_PI_8,
+            ConstantTypes::TwoPi => consts::PI * 2.0,
             ConstantTypes::E => consts::E,
-            ConstantTypes::TAU => consts::TAU,
+            ConstantTypes::Tau => consts::TAU,
             ConstantTypes::C => 299792458_f64,
             ConstantTypes::G => 6.67430 * 10_f64.powf(-11_f64),
-            ConstantTypes::PHI => 1.618_033_988_749_895_f64,
+            ConstantTypes::Phi => 1.618_033_988_749_895_f64,
         }
         .to_string();
 
@@ -120,19 +120,19 @@ impl Bucket {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
                 ConstantTypes::E
-                | ConstantTypes::TAU
+                | ConstantTypes::Tau
                 | ConstantTypes::C
                 | ConstantTypes::G
-                | ConstantTypes::PHI => Some(Self::from(
+                | ConstantTypes::Phi => Some(Self::from(
                     self.value.clone()?.parse::<f64>().unwrap().sin(),
                 )),
-                ConstantTypes::PI => Some(Self::from(0)),
-                ConstantTypes::TwoPI => Some(Self::from(0)),
-                ConstantTypes::HalfPI => Some(Self::from(1)),
-                ConstantTypes::QuarterPI => Some(Self::from(consts::FRAC_1_SQRT_2)),
-                ConstantTypes::EighthPI => Some(Self::from(consts::FRAC_PI_8.sin())),
-                ConstantTypes::SixthPI => Some(Self::from(0.5)),
-                ConstantTypes::ThirdPI => Some(Self::from(consts::FRAC_PI_3.sin())),
+                ConstantTypes::Pi => Some(Self::from(0)),
+                ConstantTypes::TwoPi => Some(Self::from(0)),
+                ConstantTypes::HalfPi => Some(Self::from(1)),
+                ConstantTypes::QuarterPi => Some(Self::from(consts::FRAC_1_SQRT_2)),
+                ConstantTypes::EighthPi => Some(Self::from(consts::FRAC_PI_8.sin())),
+                ConstantTypes::SixthPi => Some(Self::from(0.5)),
+                ConstantTypes::ThirdPi => Some(Self::from(consts::FRAC_PI_3.sin())),
             },
             BucketTypes::Float => Some(Self::from(
                 Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?.checked_sin()?,
@@ -146,19 +146,19 @@ impl Bucket {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
                 ConstantTypes::E
-                | ConstantTypes::TAU
+                | ConstantTypes::Tau
                 | ConstantTypes::C
                 | ConstantTypes::G
-                | ConstantTypes::PHI => Some(Self::from(
+                | ConstantTypes::Phi => Some(Self::from(
                     self.value.clone()?.parse::<f64>().unwrap().cos(),
                 )),
-                ConstantTypes::PI => Some(Self::from(-1)),
-                ConstantTypes::TwoPI => Some(Self::from(1)),
-                ConstantTypes::HalfPI => Some(Self::from(0)),
-                ConstantTypes::QuarterPI => Some(Self::from(consts::FRAC_1_SQRT_2)),
-                ConstantTypes::EighthPI => Some(Self::from(consts::FRAC_PI_8.cos())),
-                ConstantTypes::SixthPI => Some(Self::from(consts::FRAC_PI_6.cos())),
-                ConstantTypes::ThirdPI => Some(Self::from(0.5)),
+                ConstantTypes::Pi => Some(Self::from(-1)),
+                ConstantTypes::TwoPi => Some(Self::from(1)),
+                ConstantTypes::HalfPi => Some(Self::from(0)),
+                ConstantTypes::QuarterPi => Some(Self::from(consts::FRAC_1_SQRT_2)),
+                ConstantTypes::EighthPi => Some(Self::from(consts::FRAC_PI_8.cos())),
+                ConstantTypes::SixthPi => Some(Self::from(consts::FRAC_PI_6.cos())),
+                ConstantTypes::ThirdPi => Some(Self::from(0.5)),
             },
             BucketTypes::Float => Some(Self::from(
                 Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?.checked_cos()?,
@@ -172,19 +172,19 @@ impl Bucket {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
                 ConstantTypes::E
-                | ConstantTypes::TAU
+                | ConstantTypes::Tau
                 | ConstantTypes::C
                 | ConstantTypes::G
-                | ConstantTypes::PHI => Some(Self::from(
+                | ConstantTypes::Phi => Some(Self::from(
                     self.value.clone()?.parse::<f64>().unwrap().tan(),
                 )),
-                ConstantTypes::PI => Some(Self::from(0)),
-                ConstantTypes::TwoPI => Some(Self::from(0)),
-                ConstantTypes::HalfPI => Some(Self::new_undefined()),
-                ConstantTypes::QuarterPI => Some(Self::from(1)),
-                ConstantTypes::EighthPI => Some(Self::from(consts::FRAC_PI_8.tan())),
-                ConstantTypes::SixthPI => Some(Self::from(consts::FRAC_PI_6.tan())),
-                ConstantTypes::ThirdPI => Some(Self::from(consts::FRAC_PI_3.tan())),
+                ConstantTypes::Pi => Some(Self::from(0)),
+                ConstantTypes::TwoPi => Some(Self::from(0)),
+                ConstantTypes::HalfPi => Some(Self::new_undefined()),
+                ConstantTypes::QuarterPi => Some(Self::from(1)),
+                ConstantTypes::EighthPi => Some(Self::from(consts::FRAC_PI_8.tan())),
+                ConstantTypes::SixthPi => Some(Self::from(consts::FRAC_PI_6.tan())),
+                ConstantTypes::ThirdPi => Some(Self::from(consts::FRAC_PI_3.tan())),
             },
             BucketTypes::Float => Some(Self::from(
                 Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?.checked_tan()?,
@@ -200,22 +200,22 @@ impl Bucket {
                 // Compute:
                 // 1 / sin(value)
                 ConstantTypes::E
-                | ConstantTypes::TAU
+                | ConstantTypes::Tau
                 | ConstantTypes::C
                 | ConstantTypes::G
-                | ConstantTypes::PHI => Some(Self::from(
+                | ConstantTypes::Phi => Some(Self::from(
                     dec!(1.0)
                         / Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?
                             .checked_sin()?,
                 )),
-                ConstantTypes::PI | ConstantTypes::TwoPI => Some(Self::new_undefined()),
-                ConstantTypes::HalfPI => Some(Self::from(1)),
-                ConstantTypes::QuarterPI => Some(Self::from(consts::SQRT_2)),
-                ConstantTypes::EighthPI => Some(Self::from(
+                ConstantTypes::Pi | ConstantTypes::TwoPi => Some(Self::new_undefined()),
+                ConstantTypes::HalfPi => Some(Self::from(1)),
+                ConstantTypes::QuarterPi => Some(Self::from(consts::SQRT_2)),
+                ConstantTypes::EighthPi => Some(Self::from(
                     dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_8.sin())?,
                 )),
-                ConstantTypes::SixthPI => Some(Self::from(2)),
-                ConstantTypes::ThirdPI => Some(Self::from(
+                ConstantTypes::SixthPi => Some(Self::from(2)),
+                ConstantTypes::ThirdPi => Some(Self::from(
                     dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_3.sin())?,
                 )),
             },
@@ -243,25 +243,25 @@ impl Bucket {
                 // Compute:
                 // 1 / cos(value)
                 ConstantTypes::E
-                | ConstantTypes::TAU
+                | ConstantTypes::Tau
                 | ConstantTypes::C
                 | ConstantTypes::G
-                | ConstantTypes::PHI => Some(Self::from(
+                | ConstantTypes::Phi => Some(Self::from(
                     dec!(1.0)
                         / Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?
                             .checked_cos()?,
                 )),
-                ConstantTypes::PI => Some(Self::from(-1)),
-                ConstantTypes::TwoPI => Some(Self::from(1)),
-                ConstantTypes::HalfPI => Some(Self::new_undefined()),
-                ConstantTypes::QuarterPI => Some(Self::from(consts::SQRT_2)),
-                ConstantTypes::EighthPI => Some(Self::from(
+                ConstantTypes::Pi => Some(Self::from(-1)),
+                ConstantTypes::TwoPi => Some(Self::from(1)),
+                ConstantTypes::HalfPi => Some(Self::new_undefined()),
+                ConstantTypes::QuarterPi => Some(Self::from(consts::SQRT_2)),
+                ConstantTypes::EighthPi => Some(Self::from(
                     dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_8.cos())?,
                 )),
-                ConstantTypes::SixthPI => Some(Self::from(
+                ConstantTypes::SixthPi => Some(Self::from(
                     dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_6.cos())?,
                 )),
-                ConstantTypes::ThirdPI => Some(Self::from(2)),
+                ConstantTypes::ThirdPi => Some(Self::from(2)),
             },
             BucketTypes::Float => match &self.value {
                 Some(value) => {
@@ -288,24 +288,24 @@ impl Bucket {
                 // Compute:
                 // 1 / tan(value)
                 ConstantTypes::E
-                | ConstantTypes::TAU
+                | ConstantTypes::Tau
                 | ConstantTypes::C
                 | ConstantTypes::G
-                | ConstantTypes::PHI => Some(Self::from(
+                | ConstantTypes::Phi => Some(Self::from(
                     dec!(1.0)
                         / Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?
                             .checked_tan()?,
                 )),
-                ConstantTypes::PI | ConstantTypes::TwoPI => Some(Self::new_undefined()),
-                ConstantTypes::HalfPI => Some(Self::from(0)),
-                ConstantTypes::QuarterPI => Some(Self::from(1)),
-                ConstantTypes::EighthPI => Some(Self::from(
+                ConstantTypes::Pi | ConstantTypes::TwoPi => Some(Self::new_undefined()),
+                ConstantTypes::HalfPi => Some(Self::from(0)),
+                ConstantTypes::QuarterPi => Some(Self::from(1)),
+                ConstantTypes::EighthPi => Some(Self::from(
                     dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_8.tan())?,
                 )),
-                ConstantTypes::SixthPI => Some(Self::from(
+                ConstantTypes::SixthPi => Some(Self::from(
                     dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_6.tan())?,
                 )),
-                ConstantTypes::ThirdPI => Some(Self::from(
+                ConstantTypes::ThirdPi => Some(Self::from(
                     dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_3.tan())?,
                 )),
             },

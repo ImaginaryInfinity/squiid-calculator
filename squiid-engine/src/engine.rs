@@ -152,19 +152,19 @@ impl Engine {
             for _ in 0..number {
                 let operand = self.stack.pop().unwrap();
                 operands.push(match operand.bucket_type {
-                    BucketTypes::Constant(ConstantTypes::PI) => Decimal::PI,
+                    BucketTypes::Constant(ConstantTypes::Pi) => Decimal::PI,
                     BucketTypes::Constant(ConstantTypes::E) => Decimal::E,
-                    BucketTypes::Constant(ConstantTypes::HalfPI) => Decimal::HALF_PI,
-                    BucketTypes::Constant(ConstantTypes::QuarterPI) => Decimal::QUARTER_PI,
-                    BucketTypes::Constant(ConstantTypes::TwoPI) => Decimal::TWO_PI,
+                    BucketTypes::Constant(ConstantTypes::HalfPi) => Decimal::HALF_PI,
+                    BucketTypes::Constant(ConstantTypes::QuarterPi) => Decimal::QUARTER_PI,
+                    BucketTypes::Constant(ConstantTypes::TwoPi) => Decimal::TWO_PI,
                     BucketTypes::Float
-                    | BucketTypes::Constant(ConstantTypes::TAU)
+                    | BucketTypes::Constant(ConstantTypes::Tau)
                     | BucketTypes::Constant(ConstantTypes::C)
                     | BucketTypes::Constant(ConstantTypes::G)
-                    | BucketTypes::Constant(ConstantTypes::ThirdPI)
-                    | BucketTypes::Constant(ConstantTypes::SixthPI)
-                    | BucketTypes::Constant(ConstantTypes::EighthPI)
-                    | BucketTypes::Constant(ConstantTypes::PHI) => {
+                    | BucketTypes::Constant(ConstantTypes::ThirdPi)
+                    | BucketTypes::Constant(ConstantTypes::SixthPi)
+                    | BucketTypes::Constant(ConstantTypes::EighthPi)
+                    | BucketTypes::Constant(ConstantTypes::Phi) => {
                         match Decimal::from_str_exact(&operand.value.unwrap()) {
                             Ok(value) => value,
                             Err(e) => return Err(e.to_string()),
@@ -271,7 +271,7 @@ impl Engine {
 
         let result = if non_matching_operands.is_empty() {
             // the only things on the mulitplication stack are 2 and pi, replace with the constant
-            Bucket::from_constant(ConstantTypes::TwoPI)
+            Bucket::from_constant(ConstantTypes::TwoPi)
         } else {
             // not 2*pi, perform normal mulitplication
             Bucket::from(operands[0] * operands[1])
@@ -294,19 +294,19 @@ impl Engine {
         let result = if operands[0] == Decimal::PI {
             if operands[1] == dec!(2.0) {
                 // pi/2
-                Bucket::from_constant(ConstantTypes::HalfPI)
+                Bucket::from_constant(ConstantTypes::HalfPi)
             } else if operands[1] == dec!(4.0) {
                 // pi/4
-                Bucket::from_constant(ConstantTypes::QuarterPI)
+                Bucket::from_constant(ConstantTypes::QuarterPi)
             } else if operands[1] == dec!(3.0) {
                 // pi/3
-                Bucket::from_constant(ConstantTypes::ThirdPI)
+                Bucket::from_constant(ConstantTypes::ThirdPi)
             } else if operands[1] == dec!(6.0) {
                 // pi/6
-                Bucket::from_constant(ConstantTypes::SixthPI)
+                Bucket::from_constant(ConstantTypes::SixthPi)
             } else if operands[1] == dec!(8.0) {
                 // pi/8
-                Bucket::from_constant(ConstantTypes::EighthPI)
+                Bucket::from_constant(ConstantTypes::EighthPi)
             } else {
                 // denominator is not 2 or 4, eval normally
                 Bucket::from(operands[0] / operands[1])

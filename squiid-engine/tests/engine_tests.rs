@@ -38,12 +38,12 @@ fn test_add_constants_to_stack() {
     assert_eq!(
         engine.stack,
         vec![
-            Bucket::from_constant(ConstantTypes::PI),
+            Bucket::from_constant(ConstantTypes::Pi),
             Bucket::from_constant(ConstantTypes::E),
-            Bucket::from_constant(ConstantTypes::TAU),
+            Bucket::from_constant(ConstantTypes::Tau),
             Bucket::from_constant(ConstantTypes::C),
             Bucket::from_constant(ConstantTypes::G),
-            Bucket::from_constant(ConstantTypes::PHI),
+            Bucket::from_constant(ConstantTypes::Phi),
         ]
     );
 }

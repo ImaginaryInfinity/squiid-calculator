@@ -44,18 +44,24 @@ extern "C" fn execute_multiple_rpn_exposed(
 
 #[no_mangle]
 extern "C" fn get_stack(outlen: *mut c_int) -> *mut *mut c_char {
-    // TODO: this is very rough for testing, make this better
-    let mut stack: Vec<_> = crate::get_stack()
+    // Create a vector of CStrings from the stack
+    // TODO: transition to returning bucket objects
+    let mut stack_ptr: Vec<_> = crate::get_stack()
         .iter()
         .map(|i| CString::new(i.to_string()).unwrap().into_raw())
         .collect();
-    stack.shrink_to_fit();
 
-    let len = stack.len();
-    let vec_ptr = stack.as_mut_ptr();
-    std::mem::forget(stack);
+    stack_ptr.shrink_to_fit();
+    // assert that shrink_to_fit worked
+    assert!(stack_ptr.len() == stack_ptr.capacity());
 
+    // write the vec length to the pointer that was passed in
+    let len = stack_ptr.len();
     unsafe { std::ptr::write(outlen, len as c_int) };
+
+    // get the pointer to the vec that we are returning
+    let vec_ptr = stack_ptr.as_mut_ptr();
+    std::mem::forget(stack_ptr);
 
     vec_ptr
 }

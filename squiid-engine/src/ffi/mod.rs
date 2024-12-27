@@ -1,15 +1,11 @@
 use std::ffi::{c_char, c_int, CStr, CString};
 
+use data_structs::MessageActionSetFFI;
+
 use crate::execute_multiple_rpn;
 
-#[repr(C)]
-pub struct MessageActionSetFFI {
-    get_stack: bool,
-    get_commands: bool,
-    get_prev_answer: bool,
-    quit: bool,
-    error: *mut c_char,
-}
+mod cleanup;
+mod data_structs;
 
 /// FFI-Exposed function to submit multiple RPN commands to the engine.
 ///
@@ -27,19 +23,24 @@ extern "C" fn execute_multiple_rpn_exposed(
     rpn_data: *const *const c_char,
     rpn_data_length: usize,
 ) -> MessageActionSetFFI {
+    // construct a new vec to hold the data send from the frontend
     let mut rpn_data_vec = Vec::new();
+
+    // iterate over the submissions
     for i in 0..rpn_data_length {
         unsafe {
+            // create new strings from the provided pointers and push them to the vec
             let c_str = CStr::from_ptr(*rpn_data.add(i));
             rpn_data_vec.push(c_str.to_str().unwrap());
         }
     }
 
+    // submit all of the commands to the engine
     let result = execute_multiple_rpn(rpn_data_vec);
 
+    // return a struct telling the frontend what to do next
     MessageActionSetFFI {
         get_stack: result.get_stack,
-        get_commands: result.get_commands,
         get_prev_answer: result.get_prev_answer,
         quit: result.quit,
         error: if let Some(error_str) = result.get_error() {
@@ -47,16 +48,6 @@ extern "C" fn execute_multiple_rpn_exposed(
         } else {
             std::ptr::null_mut()
         },
-    }
-}
-
-#[no_mangle]
-extern "C" fn free_message_action_set(ptr: MessageActionSetFFI) {
-    unsafe {
-        if !ptr.error.is_null() {
-            let _ = CString::from_raw(ptr.error);
-            // the string will be automatically dropped after this
-        }
     }
 }
 

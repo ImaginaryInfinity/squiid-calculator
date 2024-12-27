@@ -133,18 +133,6 @@ impl MessageActionSet {
         }
     }
 
-    pub fn should_get_stack(&self) -> bool {
-        self.get_stack
-    }
-    pub fn should_get_commands(&self) -> bool {
-        self.get_commands
-    }
-    pub fn should_get_prev_answer(&self) -> bool {
-        self.get_prev_answer
-    }
-    pub fn should_quit(&self) -> bool {
-        self.quit
-    }
     pub fn get_error(&self) -> Option<String> {
         self.error.clone()
     }

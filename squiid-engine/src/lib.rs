@@ -159,7 +159,7 @@ impl MessageActionSet {
 /// # Errors
 ///
 /// This function errors if locking the engine mutex fails
-pub fn execute_rpn_data(rpn_data: Vec<&str>) -> MessageActionSet {
+pub fn execute_multiple_rpn(rpn_data: Vec<&str>) -> MessageActionSet {
     let mut engine = ENGINE.lock().unwrap();
 
     let mut message_actions = MessageActionSet::new();
@@ -182,7 +182,7 @@ pub fn execute_rpn_data(rpn_data: Vec<&str>) -> MessageActionSet {
 #[macro_export]
 macro_rules! execute_single_rpn {
     ($i:expr) => {
-        execute_rpn_data(vec![$i])
+        execute_multiple_rpn(vec![$i])
     };
 }
 

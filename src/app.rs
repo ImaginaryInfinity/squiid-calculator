@@ -1,6 +1,6 @@
 use std::{collections::HashMap, io, sync::LazyLock};
 
-use squiid_engine::{execute_rpn_data, execute_single_rpn, MessageActionSet};
+use squiid_engine::{execute_multiple_rpn, execute_single_rpn, MessageActionSet};
 use unicode_width::UnicodeWidthStr;
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
@@ -284,7 +284,7 @@ fn algebraic_eval(app: &mut App) {
         })
         .collect::<Vec<&str>>();
 
-    let response = execute_rpn_data(transformed_expression);
+    let response = execute_multiple_rpn(transformed_expression);
     update_stack_or_error(response, app);
 
     // Empty placeholder result in case there is nothing on the stack

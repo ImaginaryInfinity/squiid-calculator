@@ -55,7 +55,6 @@ extern "C" fn free_message_action_set(ptr: MessageActionSetFFI) {
     unsafe {
         if !ptr.error.is_null() {
             let _ = CString::from_raw(ptr.error);
-            println!("really dropped");
             // the string will be automatically dropped after this
         }
     }

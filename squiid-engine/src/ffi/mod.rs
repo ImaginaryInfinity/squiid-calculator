@@ -39,16 +39,7 @@ extern "C" fn execute_multiple_rpn_exposed(
     let result = execute_multiple_rpn(rpn_data_vec);
 
     // return a struct telling the frontend what to do next
-    MessageActionSetFFI {
-        get_stack: result.get_stack,
-        get_prev_answer: result.get_prev_answer,
-        quit: result.quit,
-        error: if let Some(error_str) = result.get_error() {
-            CString::new(error_str).unwrap().into_raw()
-        } else {
-            std::ptr::null_mut()
-        },
-    }
+    result.into()
 }
 
 #[no_mangle]

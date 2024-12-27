@@ -110,6 +110,7 @@ impl MessageActionSet {
     ///
     /// * `action` - The action to merge into the set
     pub fn merge(&mut self, action: Result<MessageAction, String>) {
+        println!("{:?}", action);
         match action {
             Ok(v) => match v {
                 MessageAction::SendStack => self.get_stack = true,

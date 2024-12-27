@@ -777,11 +777,6 @@ impl Engine {
         }
     }
 
-    /// Send a list of commands to the client
-    pub fn list_commands(&mut self) -> Result<MessageAction, String> {
-        Ok(MessageAction::SendCommands)
-    }
-
     // send quit code
     pub fn quit(&mut self) -> Result<MessageAction, String> {
         Ok(MessageAction::Quit)

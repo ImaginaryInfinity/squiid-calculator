@@ -25,7 +25,6 @@ static COMMAND_MAPPINGS: LazyLock<CommandsMap> =
 #[derive(Debug, PartialEq)]
 pub enum MessageAction {
     SendStack,
-    SendCommands,
     SendPrevAnswer,
     Quit,
 }
@@ -47,16 +46,8 @@ pub fn handle_data(engine: &mut Engine, data: &str) -> Result<MessageAction, Str
         _ = engine.undo_variable_history.pop_front();
     }
 
-    // Don't add to history if command is refresh, commands, or update_previous_answer as it does not affect the stack
-    if ![
-        "refresh",
-        "commands",
-        "update_previous_answer",
-        "undo",
-        "redo",
-    ]
-    .contains(&data)
-    {
+    // Don't add to history if command is refresh, or update_previous_answer as it does not affect the stack
+    if !["refresh", "update_previous_answer", "undo", "redo"].contains(&data) {
         // reset everything in front of the undo history pointer
         engine.undo_history.drain(
             engine
@@ -98,9 +89,6 @@ pub fn handle_data(engine: &mut Engine, data: &str) -> Result<MessageAction, Str
 pub struct MessageActionSet {
     /// This is set if the `get_stack` method should be called to retrieve the new stack
     get_stack: bool,
-    /// This is set if the `get_commands` method should be called to retrieve the valid engine
-    /// commands
-    get_commands: bool,
     /// This is set if the `get_prev_answer` method should be called to retrieve the new previous
     /// answer
     get_prev_answer: bool,
@@ -125,7 +113,6 @@ impl MessageActionSet {
         match action {
             Ok(v) => match v {
                 MessageAction::SendStack => self.get_stack = true,
-                MessageAction::SendCommands => self.get_commands = true,
                 MessageAction::SendPrevAnswer => self.get_prev_answer = true,
                 MessageAction::Quit => self.quit = true,
             },

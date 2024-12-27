@@ -1025,16 +1025,6 @@ fn test_redo() {
 }
 
 #[test]
-fn test_list_commands() {
-    let mut engine = Engine::new();
-
-    assert!(matches!(
-        engine.list_commands().unwrap(),
-        MessageAction::SendCommands
-    ));
-}
-
-#[test]
 fn test_update_previous_answer() {
     let mut engine = Engine::new();
 
@@ -1053,15 +1043,6 @@ fn test_update_previous_answer() {
 
     assert_eq!(*engine.stack.last().unwrap(), Bucket::from(5));
     assert_eq!(engine.previous_answer, Bucket::from(5));
-}
-
-#[test]
-fn test_commands() {
-    let mut engine = Engine::new();
-
-    let result = squiid_engine::handle_data(&mut engine, "commands");
-
-    assert_eq!(result.unwrap(), MessageAction::SendCommands);
 }
 
 #[test]

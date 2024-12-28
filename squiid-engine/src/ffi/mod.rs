@@ -43,7 +43,7 @@ extern "C" fn execute_multiple_rpn_exposed(
 }
 
 #[no_mangle]
-extern "C" fn get_stack(outlen: *mut c_int) -> *mut *mut BucketFFI {
+extern "C" fn get_stack_exposed(outlen: *mut c_int) -> *mut *mut BucketFFI {
     // Create a vector of CStrings from the stack
     let mut stack_ptr: Vec<*mut BucketFFI> = crate::get_stack()
         .iter()

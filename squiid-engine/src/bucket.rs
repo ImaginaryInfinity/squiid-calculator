@@ -100,7 +100,7 @@ impl Bucket {
             ConstantTypes::QuarterPi => consts::FRAC_PI_4,
             ConstantTypes::SixthPi => consts::FRAC_PI_6,
             ConstantTypes::EighthPi => consts::FRAC_PI_8,
-            ConstantTypes::TwoPi => consts::PI * 2.0,
+            ConstantTypes::TwoPi => consts::TAU,
             ConstantTypes::E => consts::E,
             ConstantTypes::Tau => consts::TAU,
             ConstantTypes::C => 299792458_f64,

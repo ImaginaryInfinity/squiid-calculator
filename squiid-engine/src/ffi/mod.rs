@@ -60,7 +60,6 @@ extern "C" fn get_stack(outlen: *mut c_int) -> *mut *mut BucketFFI {
 
     // get the pointer to the vec that we are returning
     let vec_ptr = stack_ptr.as_mut_ptr();
-    println!("{:?}", stack_ptr);
     std::mem::forget(stack_ptr);
 
     vec_ptr

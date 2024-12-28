@@ -213,10 +213,6 @@ pub fn update_stack_or_error(msg: MessageActionSet, app: &mut App) {
             .collect();
     }
 
-    if msg.should_get_commands() {
-        todo!();
-    }
-
     if msg.should_quit() {
         app.quit_app = true;
     }

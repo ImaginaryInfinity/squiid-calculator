@@ -20,6 +20,7 @@ lto = true
 name = "squiid_parser"
 crate-type = ["lib", "cdylib"]
 path = "src/lib.rs"
+required-features = ["ffi"]
 
 # example binary stuff
 [[bin]]
@@ -37,3 +38,4 @@ logos = "0.15.0"
 default = ["logging"]
 bin = ["dep:rustyline", "dep:env_logger", "logging"]
 logging = ["dep:log"]
+ffi = []

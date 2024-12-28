@@ -1,7 +1,9 @@
-mod ffi;
 pub mod lexer;
 pub mod parser;
 pub mod tokens;
+
+#[cfg(feature = "ffi")]
+mod ffi;
 
 use crate::lexer::lex;
 use parser::{parse_implicit_multiplication, parse_subtract_sign, shunting_yard_parser};

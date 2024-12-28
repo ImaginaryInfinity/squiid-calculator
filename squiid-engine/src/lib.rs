@@ -6,6 +6,7 @@ pub mod utils;
 #[cfg(feature = "crash-reporting")]
 pub mod crash_reporter;
 
+#[cfg(feature = "ffi")]
 pub mod ffi;
 
 use std::{

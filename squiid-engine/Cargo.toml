@@ -28,8 +28,10 @@ lto = true
 [features]
 default = ["crash-reporting"]
 crash-reporting = ["dep:backtrace", "dep:chrono", "dep:colored"]
+ffi = []
 
 [lib]
 name = "squiid_engine"
 crate-type = ["lib", "cdylib"]
 path = "src/lib.rs"
+required-features = ["ffi"]

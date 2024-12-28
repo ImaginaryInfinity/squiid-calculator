@@ -53,17 +53,17 @@ clean: ## Clean the build environment
 		squiid*_source.* \
 		snap
 
-require:
+require-cargo:
 	@echo "Checking the programs required for the build are installed..."
 	@$(CARGO) --version >/dev/null 2>&1 || (echo "ERROR: cargo is required."; exit 1)
 
 test: ## Test each component of the project
 	$(CARGO) test -p squiid-parser -p squiid-engine -p squiid
 
-build: require ## Build the release version of the program for the system platform
+build: require-cargo ## Build the release version of the program for the system platform
 	$(CARGO) build --release
 
-build-musl: require ## Build the Linux MUSL version
+build-musl: require-cargo ## Build the Linux MUSL version
 	$(CARGO) build --release --target=x86_64-unknown-linux-musl
 
 install: build ## Install Squiid to the system
@@ -76,7 +76,7 @@ uninstall: ## Uninstall the version of Squiid installed with the Makefile
 	$(ELEVATE) rm $(DESTDIR)$(APPLICATIONSDIR)/$(DESKTOP_FILE_NAME)
 	$(ELEVATE) rm $(DESTDIR)$(ICONSDIR)/$(ICON_FILE_DEST_NAME)
 
-flatpak: require clean ## Build the flatpak in package-build/
+flatpak: require-cargo clean ## Build the flatpak in package-build/
 	@python3 --version >/dev/null 2>&1 || (echo "ERROR: python3 is required."; exit 1)
 	@flatpak-builder --version >/dev/null 2>&1 || (echo "ERROR: flatpak-builder is required."; exit 1)
 	@curl --version >/dev/null 2>&1 || (echo "ERROR: curl is required."; exit 1)
@@ -102,7 +102,7 @@ flatpak: require clean ## Build the flatpak in package-build/
 
 	# rm -f net.imaginaryinfinity.Squiid* generated-sources.json flatpak-cargo-generator.py
 
-snap: require clean ## Build the snap
+snap: clean ## Build the snap
 	@snapcraft --version >/dev/null 2>&1 || (echo "ERROR: snapcraft is required."; exit 1)
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 
@@ -118,7 +118,7 @@ snap: require clean ## Build the snap
 
 	rm -rf snap
 
-appimage: require clean build-musl ## Build the AppImage
+appimage: require-cargo clean build-musl ## Build the AppImage
 	# Check for appimagetool
 	@$(APPIMAGETOOL) --version > /dev/null 2>&1 || (echo "ERROR: appimagetool is required"; exit 1)
 	# Check for curl
@@ -157,7 +157,7 @@ appimage: require clean build-musl ## Build the AppImage
 	# Build appimage
 	$(APPIMAGETOOL) package-build/squiid.AppDir package-build/Squiid_Calculator.AppImage
 
-windows-build: require clean ## Cross compile the Windows release
+windows-build: require-cargo clean ## Cross compile the Windows release
 	# cross compile windows version
 	$(CARGO) build --release --target=x86_64-pc-windows-gnu
 
@@ -184,7 +184,7 @@ windows-installer: clean ## Build the Windows installer
 
 # ANDROID
 # TODO: fix android building
-android-require: require
+android-require: require-cargo
 ifndef platform
 	# check if platform= argument is defined
 	@echo "ERROR: platform is not defined. please specify an android ndk version with platform=xx (for example, 33)"
@@ -225,7 +225,7 @@ aur-metadata: clean ## Build the AUR metadata files for deployment
 
 	cd package-build; makepkg --printsrcinfo > .SRCINFO
 
-arch-package: require aur-metadata ## Build an Arch package
+arch-package: require-cargo aur-metadata ## Build an Arch package
 	cd package-build; makepkg -s
 
 homebrew: clean ## Format the homebrew metadata
@@ -243,7 +243,7 @@ homebrew: clean ## Format the homebrew metadata
 	@echo "squiid.rb can be found in the package-build/ directory"
 	@echo "Commit it to your branch of homebrew-core to update"
 
-rpm: require clean ## Create the RPM spec file
+rpm: require-cargo clean ## Create the RPM spec file
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 
 	mkdir -p package-build

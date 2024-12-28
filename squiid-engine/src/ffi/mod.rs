@@ -1,6 +1,6 @@
-use std::ffi::{c_char, c_int, CStr, CString};
+use std::ffi::{c_char, c_int, CStr};
 
-use data_structs::MessageActionSetFFI;
+use data_structs::{BucketFFI, MessageActionSetFFI};
 
 use crate::execute_multiple_rpn;
 
@@ -43,12 +43,11 @@ extern "C" fn execute_multiple_rpn_exposed(
 }
 
 #[no_mangle]
-extern "C" fn get_stack(outlen: *mut c_int) -> *mut *mut c_char {
+extern "C" fn get_stack(outlen: *mut c_int) -> *mut *mut BucketFFI {
     // Create a vector of CStrings from the stack
-    // TODO: transition to returning bucket objects
-    let mut stack_ptr: Vec<_> = crate::get_stack()
+    let mut stack_ptr: Vec<*mut BucketFFI> = crate::get_stack()
         .iter()
-        .map(|i| CString::new(i.to_string()).unwrap().into_raw())
+        .map(|b| Box::into_raw(Box::new(BucketFFI::from(b.clone()))))
         .collect();
 
     stack_ptr.shrink_to_fit();
@@ -61,6 +60,7 @@ extern "C" fn get_stack(outlen: *mut c_int) -> *mut *mut c_char {
 
     // get the pointer to the vec that we are returning
     let vec_ptr = stack_ptr.as_mut_ptr();
+    println!("{:?}", stack_ptr);
     std::mem::forget(stack_ptr);
 
     vec_ptr

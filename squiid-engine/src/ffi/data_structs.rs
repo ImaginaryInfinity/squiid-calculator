@@ -7,6 +7,7 @@ use crate::{
 
 /// Struct containing data about which actions a frontend should take next
 #[repr(C)]
+#[derive(Debug, Clone, Copy)]
 pub struct MessageActionSetFFI {
     /// Whether or not the frontend should fetch the stack
     pub get_stack: bool,
@@ -35,6 +36,7 @@ impl From<MessageActionSet> for MessageActionSetFFI {
 
 /// FFI-Compatible [`Bucket`] struct
 #[repr(C)]
+#[derive(Debug, Clone)]
 pub struct BucketFFI {
     /// Bucket value. Will be null when undefined
     pub value: *mut c_char,
@@ -47,7 +49,8 @@ pub struct BucketFFI {
 impl From<Bucket> for BucketFFI {
     fn from(value: Bucket) -> Self {
         let value_ptr = if let Some(str_val) = value.value {
-            CString::new(str_val).unwrap().into_raw()
+            let str = CString::new(str_val).unwrap();
+            str.into_raw()
         } else {
             std::ptr::null_mut()
         };
@@ -67,6 +70,7 @@ impl From<Bucket> for BucketFFI {
 
 /// FFI-Compatible [`BucketTypes`] enum
 #[repr(C)]
+#[derive(Debug, Clone, Copy)]
 pub enum BucketTypesFFI {
     Float = 1,
     String,
@@ -87,6 +91,7 @@ impl From<BucketTypes> for BucketTypesFFI {
 
 /// FFI-Compatible [`ConstantTypes`] enum
 #[repr(C)]
+#[derive(Debug, Clone, Copy)]
 pub enum ConstantTypesFFI {
     Pi = 1,
     HalfPi,

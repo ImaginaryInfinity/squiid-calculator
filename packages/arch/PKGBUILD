@@ -6,7 +6,7 @@ pkgdesc="Advanced calculator written in Rust, featuring a terminal user interfac
 arch=('any')
 url="https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid"
 license=('GPLv3')
-makedepends=('cargo' 'cmake')
+makedepends=('cargo')
 source=("https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/archive/$pkgver/$pkgname-$pkgver.tar.gz")
 sha512sums=('${SHA512SUM}')
 
@@ -20,13 +20,13 @@ build() {
 	cd "$pkgname-$pkgver"
 	export RUSTUP_TOOLCHAIN=stable
 	export CARGO_TARGET_DIR=target
-	cargo build --frozen --release --all-features
+	cargo build --frozen --release
 }
 
 check() {
 	cd "$pkgname-$pkgver"
 	export RUSTUP_TOOLCHAIN=stable
-	cargo test --frozen --all-features -p squiid -p squiid-engine -p squiid-parser
+	cargo test --frozen -p squiid -p squiid-engine -p squiid-parser
 }
 
 package() {

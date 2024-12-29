@@ -206,8 +206,13 @@ pub fn get_prev_answer() -> Bucket {
 /// # Errors
 ///
 /// This function error if locking the engine mutex fails
-pub fn update_previous_answer() -> Result<EngineSignal, String> {
+pub fn update_previous_answer() -> EngineSignalSet {
     let mut engine = ENGINE.lock().unwrap();
 
-    engine.update_previous_answer()
+    let result = engine.update_previous_answer();
+
+    let mut signals = EngineSignalSet::new();
+    signals.merge(result);
+
+    signals
 }

@@ -92,3 +92,10 @@ extern "C" fn get_commands_exposed(outlen: *mut c_int) -> *mut *mut c_char {
 extern "C" fn get_previous_answer_exposed() -> *mut BucketFFI {
     Box::into_raw(Box::new(BucketFFI::from(crate::get_prev_answer())))
 }
+
+#[no_mangle]
+extern "C" fn update_previous_answer_exposed() -> EngineSignalSetFFI {
+    let result = crate::update_previous_answer();
+
+    EngineSignalSetFFI::from(result)
+}

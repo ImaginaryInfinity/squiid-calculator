@@ -230,7 +230,7 @@ impl Engine {
     pub fn update_previous_answer(&mut self) -> Result<EngineSignal, String> {
         if !self.stack.is_empty() {
             self.previous_answer = self.stack.last().unwrap().clone();
-            Ok(EngineSignal::PrevAnswerUpdated)
+            Ok(EngineSignal::NOP)
         } else {
             Err(String::from("stack is empty"))
         }

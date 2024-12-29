@@ -11,8 +11,6 @@ use crate::{
 pub struct EngineSignalSetFFI {
     /// Whether or not the frontend should fetch the stack
     pub stack_updated: bool,
-    /// Whether or not the frontend should fetch the previous answer
-    pub prev_answer_updated: bool,
     /// Whether or not the frontend should quit
     pub quit: bool,
     /// This is set if an error was encountered, or null if not
@@ -23,7 +21,6 @@ impl From<EngineSignalSet> for EngineSignalSetFFI {
     fn from(value: EngineSignalSet) -> Self {
         EngineSignalSetFFI {
             stack_updated: value.stack_updated,
-            prev_answer_updated: value.prev_answer_updated,
             quit: value.quit,
             error: if let Some(error_str) = value.get_error() {
                 CString::new(error_str).unwrap().into_raw()

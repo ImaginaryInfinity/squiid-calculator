@@ -62,11 +62,6 @@ pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     function_map_entry!(function_map, "undo", undo);
     function_map_entry!(function_map, "redo", redo);
     function_map_entry!(function_map, "quit", quit);
-    function_map_entry!(
-        function_map,
-        "update_previous_answer",
-        update_previous_answer
-    );
 
     // manually insert refresh since it doesn't use an engine method
     function_map.insert(

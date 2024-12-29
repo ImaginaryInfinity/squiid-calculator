@@ -25,9 +25,12 @@ static COMMAND_MAPPINGS: LazyLock<CommandsMap> =
 /// Server response type for internal handling
 #[derive(Debug, PartialEq)]
 pub enum EngineSignal {
+    /// The stack was updated
     StackUpdated,
-    PrevAnswerUpdated,
+    /// A quit was requested
     Quit,
+    /// No operation
+    NOP,
 }
 
 /// This function is an abstraction which allows you to run one RPN operation on an engine.
@@ -47,8 +50,8 @@ pub fn handle_data(engine: &mut Engine, data: &str) -> Result<EngineSignal, Stri
         _ = engine.undo_variable_history.pop_front();
     }
 
-    // Don't add to history if command is refresh, or update_previous_answer as it does not affect the stack
-    if !["refresh", "update_previous_answer", "undo", "redo"].contains(&data) {
+    // Don't add to history if command is refresh, undo, or redo as it does not affect the stack
+    if !["refresh", "undo", "redo"].contains(&data) {
         // reset everything in front of the undo history pointer
         engine.undo_history.drain(
             engine
@@ -90,9 +93,6 @@ pub fn handle_data(engine: &mut Engine, data: &str) -> Result<EngineSignal, Stri
 pub struct EngineSignalSet {
     /// This is set if the `get_stack` method should be called to retrieve the new stack
     stack_updated: bool,
-    /// This is set if the `get_prev_answer` method should be called to retrieve the new previous
-    /// answer
-    prev_answer_updated: bool,
     /// This is set if the frontend should quit
     quit: bool,
     /// This is set if there was an error while putting data into the engine
@@ -114,8 +114,8 @@ impl EngineSignalSet {
         match action {
             Ok(v) => match v {
                 EngineSignal::StackUpdated => self.stack_updated = true,
-                EngineSignal::PrevAnswerUpdated => self.prev_answer_updated = true,
                 EngineSignal::Quit => self.quit = true,
+                EngineSignal::NOP => (),
             },
             Err(e) => self.error = Some(e),
         }
@@ -123,10 +123,6 @@ impl EngineSignalSet {
 
     pub fn stack_updated(&self) -> bool {
         self.stack_updated
-    }
-
-    pub fn prev_answer_updated(&self) -> bool {
-        self.prev_answer_updated
     }
 
     pub fn should_quit(&self) -> bool {
@@ -168,6 +164,7 @@ pub fn execute_multiple_rpn(rpn_data: Vec<&str>) -> EngineSignalSet {
 }
 
 #[macro_export]
+/// Execute a single RPN statement
 macro_rules! execute_single_rpn {
     ($i:expr) => {
         execute_multiple_rpn(vec![$i])
@@ -199,4 +196,18 @@ pub fn get_prev_answer() -> Bucket {
     let engine = ENGINE.lock().unwrap();
 
     engine.previous_answer.clone()
+}
+
+/// Update the previous answer variable in the engine.
+///
+/// This should be called after a full algebraic statement in algebraic mode,
+/// or after each RPN command if in RPN mode.
+///
+/// # Errors
+///
+/// This function error if locking the engine mutex fails
+pub fn update_previous_answer() -> Result<EngineSignal, String> {
+    let mut engine = ENGINE.lock().unwrap();
+
+    engine.update_previous_answer()
 }

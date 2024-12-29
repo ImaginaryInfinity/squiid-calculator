@@ -34,4 +34,3 @@ ffi = []
 name = "squiid_engine"
 crate-type = ["lib", "cdylib"]
 path = "src/lib.rs"
-required-features = ["ffi"]

@@ -20,7 +20,6 @@ lto = true
 name = "squiid_parser"
 crate-type = ["lib", "cdylib"]
 path = "src/lib.rs"
-required-features = ["ffi"]
 
 # example binary stuff
 [[bin]]

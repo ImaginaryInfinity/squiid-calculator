@@ -754,7 +754,7 @@ fn test_drop() {
     assert_eq!(engine.stack, vec![]);
 
     let result = engine.drop();
-    assert_eq!(result, Ok(MessageAction::SendStack));
+    assert_eq!(result, Ok(MessageAction::StackUpdated));
 }
 
 #[test]
@@ -1051,7 +1051,7 @@ fn test_refresh() {
 
     let result = squiid_engine::handle_data(&mut engine, "refresh");
 
-    assert_eq!(result.unwrap(), MessageAction::SendStack);
+    assert_eq!(result.unwrap(), MessageAction::StackUpdated);
 }
 
 #[test]

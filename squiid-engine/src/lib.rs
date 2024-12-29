@@ -25,8 +25,8 @@ static COMMAND_MAPPINGS: LazyLock<CommandsMap> =
 /// Server response type for internal handling
 #[derive(Debug, PartialEq)]
 pub enum MessageAction {
-    SendStack,
-    SendPrevAnswer,
+    StackUpdated,
+    PrevAnswerUpdated,
     Quit,
 }
 
@@ -89,10 +89,10 @@ pub fn handle_data(engine: &mut Engine, data: &str) -> Result<MessageAction, Str
 #[derive(Debug, Default, Clone)]
 pub struct MessageActionSet {
     /// This is set if the `get_stack` method should be called to retrieve the new stack
-    get_stack: bool,
+    stack_updated: bool,
     /// This is set if the `get_prev_answer` method should be called to retrieve the new previous
     /// answer
-    get_prev_answer: bool,
+    prev_answer_updated: bool,
     /// This is set if the frontend should quit
     quit: bool,
     /// This is set if there was an error while putting data into the engine
@@ -113,20 +113,20 @@ impl MessageActionSet {
     pub fn merge(&mut self, action: Result<MessageAction, String>) {
         match action {
             Ok(v) => match v {
-                MessageAction::SendStack => self.get_stack = true,
-                MessageAction::SendPrevAnswer => self.get_prev_answer = true,
+                MessageAction::StackUpdated => self.stack_updated = true,
+                MessageAction::PrevAnswerUpdated => self.prev_answer_updated = true,
                 MessageAction::Quit => self.quit = true,
             },
             Err(e) => self.error = Some(e),
         }
     }
 
-    pub fn should_get_stack(&self) -> bool {
-        self.get_stack
+    pub fn stack_updated(&self) -> bool {
+        self.stack_updated
     }
 
-    pub fn should_get_prev_answer(&self) -> bool {
-        self.get_prev_answer
+    pub fn prev_answer_updated(&self) -> bool {
+        self.prev_answer_updated
     }
 
     pub fn should_quit(&self) -> bool {

@@ -71,7 +71,7 @@ pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     // manually insert refresh since it doesn't use an engine method
     function_map.insert(
         String::from("refresh"),
-        Box::new(|_engine: &mut Engine| Ok(MessageAction::SendStack)),
+        Box::new(|_engine: &mut Engine| Ok(MessageAction::StackUpdated)),
     );
 
     function_map

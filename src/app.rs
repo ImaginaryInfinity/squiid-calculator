@@ -206,7 +206,7 @@ impl App {
 /// Update the stack if msg is not an error. If it is an error, display that error
 pub fn update_stack_or_error(msg: MessageActionSet, app: &mut App) {
     // TODO: make a seperate display for commands
-    if msg.should_get_stack() {
+    if msg.stack_updated() {
         app.stack = squiid_engine::get_stack()
             .iter()
             .map(|i| i.to_string())

@@ -88,7 +88,7 @@ impl Engine {
         // push the new item to the stack
         self.stack.push(item_pushable);
 
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Get operands from stack as float
@@ -230,7 +230,7 @@ impl Engine {
     pub fn update_previous_answer(&mut self) -> Result<MessageAction, String> {
         if !self.stack.is_empty() {
             self.previous_answer = self.stack.last().unwrap().clone();
-            Ok(MessageAction::SendPrevAnswer)
+            Ok(MessageAction::PrevAnswerUpdated)
         } else {
             Err(String::from("stack is empty"))
         }
@@ -243,7 +243,7 @@ impl Engine {
         // Put result on stack
         let result = operands[0] + operands[1];
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Subtract
@@ -254,7 +254,7 @@ impl Engine {
         // Put result on stack
         let result = operands[0] - operands[1];
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Multiply
@@ -278,7 +278,7 @@ impl Engine {
         };
         // Put result on stack
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Divide
@@ -318,7 +318,7 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Power
@@ -344,7 +344,7 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Square root
@@ -358,7 +358,7 @@ impl Engine {
             None => return Err("Error calculating sqrt".to_string()),
         };
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Modulo
@@ -369,7 +369,7 @@ impl Engine {
         // Put result on stack
         let result = operands[0] % operands[1];
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Sine
@@ -383,7 +383,7 @@ impl Engine {
             None => return Err("could not sin operand".to_string()),
         };
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Cosine
@@ -397,7 +397,7 @@ impl Engine {
             None => return Err("could not cos operand".to_string()),
         };
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Tangent
@@ -410,7 +410,7 @@ impl Engine {
             None => return Err("could not tan operand".to_string()),
         };
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Secant
@@ -424,7 +424,7 @@ impl Engine {
             None => return Err("could not sec operand".to_string()),
         };
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Cosecant
@@ -438,7 +438,7 @@ impl Engine {
             None => return Err("could not csc operand".to_string()),
         };
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Cotangent
@@ -452,7 +452,7 @@ impl Engine {
             None => return Err("could not sine operand".to_string()),
         };
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Asin
@@ -462,7 +462,7 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].asin().into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Acos
@@ -472,7 +472,7 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].acos().into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Atan
@@ -482,7 +482,7 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].atan().into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Change sign
@@ -493,7 +493,7 @@ impl Engine {
         // Put result on stack
         let result = operands[0] * -1.0;
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Logarithm
@@ -507,7 +507,7 @@ impl Engine {
             None => return Err("cannot take log10 of 0 or negative numbers".to_string()),
         };
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Logarithm with custom base using the change of base formula
@@ -534,7 +534,7 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Natural logarihm
@@ -548,7 +548,7 @@ impl Engine {
             None => return Err("cannot take log10 of 0 or negative numbers".to_string()),
         };
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Absolute value
@@ -558,7 +558,7 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].abs().into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Equal to
@@ -570,7 +570,7 @@ impl Engine {
         // Put result on stack
         let result = (operands[0] == operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Greater than
@@ -581,7 +581,7 @@ impl Engine {
         // Put result on stack
         let result = (operands[0] > operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Less than
@@ -592,7 +592,7 @@ impl Engine {
         // Put result on stack
         let result = (operands[0] < operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Greater than or equal to
@@ -603,7 +603,7 @@ impl Engine {
         // Put result on stack
         let result = (operands[0] >= operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Less than or equal to
@@ -614,7 +614,7 @@ impl Engine {
         // Put result on stack
         let result = (operands[0] <= operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Round to nearest int
@@ -624,7 +624,7 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].round().into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Calculate 1/x
@@ -634,14 +634,14 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack((1_f64 / operands[0]).into());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Drop last item from stack
     pub fn drop(&mut self) -> Result<MessageAction, String> {
         // Remove last item from stack
         self.stack.pop();
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Swap last two items on stack
@@ -652,7 +652,7 @@ impl Engine {
         // Insert in reverse order
         let _ = self.add_item_to_stack(operands[1].clone());
         let _ = self.add_item_to_stack(operands[0].clone());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Duplicate the last item of the stack
@@ -663,7 +663,7 @@ impl Engine {
         // Insert twice
         let _ = self.add_item_to_stack(operands[0].clone());
         let _ = self.add_item_to_stack(operands[0].clone());
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Roll down
@@ -671,7 +671,7 @@ impl Engine {
         if !self.stack.is_empty() {
             // Rotate stack right
             self.stack.rotate_right(1);
-            Ok(MessageAction::SendStack)
+            Ok(MessageAction::StackUpdated)
         } else {
             Err(String::from("Cannot roll empty stack"))
         }
@@ -682,7 +682,7 @@ impl Engine {
         if !self.stack.is_empty() {
             // Rotate stack left
             self.stack.rotate_left(1);
-            Ok(MessageAction::SendStack)
+            Ok(MessageAction::StackUpdated)
         } else {
             Err(String::from("Cannot roll empty stack"))
         }
@@ -702,7 +702,7 @@ impl Engine {
             // Error if attempted to store in name which is not a valid ID
             return Err(format!("Cannot store in non-variable object `{}`", varname));
         }
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Delete variable
@@ -722,7 +722,7 @@ impl Engine {
             // Error if attempted to purge name which is not a valid ID
             return Err(format!("Cannot delete non-variable object `{}`", varname));
         }
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Store value in variable, with inverted argument order
@@ -737,7 +737,7 @@ impl Engine {
     /// Clear stack
     pub fn clear(&mut self) -> Result<MessageAction, String> {
         self.stack = Vec::new();
-        Ok(MessageAction::SendStack)
+        Ok(MessageAction::StackUpdated)
     }
 
     /// Update stack and variables from the undo history
@@ -760,7 +760,7 @@ impl Engine {
             }
             self.undo_state_pointer += 1;
             self.update_engine_from_history();
-            Ok(MessageAction::SendStack)
+            Ok(MessageAction::StackUpdated)
         } else {
             Err(String::from("Cannot undo further"))
         }
@@ -771,7 +771,7 @@ impl Engine {
         if self.undo_state_pointer > 1 {
             self.undo_state_pointer -= 1;
             self.update_engine_from_history();
-            Ok(MessageAction::SendStack)
+            Ok(MessageAction::StackUpdated)
         } else {
             Err(String::from("Cannot redo further"))
         }

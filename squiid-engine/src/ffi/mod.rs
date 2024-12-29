@@ -1,4 +1,4 @@
-use std::ffi::{c_char, c_int, CStr};
+use std::ffi::{c_char, c_int, CStr, CString};
 
 use data_structs::{BucketFFI, EngineSignalSetFFI};
 
@@ -63,4 +63,32 @@ extern "C" fn get_stack_exposed(outlen: *mut c_int) -> *mut *mut BucketFFI {
     std::mem::forget(stack_ptr);
 
     vec_ptr
+}
+
+#[no_mangle]
+extern "C" fn get_commands_exposed(outlen: *mut c_int) -> *mut *mut c_char {
+    // convert Vec of Strings into vec of raw pointers
+    let mut commands: Vec<_> = crate::get_commands()
+        .into_iter()
+        .map(|s| CString::new(s).unwrap().into_raw())
+        .collect();
+
+    // shrink capacity of vec
+    commands.shrink_to_fit();
+    assert!(commands.len() == commands.capacity());
+
+    let len = commands.len();
+    // forget pointer so that rust doesnt drop it
+    let vec_ptr = commands.as_mut_ptr();
+    std::mem::forget(commands);
+
+    // write length to outlen
+    unsafe { std::ptr::write(outlen, len as c_int) };
+
+    vec_ptr
+}
+
+#[no_mangle]
+extern "C" fn get_previous_answer_exposed() -> *mut BucketFFI {
+    Box::into_raw(Box::new(BucketFFI::from(crate::get_prev_answer())))
 }

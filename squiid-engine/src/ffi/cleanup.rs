@@ -51,17 +51,22 @@ extern "C" fn free_bucket_array(array: *mut *mut BucketFFI, len: c_int) {
     let array = unsafe { Vec::from_raw_parts(array, len, len) };
 
     for bucket_ffi in array {
-        // iterate over each bucket and get it back
-        if !bucket_ffi.is_null() {
-            let bucket = unsafe { Box::from_raw(bucket_ffi) };
-
-            // drop each bucket's string value
-            if !bucket.value.is_null() {
-                let s = unsafe { CString::from_raw(bucket.value) };
-                std::mem::drop(s);
-            }
-        }
+        // iterate over each bucket and drop it
+        free_bucket(bucket_ffi);
     }
 
     // vec to auto dropped here
+}
+
+#[no_mangle]
+extern "C" fn free_bucket(bucket_ffi: *mut BucketFFI) {
+    if !bucket_ffi.is_null() {
+        let bucket = unsafe { Box::from_raw(bucket_ffi) };
+
+        // drop each bucket's string value
+        if !bucket.value.is_null() {
+            let s = unsafe { CString::from_raw(bucket.value) };
+            std::mem::drop(s);
+        }
+    }
 }

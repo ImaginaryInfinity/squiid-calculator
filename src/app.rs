@@ -1,6 +1,6 @@
 use std::{collections::HashMap, io, sync::LazyLock};
 
-use squiid_engine::{execute_multiple_rpn, execute_single_rpn, MessageActionSet};
+use squiid_engine::{execute_multiple_rpn, execute_single_rpn, EngineSignalSet};
 use unicode_width::UnicodeWidthStr;
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
@@ -204,7 +204,7 @@ impl App {
 }
 
 /// Update the stack if msg is not an error. If it is an error, display that error
-pub fn update_stack_or_error(msg: MessageActionSet, app: &mut App) {
+pub fn update_stack_or_error(msg: EngineSignalSet, app: &mut App) {
     // TODO: make a seperate display for commands
     if msg.stack_updated() {
         app.stack = squiid_engine::get_stack()

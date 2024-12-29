@@ -1,6 +1,6 @@
 use std::ffi::{c_char, c_int, CStr};
 
-use data_structs::{BucketFFI, MessageActionSetFFI};
+use data_structs::{BucketFFI, EngineSignalSetFFI};
 
 use crate::execute_multiple_rpn;
 
@@ -22,7 +22,7 @@ mod data_structs;
 extern "C" fn execute_multiple_rpn_exposed(
     rpn_data: *const *const c_char,
     rpn_data_length: usize,
-) -> MessageActionSetFFI {
+) -> EngineSignalSetFFI {
     // construct a new vec to hold the data send from the frontend
     let mut rpn_data_vec = Vec::new();
 

@@ -6,7 +6,7 @@ use rust_decimal_macros::dec;
 use crate::{
     bucket::{build_exposed_constants, Bucket, BucketTypes, ConstantTypes},
     utils::{ID_REGEX, NUMERIC_REGEX},
-    MessageAction,
+    EngineSignal,
 };
 
 /// Evaluation engine struct
@@ -41,7 +41,7 @@ impl Engine {
     }
 
     /// Add item to stack
-    pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<MessageAction, String> {
+    pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<EngineSignal, String> {
         // Convert item to string
         let mut item_string = item.to_string();
 
@@ -88,7 +88,7 @@ impl Engine {
         // push the new item to the stack
         self.stack.push(item_pushable);
 
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Get operands from stack as float
@@ -227,38 +227,38 @@ impl Engine {
 
     /// Update the previous answer variable
     /// TODO: document that this function needs to be called a lot
-    pub fn update_previous_answer(&mut self) -> Result<MessageAction, String> {
+    pub fn update_previous_answer(&mut self) -> Result<EngineSignal, String> {
         if !self.stack.is_empty() {
             self.previous_answer = self.stack.last().unwrap().clone();
-            Ok(MessageAction::PrevAnswerUpdated)
+            Ok(EngineSignal::PrevAnswerUpdated)
         } else {
             Err(String::from("stack is empty"))
         }
     }
 
     /// Add
-    pub fn add(&mut self) -> Result<MessageAction, String> {
+    pub fn add(&mut self) -> Result<EngineSignal, String> {
         let operands = self.get_operands_as_dec(2)?;
 
         // Put result on stack
         let result = operands[0] + operands[1];
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Subtract
-    pub fn subtract(&mut self) -> Result<MessageAction, String> {
+    pub fn subtract(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_dec(2)?;
 
         // Put result on stack
         let result = operands[0] - operands[1];
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Multiply
-    pub fn multiply(&mut self) -> Result<MessageAction, String> {
+    pub fn multiply(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_dec(2)?;
 
@@ -278,11 +278,11 @@ impl Engine {
         };
         // Put result on stack
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Divide
-    pub fn divide(&mut self) -> Result<MessageAction, String> {
+    pub fn divide(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_dec(2)?;
 
@@ -318,11 +318,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Power
-    pub fn power(&mut self) -> Result<MessageAction, String> {
+    pub fn power(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_dec(2)?;
 
@@ -344,11 +344,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Square root
-    pub fn sqrt(&mut self) -> Result<MessageAction, String> {
+    pub fn sqrt(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_dec(1)?;
 
@@ -358,22 +358,22 @@ impl Engine {
             None => return Err("Error calculating sqrt".to_string()),
         };
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Modulo
-    pub fn modulo(&mut self) -> Result<MessageAction, String> {
+    pub fn modulo(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_f(2)?;
 
         // Put result on stack
         let result = operands[0] % operands[1];
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Sine
-    pub fn sin(&mut self) -> Result<MessageAction, String> {
+    pub fn sin(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_raw(1)?;
 
@@ -383,11 +383,11 @@ impl Engine {
             None => return Err("could not sin operand".to_string()),
         };
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Cosine
-    pub fn cos(&mut self) -> Result<MessageAction, String> {
+    pub fn cos(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_raw(1)?;
 
@@ -397,11 +397,11 @@ impl Engine {
             None => return Err("could not cos operand".to_string()),
         };
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Tangent
-    pub fn tan(&mut self) -> Result<MessageAction, String> {
+    pub fn tan(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_raw(1)?;
         // Put result on stack
@@ -410,11 +410,11 @@ impl Engine {
             None => return Err("could not tan operand".to_string()),
         };
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Secant
-    pub fn sec(&mut self) -> Result<MessageAction, String> {
+    pub fn sec(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_raw(1)?;
 
@@ -424,11 +424,11 @@ impl Engine {
             None => return Err("could not sec operand".to_string()),
         };
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Cosecant
-    pub fn csc(&mut self) -> Result<MessageAction, String> {
+    pub fn csc(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_raw(1)?;
 
@@ -438,11 +438,11 @@ impl Engine {
             None => return Err("could not csc operand".to_string()),
         };
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Cotangent
-    pub fn cot(&mut self) -> Result<MessageAction, String> {
+    pub fn cot(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_raw(1)?;
 
@@ -452,52 +452,52 @@ impl Engine {
             None => return Err("could not sine operand".to_string()),
         };
         let _ = self.add_item_to_stack(result);
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Asin
-    pub fn asin(&mut self) -> Result<MessageAction, String> {
+    pub fn asin(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].asin().into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Acos
-    pub fn acos(&mut self) -> Result<MessageAction, String> {
+    pub fn acos(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].acos().into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Atan
-    pub fn atan(&mut self) -> Result<MessageAction, String> {
+    pub fn atan(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].atan().into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Change sign
-    pub fn chs(&mut self) -> Result<MessageAction, String> {
+    pub fn chs(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let result = operands[0] * -1.0;
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Logarithm
-    pub fn log(&mut self) -> Result<MessageAction, String> {
+    pub fn log(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_dec(1)?;
 
@@ -507,11 +507,11 @@ impl Engine {
             None => return Err("cannot take log10 of 0 or negative numbers".to_string()),
         };
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Logarithm with custom base using the change of base formula
-    pub fn blog(&mut self) -> Result<MessageAction, String> {
+    pub fn blog(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_dec(2)?;
 
@@ -534,11 +534,11 @@ impl Engine {
 
         // Put result on stack
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Natural logarihm
-    pub fn ln(&mut self) -> Result<MessageAction, String> {
+    pub fn ln(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_dec(1)?;
 
@@ -548,21 +548,21 @@ impl Engine {
             None => return Err("cannot take log10 of 0 or negative numbers".to_string()),
         };
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Absolute value
-    pub fn abs(&mut self) -> Result<MessageAction, String> {
+    pub fn abs(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].abs().into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Equal to
-    pub fn eq(&mut self) -> Result<MessageAction, String> {
+    pub fn eq(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         // TODO: maybe make this work with strings
         let operands = self.get_operands_as_f(2)?;
@@ -570,126 +570,126 @@ impl Engine {
         // Put result on stack
         let result = (operands[0] == operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Greater than
-    pub fn gt(&mut self) -> Result<MessageAction, String> {
+    pub fn gt(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_f(2)?;
 
         // Put result on stack
         let result = (operands[0] > operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Less than
-    pub fn lt(&mut self) -> Result<MessageAction, String> {
+    pub fn lt(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_f(2)?;
 
         // Put result on stack
         let result = (operands[0] < operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Greater than or equal to
-    pub fn geq(&mut self) -> Result<MessageAction, String> {
+    pub fn geq(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_f(2)?;
 
         // Put result on stack
         let result = (operands[0] >= operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Less than or equal to
-    pub fn leq(&mut self) -> Result<MessageAction, String> {
+    pub fn leq(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_f(2)?;
 
         // Put result on stack
         let result = (operands[0] <= operands[1]) as u32;
         let _ = self.add_item_to_stack(result.into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Round to nearest int
-    pub fn round(&mut self) -> Result<MessageAction, String> {
+    pub fn round(&mut self) -> Result<EngineSignal, String> {
         // Get operand
         let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].round().into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Calculate 1/x
-    pub fn invert(&mut self) -> Result<MessageAction, String> {
+    pub fn invert(&mut self) -> Result<EngineSignal, String> {
         // Get operand
         let operands = self.get_operands_as_f(1)?;
 
         // Put result on stack
         let _ = self.add_item_to_stack((1_f64 / operands[0]).into());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Drop last item from stack
-    pub fn drop(&mut self) -> Result<MessageAction, String> {
+    pub fn drop(&mut self) -> Result<EngineSignal, String> {
         // Remove last item from stack
         self.stack.pop();
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Swap last two items on stack
-    pub fn swap(&mut self) -> Result<MessageAction, String> {
+    pub fn swap(&mut self) -> Result<EngineSignal, String> {
         // Get last two values from stack
         let operands = self.get_operands_raw(2)?;
 
         // Insert in reverse order
         let _ = self.add_item_to_stack(operands[1].clone());
         let _ = self.add_item_to_stack(operands[0].clone());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Duplicate the last item of the stack
-    pub fn dup(&mut self) -> Result<MessageAction, String> {
+    pub fn dup(&mut self) -> Result<EngineSignal, String> {
         // Get the last value from the stack
         let operands = self.get_operands_raw(1)?;
 
         // Insert twice
         let _ = self.add_item_to_stack(operands[0].clone());
         let _ = self.add_item_to_stack(operands[0].clone());
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Roll down
-    pub fn roll_down(&mut self) -> Result<MessageAction, String> {
+    pub fn roll_down(&mut self) -> Result<EngineSignal, String> {
         if !self.stack.is_empty() {
             // Rotate stack right
             self.stack.rotate_right(1);
-            Ok(MessageAction::StackUpdated)
+            Ok(EngineSignal::StackUpdated)
         } else {
             Err(String::from("Cannot roll empty stack"))
         }
     }
 
     /// Roll up
-    pub fn roll_up(&mut self) -> Result<MessageAction, String> {
+    pub fn roll_up(&mut self) -> Result<EngineSignal, String> {
         if !self.stack.is_empty() {
             // Rotate stack left
             self.stack.rotate_left(1);
-            Ok(MessageAction::StackUpdated)
+            Ok(EngineSignal::StackUpdated)
         } else {
             Err(String::from("Cannot roll empty stack"))
         }
     }
 
     /// Store value in variable
-    pub fn store(&mut self) -> Result<MessageAction, String> {
+    pub fn store(&mut self) -> Result<EngineSignal, String> {
         // Get 2 operands from stack
         let operands = self.get_operands_raw(2)?;
 
@@ -702,11 +702,11 @@ impl Engine {
             // Error if attempted to store in name which is not a valid ID
             return Err(format!("Cannot store in non-variable object `{}`", varname));
         }
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Delete variable
-    pub fn purge(&mut self) -> Result<MessageAction, String> {
+    pub fn purge(&mut self) -> Result<EngineSignal, String> {
         // Get operand from stack
         let operands = self.get_operands_raw(1)?;
 
@@ -722,11 +722,11 @@ impl Engine {
             // Error if attempted to purge name which is not a valid ID
             return Err(format!("Cannot delete non-variable object `{}`", varname));
         }
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Store value in variable, with inverted argument order
-    pub fn invstore(&mut self) -> Result<MessageAction, String> {
+    pub fn invstore(&mut self) -> Result<EngineSignal, String> {
         match self.swap() {
             Ok(_) => {}
             Err(error) => return Err(error),
@@ -735,9 +735,9 @@ impl Engine {
     }
 
     /// Clear stack
-    pub fn clear(&mut self) -> Result<MessageAction, String> {
+    pub fn clear(&mut self) -> Result<EngineSignal, String> {
         self.stack = Vec::new();
-        Ok(MessageAction::StackUpdated)
+        Ok(EngineSignal::StackUpdated)
     }
 
     /// Update stack and variables from the undo history
@@ -750,7 +750,7 @@ impl Engine {
     }
 
     /// Undo last operation
-    pub fn undo(&mut self) -> Result<MessageAction, String> {
+    pub fn undo(&mut self) -> Result<EngineSignal, String> {
         if self.undo_state_pointer < self.undo_history.len() as u8 {
             if self.undo_state_pointer == 0 {
                 // add current stack and variables to hsitory and increment pointer by 1
@@ -760,26 +760,26 @@ impl Engine {
             }
             self.undo_state_pointer += 1;
             self.update_engine_from_history();
-            Ok(MessageAction::StackUpdated)
+            Ok(EngineSignal::StackUpdated)
         } else {
             Err(String::from("Cannot undo further"))
         }
     }
 
     /// Redo the last undo
-    pub fn redo(&mut self) -> Result<MessageAction, String> {
+    pub fn redo(&mut self) -> Result<EngineSignal, String> {
         if self.undo_state_pointer > 1 {
             self.undo_state_pointer -= 1;
             self.update_engine_from_history();
-            Ok(MessageAction::StackUpdated)
+            Ok(EngineSignal::StackUpdated)
         } else {
             Err(String::from("Cannot redo further"))
         }
     }
 
     // send quit code
-    pub fn quit(&mut self) -> Result<MessageAction, String> {
-        Ok(MessageAction::Quit)
+    pub fn quit(&mut self) -> Result<EngineSignal, String> {
+        Ok(EngineSignal::Quit)
     }
 }
 

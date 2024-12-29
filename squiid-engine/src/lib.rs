@@ -24,7 +24,7 @@ static COMMAND_MAPPINGS: LazyLock<CommandsMap> =
 
 /// Server response type for internal handling
 #[derive(Debug, PartialEq)]
-pub enum MessageAction {
+pub enum EngineSignal {
     StackUpdated,
     PrevAnswerUpdated,
     Quit,
@@ -41,7 +41,7 @@ pub enum MessageAction {
 ///
 /// When the command which was input creates an invalid state in the engine, such as when an
 /// undefined variable is referenced.
-pub fn handle_data(engine: &mut Engine, data: &str) -> Result<MessageAction, String> {
+pub fn handle_data(engine: &mut Engine, data: &str) -> Result<EngineSignal, String> {
     if engine.undo_history.len() > 20 {
         _ = engine.undo_history.pop_front();
         _ = engine.undo_variable_history.pop_front();
@@ -84,10 +84,10 @@ pub fn handle_data(engine: &mut Engine, data: &str) -> Result<MessageAction, Str
     result
 }
 
-/// Struct to identify which MessageActions were triggered during the submission of multiple
+/// Struct to identify which EngineSignals were triggered during the submission of multiple
 /// commands to the engine (usually in `execute_rpn_data`)
 #[derive(Debug, Default, Clone)]
-pub struct MessageActionSet {
+pub struct EngineSignalSet {
     /// This is set if the `get_stack` method should be called to retrieve the new stack
     stack_updated: bool,
     /// This is set if the `get_prev_answer` method should be called to retrieve the new previous
@@ -99,7 +99,7 @@ pub struct MessageActionSet {
     error: Option<String>,
 }
 
-impl MessageActionSet {
+impl EngineSignalSet {
     pub fn new() -> Self {
         Self::default()
     }
@@ -110,12 +110,12 @@ impl MessageActionSet {
     /// # Arguments
     ///
     /// * `action` - The action to merge into the set
-    pub fn merge(&mut self, action: Result<MessageAction, String>) {
+    pub fn merge(&mut self, action: Result<EngineSignal, String>) {
         match action {
             Ok(v) => match v {
-                MessageAction::StackUpdated => self.stack_updated = true,
-                MessageAction::PrevAnswerUpdated => self.prev_answer_updated = true,
-                MessageAction::Quit => self.quit = true,
+                EngineSignal::StackUpdated => self.stack_updated = true,
+                EngineSignal::PrevAnswerUpdated => self.prev_answer_updated = true,
+                EngineSignal::Quit => self.quit = true,
             },
             Err(e) => self.error = Some(e),
         }
@@ -147,24 +147,24 @@ impl MessageActionSet {
 /// # Errors
 ///
 /// This function errors if locking the engine mutex fails
-pub fn execute_multiple_rpn(rpn_data: Vec<&str>) -> MessageActionSet {
+pub fn execute_multiple_rpn(rpn_data: Vec<&str>) -> EngineSignalSet {
     let mut engine = ENGINE.lock().unwrap();
 
-    let mut message_actions = MessageActionSet::new();
+    let mut engine_signals = EngineSignalSet::new();
 
     for item in rpn_data {
         // submit each piece of data to the engine
         let response = handle_data(&mut engine, item);
         // merge the response into the actions set
-        message_actions.merge(response);
+        engine_signals.merge(response);
 
         // if an error was encountered, terminate early
-        if message_actions.get_error().is_some() {
-            return message_actions;
+        if engine_signals.get_error().is_some() {
+            return engine_signals;
         }
     }
 
-    message_actions
+    engine_signals
 }
 
 #[macro_export]

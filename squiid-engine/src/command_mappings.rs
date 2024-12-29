@@ -1,6 +1,6 @@
 use std::{borrow::BorrowMut, collections::HashMap};
 
-use crate::{engine::Engine, MessageAction};
+use crate::{engine::Engine, EngineSignal};
 
 /// Insert a function and reference name into a hashmap
 macro_rules! function_map_entry {
@@ -12,7 +12,7 @@ macro_rules! function_map_entry {
     };
 }
 
-type EngineFunction = dyn Fn(&mut Engine) -> Result<MessageAction, String> + Send + Sync + 'static;
+type EngineFunction = dyn Fn(&mut Engine) -> Result<EngineSignal, String> + Send + Sync + 'static;
 pub type CommandsMap = HashMap<String, Box<EngineFunction>>;
 
 /// Create a map of every available function and it's respective command
@@ -71,7 +71,7 @@ pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     // manually insert refresh since it doesn't use an engine method
     function_map.insert(
         String::from("refresh"),
-        Box::new(|_engine: &mut Engine| Ok(MessageAction::StackUpdated)),
+        Box::new(|_engine: &mut Engine| Ok(EngineSignal::StackUpdated)),
     );
 
     function_map

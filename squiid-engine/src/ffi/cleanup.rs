@@ -1,14 +1,14 @@
 use std::ffi::{c_char, c_int, CString};
 
-use super::data_structs::{BucketFFI, MessageActionSetFFI};
+use super::data_structs::{BucketFFI, EngineSignalSetFFI};
 
-/// Free the error string contained within the MessageActionSetFFI struct
+/// Free the error string contained within the EngineSignalSetFFI struct
 ///
 /// # Arguments
 ///
-/// * `ptr` - Pointer to a MessageActionSetFFI struct which was returned from Rust
+/// * `ptr` - Pointer to a EngineSignalSetFFI struct which was returned from Rust
 #[no_mangle]
-extern "C" fn free_message_action_set(ptr: MessageActionSetFFI) {
+extern "C" fn free_engine_signal_set(ptr: EngineSignalSetFFI) {
     unsafe {
         if !ptr.error.is_null() {
             let _ = CString::from_raw(ptr.error);

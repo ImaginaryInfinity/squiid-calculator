@@ -2,13 +2,13 @@ use std::ffi::{c_char, CString};
 
 use crate::{
     bucket::{Bucket, BucketTypes, ConstantTypes},
-    MessageActionSet,
+    EngineSignalSet,
 };
 
 /// Struct containing data about which actions a frontend should take next
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub struct MessageActionSetFFI {
+pub struct EngineSignalSetFFI {
     /// Whether or not the frontend should fetch the stack
     pub stack_updated: bool,
     /// Whether or not the frontend should fetch the previous answer
@@ -19,9 +19,9 @@ pub struct MessageActionSetFFI {
     pub error: *mut c_char,
 }
 
-impl From<MessageActionSet> for MessageActionSetFFI {
-    fn from(value: MessageActionSet) -> Self {
-        MessageActionSetFFI {
+impl From<EngineSignalSet> for EngineSignalSetFFI {
+    fn from(value: EngineSignalSet) -> Self {
+        EngineSignalSetFFI {
             stack_updated: value.stack_updated,
             prev_answer_updated: value.prev_answer_updated,
             quit: value.quit,

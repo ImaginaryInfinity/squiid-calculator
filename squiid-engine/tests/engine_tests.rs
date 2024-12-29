@@ -4,7 +4,7 @@ use squiid_engine::{
     bucket::{Bucket, BucketTypes, ConstantTypes},
     command_mappings,
     engine::*,
-    MessageAction,
+    EngineSignal,
 };
 
 #[test]
@@ -754,7 +754,7 @@ fn test_drop() {
     assert_eq!(engine.stack, vec![]);
 
     let result = engine.drop();
-    assert_eq!(result, Ok(MessageAction::StackUpdated));
+    assert_eq!(result, Ok(EngineSignal::StackUpdated));
 }
 
 #[test]
@@ -1051,7 +1051,7 @@ fn test_refresh() {
 
     let result = squiid_engine::handle_data(&mut engine, "refresh");
 
-    assert_eq!(result.unwrap(), MessageAction::StackUpdated);
+    assert_eq!(result.unwrap(), EngineSignal::StackUpdated);
 }
 
 #[test]
@@ -1060,7 +1060,7 @@ fn test_quit() {
 
     let result = squiid_engine::handle_data(&mut engine, "quit");
 
-    assert_eq!(result.unwrap(), MessageAction::Quit);
+    assert_eq!(result.unwrap(), EngineSignal::Quit);
 }
 
 #[test]

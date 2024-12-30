@@ -22,7 +22,7 @@ static ENGINE: LazyLock<Mutex<Engine>> = LazyLock::new(|| Mutex::new(Engine::new
 static COMMAND_MAPPINGS: LazyLock<CommandsMap> =
     LazyLock::new(command_mappings::create_function_map);
 
-/// Server response type for internal handling
+/// Server signal type for internal handling
 #[derive(Debug, PartialEq)]
 pub enum EngineSignal {
     /// The stack was updated
@@ -121,14 +121,17 @@ impl EngineSignalSet {
         }
     }
 
+    /// Whether or not the stack has been updated
     pub fn stack_updated(&self) -> bool {
         self.stack_updated
     }
 
+    /// Whether or not the frontend should quit
     pub fn should_quit(&self) -> bool {
         self.quit
     }
 
+    /// Get the last encountered error if available
     pub fn get_error(&self) -> Option<String> {
         self.error.clone()
     }
@@ -163,8 +166,8 @@ pub fn execute_multiple_rpn(rpn_data: Vec<&str>) -> EngineSignalSet {
     engine_signals
 }
 
-#[macro_export]
 /// Execute a single RPN statement
+#[macro_export]
 macro_rules! execute_single_rpn {
     ($i:expr) => {
         execute_multiple_rpn(vec![$i])

@@ -42,6 +42,11 @@ extern "C" fn execute_multiple_rpn_exposed(
     result.into()
 }
 
+/// Get the engine's current stack.
+///
+/// # Arguments
+///
+/// * `outlen` - A pointer to an integer to store the length of the output array
 #[no_mangle]
 extern "C" fn get_stack_exposed(outlen: *mut c_int) -> *mut *mut BucketFFI {
     // Create a vector of CStrings from the stack
@@ -65,6 +70,11 @@ extern "C" fn get_stack_exposed(outlen: *mut c_int) -> *mut *mut BucketFFI {
     vec_ptr
 }
 
+/// Get the engine's list of currently supported commands.
+///
+/// # Arguments
+///
+/// * `outlen` - A pointer to an integer to store the length of the output array
 #[no_mangle]
 extern "C" fn get_commands_exposed(outlen: *mut c_int) -> *mut *mut c_char {
     // convert Vec of Strings into vec of raw pointers
@@ -88,11 +98,16 @@ extern "C" fn get_commands_exposed(outlen: *mut c_int) -> *mut *mut c_char {
     vec_ptr
 }
 
+/// Get the current previous answer from the engine.
 #[no_mangle]
 extern "C" fn get_previous_answer_exposed() -> *mut BucketFFI {
     Box::into_raw(Box::new(BucketFFI::from(crate::get_previous_answer())))
 }
 
+/// Update the previous answer variable in the engine.
+///
+/// This should be called after a full algebraic statement in algebraic mode,
+/// or after each RPN command if in RPN mode.
 #[no_mangle]
 extern "C" fn update_previous_answer_exposed() -> EngineSignalSetFFI {
     let result = crate::update_previous_answer();

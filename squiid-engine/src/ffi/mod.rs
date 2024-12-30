@@ -90,7 +90,7 @@ extern "C" fn get_commands_exposed(outlen: *mut c_int) -> *mut *mut c_char {
 
 #[no_mangle]
 extern "C" fn get_previous_answer_exposed() -> *mut BucketFFI {
-    Box::into_raw(Box::new(BucketFFI::from(crate::get_prev_answer())))
+    Box::into_raw(Box::new(BucketFFI::from(crate::get_previous_answer())))
 }
 
 #[no_mangle]

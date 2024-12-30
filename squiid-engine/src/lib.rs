@@ -192,7 +192,7 @@ pub fn get_commands() -> Vec<String> {
 /// # Errors
 ///
 /// This function errors if locking the engine mutex fails
-pub fn get_prev_answer() -> Bucket {
+pub fn get_previous_answer() -> Bucket {
     let engine = ENGINE.lock().unwrap();
 
     engine.previous_answer.clone()

@@ -8,9 +8,11 @@ The function also maintains a history of the calculator's state, including the s
 
 The engine can either be used as a Rust module in Rust programs, or as a shared library over FFI. We provide some language bindings for other languages to easily use the engine [here](https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-bindings). `lib.rs` is the main point of where you would interact with the engine. It provides the `execute_multiple_rpn` and `execute_single_rpn` functions to easily execute RPN expressions, and functions like `get_stack`, `get_commands`, and `get_previous_answer` help to query the state of the engine.
 
-The quit command can be used to signal an intent to exit.
+Note that for FFI functionality, the engine/parser **MUST** be compiled with the `ffi` feature enabled:
 
-Overall, this code provides the core functionality for a command-line calculator.
+```properties
+cargo build --release --lib --features ffi
+```
 
 !!! important
 
@@ -41,4 +43,3 @@ This directory provides an interface to other programming languages, allowing th
 ### `utils.rs`
 
 This module contains utility functions for sending and receiving data over the network.
-

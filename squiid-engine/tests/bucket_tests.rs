@@ -41,7 +41,6 @@ fn test_constants_have_string_repr() {
         ConstantTypes::EighthPi,
         ConstantTypes::TwoPi,
         ConstantTypes::E,
-        ConstantTypes::Tau,
         ConstantTypes::C,
         ConstantTypes::G,
         ConstantTypes::Phi,
@@ -57,10 +56,4 @@ fn test_constants_have_string_repr() {
             variant
         );
     }
-
-    assert_eq!(
-        all_variants.len(),
-        CONSTANT_IDENTIFIERS.len(),
-        "Constant Indentifiers contains an extra value"
-    );
 }

@@ -41,7 +41,7 @@ fn test_add_constants_to_stack() {
         vec![
             Bucket::from_constant(ConstantTypes::Pi),
             Bucket::from_constant(ConstantTypes::E),
-            Bucket::from_constant(ConstantTypes::Tau),
+            Bucket::from_constant(ConstantTypes::TwoPi),
             Bucket::from_constant(ConstantTypes::C),
             Bucket::from_constant(ConstantTypes::G),
             Bucket::from_constant(ConstantTypes::Phi),

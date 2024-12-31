@@ -152,7 +152,6 @@ impl Engine {
                     BucketTypes::Constant(ConstantTypes::QuarterPi) => Decimal::QUARTER_PI,
                     BucketTypes::Constant(ConstantTypes::TwoPi) => Decimal::TWO_PI,
                     BucketTypes::Float
-                    | BucketTypes::Constant(ConstantTypes::Tau)
                     | BucketTypes::Constant(ConstantTypes::C)
                     | BucketTypes::Constant(ConstantTypes::G)
                     | BucketTypes::Constant(ConstantTypes::ThirdPi)

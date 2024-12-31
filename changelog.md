@@ -25,6 +25,11 @@
 - Fix a bug preventing most of the Constant PI variants from being recognized in the calculator (f4a9e9f629cd3a2a5810f0ef593e9662b2d1f0fb)
 - Remove `ConstantTypes::Tau` and just have `#tau` map to `ConstantTypes::TwoPi`
 - Update to Winget manifest v6 (#69)
+- Update some flatpak metadata issues
+- Update copyright year in app.rs
+- Fix a typo in the documentation
+- Fix icon not showing on installed Windows version (#68)
+- Move the config from the backend into the frontend (#55)
 
 # 1.1.3
 

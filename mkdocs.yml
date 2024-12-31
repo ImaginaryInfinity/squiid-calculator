@@ -64,8 +64,6 @@ nav:
                 - Inverted Store: user/commands/internal-funcs/invstore.md
     - Developer Documentation:
         - Cross Compiling: dev/cross_compiling.md
-        - Communication Protocol: dev/comm_prot.md
-        - Adding an IPC Backend: dev/adding_ipc_backend.md
         - Squiid Parser: dev/parser.md
         - Squiid Engine: dev/engine.md
 

@@ -19,26 +19,26 @@ test:
         - '*'
 
 
-deploy-snap:
-  stage: deploy
-  image: ubuntudesktop/gnome-3-38-2004
-  before_script:
-    - apt update
-    - apt install cargo gettext-base cmake -y
-  script:
-    - echo "$SNAPCRAFT_STORE_CREDENTIALS" > login.priv
-    - snapcraft login --with login.priv
-    - make snap
-    - case "$CI_COMMIT_BRANCH" in
-      "trunk") snapcraft upload --release=stable squiid*.snap; ;;
-      *) snapcraft upload --release=edge squiid*.snap; ;;
-      esac
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "web"'
-      when: always
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      changes:
-        - '*'
+# deploy-snap:
+#   stage: deploy
+#   image: ubuntudesktop/gnome-3-38-2004
+#   before_script:
+#     - apt update
+#     - apt install cargo gettext-base cmake -y
+#   script:
+#     - echo "$SNAPCRAFT_STORE_CREDENTIALS" > login.priv
+#     - snapcraft login --with login.priv
+#     - make snap
+#     - case "$CI_COMMIT_BRANCH" in
+#       "trunk") snapcraft upload --release=stable squiid*.snap; ;;
+#       *) snapcraft upload --release=edge squiid*.snap; ;;
+#       esac
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "web"'
+#       when: always
+#     - if: '$CI_PIPELINE_SOURCE == "schedule"'
+#       changes:
+#         - '*'
 
 deploy-aur:
   stage: deploy

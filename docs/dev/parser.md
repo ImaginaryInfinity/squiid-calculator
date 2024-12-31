@@ -6,7 +6,7 @@ The Squiid Parser is a Rust implementation of a mathematical expression parser, 
 
 ### `lib::parse`
 
-This function lexes and parses a given string automatically. You won't need to call any other internal methods when this is run, as all required operations will be performed. 
+This function lexes and parses a given string automatically. You won't need to call any other internal methods when this is run, as all required operations will be performed.
 
 ### `lexer::lex`
 
@@ -27,12 +27,15 @@ This function takes a mutable reference to a vector of `Token`s and parses wheth
 ## Exposed FFI Functions
 
 ### `parse_exposed`
+
 The `parse_exposed` function takes a null-terminated C string `input` and returns a pointer to an array of null-terminated C strings. The length of the array is stored in the `outlen` variable, which must be passed as a pointer
 
 ### `free_string_array`
+
 To free the memory allocated for the array of C strings returned by `parse_exposed`, use the `free_string_array` function, passing in the pointer to the array and the length of the array as arguments.
 
 Example in C:
+
 ```c
 // Compiled with `gcc file.c -o file -L. -l:libsquiid_parser.so`
 #include <stdio.h>
@@ -66,7 +69,7 @@ int main() {
 }
 ```
 
-A similar result can be achieved in other languages which allow you to interact with shared object libraries via the FFI, such as Python, Go, and many others. 
+A similar result can be achieved in other languages which allow you to interact with shared object libraries via the FFI, such as Python, Go, and many others.
 
 ## Tokens
 
@@ -93,3 +96,4 @@ Each variant of the `Token` enum represents a type of token. Here is an explanat
 - `Negative(&'a str)`: This is not a valid token, but it is used for differentiation between minus and negative later on in parsing.
 
 The `PartialEq` implementation ignores the content of the `Token` enum and only compares the variants.
+

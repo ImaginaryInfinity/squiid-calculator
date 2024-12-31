@@ -7,9 +7,6 @@
         "org.freedesktop.Sdk.Extension.rust-stable"
     ],
     "command": "squiid",
-    "finish-args": [
-        "--share=network"
-    ],
     "build-options": {
         "append-path": "/usr/lib/sdk/rust-stable/bin"
     },

@@ -5,6 +5,26 @@
 - Fix a typo in the documentation
 - Fix icon not showing on installed Windows version (#68)
 - Move the config from the backend into the frontend (#55)
+- Remove NNG in favor of FFI bindings (#70)
+  - The `nng` and `ipc` features have been removed and replaced with an `ffi` feature.
+- Remove `commands` command in favor of `get_stack` (Rust) and `get_stack_exposed` (FFI)
+- Document `#phi` constant
+- Change internal constant case from SCREAMING_SNAKE_CASE to PascalCase
+- Fix some new clippy lints
+- Properly gate crash reporting behind a feature flag
+- Delete engine binary target as it's no longer needed without NNG
+- Switch from `lazy_static` to the new `LazyLock`
+- Fix musl cdylib building in the engine and the parser
+- Gate parser logging behind feature flag
+- Write Python, C, and C++ bindings to the engine and the parser (#29)
+- Rename `MessageAction` to `EngineSignal`
+  - This includes renaming the enum variants, such as `SendStack` to `StackUpdated` to reflect the removal of NNG
+  - `SendCommands` and `SendPrevAnswer` have been removed as they are no longer needed due to the introduction of `get_commands` and `get_previous_answer`/`update_previous_answer`
+  - A new `EngineSignal::NOP` variant was introduced for operations that don't effect the engine
+- Removed the `commands` and `update_previous_answer` commands as these have been replaced with functions in the engine
+- Fix a bug preventing most of the Constant PI variants from being recognized in the calculator (f4a9e9f629cd3a2a5810f0ef593e9662b2d1f0fb)
+- Remove `ConstantTypes::Tau` and just have `#tau` map to `ConstantTypes::TwoPi`
+- Update to Winget manifest v6 (#69)
 
 # 1.1.3
 

@@ -14,24 +14,14 @@ struct EnvironmentDetails<'a> {
     crate_name: &'a str,
     arch: &'a str,
     os: &'a str,
-    ipc_enabled: bool,
 }
 
 impl fmt::Display for EnvironmentDetails<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Version: {}\nPackage: {}\nCrate: {}\nArchitecture: {}\nOS: {}\nIPC: {}",
-            self.version,
-            self.pkg_name,
-            self.crate_name,
-            self.arch,
-            self.os,
-            if self.ipc_enabled {
-                "Enabled"
-            } else {
-                "Disabled"
-            }
+            "Version: {}\nPackage: {}\nCrate: {}\nArchitecture: {}\nOS: {}",
+            self.version, self.pkg_name, self.crate_name, self.arch, self.os,
         )
     }
 }
@@ -46,7 +36,6 @@ pub fn crash_report(panic_info: &PanicHookInfo, config_path: Option<PathBuf>) {
         crate_name: env!("CARGO_CRATE_NAME"),
         arch: std::env::consts::ARCH,
         os: std::env::consts::OS,
-        ipc_enabled: cfg!(feature = "ipc"),
     };
 
     // print crash report for user

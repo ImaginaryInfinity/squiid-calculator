@@ -7,6 +7,12 @@ use std::{
 
 use crate::parse;
 
+/// Parse a given algebraic (infix) notation string into an array of RPN (postfix) commands.
+///
+/// # Arguments
+///
+/// * `input` - The string input to parse
+/// * `outlen` - A pointer to an integer to store the length of the result array
 #[no_mangle]
 extern "C" fn parse_exposed(input: *const c_char, outlen: *mut c_int) -> *mut *mut c_char {
     let c_str = unsafe { CStr::from_ptr(input) };
@@ -40,13 +46,23 @@ extern "C" fn parse_exposed(input: *const c_char, outlen: *mut c_int) -> *mut *m
     vec_ptr
 }
 
+/// Free an array of strings that was returned over the FFI boundary.
+///
+/// # Arguments
+///
+/// * `array` - the string array to free
+/// * `len` - the length of the string array
+///
+/// # Panics
+///
+/// If the array pointer is null or if the vec or strings are invalid data
 #[no_mangle]
-extern "C" fn free_string_array(ptr: *mut *mut c_char, len: c_int) {
+extern "C" fn free_string_array(array: *mut *mut c_char, len: c_int) {
     let len = len as usize;
 
     // Get back our vector.
     // Previously we shrank to fit, so capacity == length.
-    let v = unsafe { Vec::from_raw_parts(ptr, len, len) };
+    let v = unsafe { Vec::from_raw_parts(array, len, len) };
 
     // Now drop one string at a time.
     for elem in v {

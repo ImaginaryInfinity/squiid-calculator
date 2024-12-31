@@ -286,6 +286,8 @@ fn test_modulo() {
 fn test_sin() {
     let mut engine = Engine::new();
 
+    let _ = engine.add_item_to_stack("#e".into());
+
     let _ = engine.add_item_to_stack("#pi".into());
     let _ = engine.add_item_to_stack("2".into());
 
@@ -303,6 +305,13 @@ fn test_sin() {
     let _ = engine.divide();
     let _ = engine.sin();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+
+    // sin(#e) to 2 decimal places
+    let _ = engine.sin();
+    assert_eq!(
+        (engine.get_operands_as_f(1).unwrap()[0] * 100.0).round(),
+        41.0
+    )
 }
 
 #[test]

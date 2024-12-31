@@ -4,7 +4,7 @@ use rust_decimal::{prelude::ToPrimitive, Decimal, MathematicalOps};
 use rust_decimal_macros::dec;
 
 use crate::{
-    bucket::{build_exposed_constants, Bucket, BucketTypes, ConstantTypes},
+    bucket::{Bucket, BucketTypes, ConstantTypes, CONSTANT_IDENTIFIERS},
     utils::{ID_REGEX, NUMERIC_REGEX},
     EngineSignal,
 };
@@ -63,20 +63,18 @@ impl Engine {
             }
         }
 
-        // Replace with value if item is a constant
-        let exposed_constants = build_exposed_constants();
-
-        // create a StackableFloat if item_string is numeric, else StackableString
+        // create a Float if item_string is numeric, else String
         let item_pushable: Bucket = match item.bucket_type {
             BucketTypes::Undefined => Bucket::new_undefined(),
             BucketTypes::Constant(constant_type) => {
                 // bucket already has a constant type, use that
                 Bucket::from_constant(constant_type)
             }
-            _ => {
+            BucketTypes::Float | BucketTypes::String => {
                 // test all other options
-                if exposed_constants.contains_key(item_string.as_str()) {
-                    Bucket::from_constant(*exposed_constants.get(item_string.as_str()).unwrap())
+                if CONSTANT_IDENTIFIERS.contains_key(item_string.as_str()) {
+                    // Replace with value if item is a constant
+                    Bucket::from_constant(*CONSTANT_IDENTIFIERS.get(item_string.as_str()).unwrap())
                 } else if NUMERIC_REGEX.is_match(&item_string) {
                     Bucket::from(item_string.parse::<f64>().unwrap())
                 } else {
@@ -106,7 +104,7 @@ impl Engine {
                             "The operation cannot be performed on these operands",
                         ));
                     }
-                    _ => (),
+                    BucketTypes::Float | BucketTypes::Constant(_) => (),
                 }
             }
 
@@ -114,12 +112,8 @@ impl Engine {
             for _ in 0..number {
                 let operand = self.stack.pop().unwrap();
 
-                operands.push(match operand.bucket_type {
-                    BucketTypes::Float | BucketTypes::Constant(_) => {
-                        operand.value.unwrap().parse::<f64>().unwrap()
-                    }
-                    _ => return Err(String::from("you should never get this error")),
-                });
+                // this is safe as we tested above for invalid variants
+                operands.push(operand.value.unwrap().parse::<f64>().unwrap());
             }
             // Make the new vector's order match the stack
             operands.reverse();
@@ -144,7 +138,7 @@ impl Engine {
                             "The operation cannot be performed on these operands",
                         ));
                     }
-                    _ => (),
+                    BucketTypes::Float | BucketTypes::Constant(_) => (),
                 }
             }
 

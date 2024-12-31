@@ -1,6 +1,6 @@
 // items on the stack are called Buckets
 
-use std::{collections::HashMap, f64::consts};
+use std::{collections::HashMap, f64::consts, sync::LazyLock};
 
 use rust_decimal::{prelude::FromPrimitive, Decimal, MathematicalOps};
 use rust_decimal_macros::dec;
@@ -23,45 +23,23 @@ pub enum ConstantTypes {
     Phi,
 }
 
-// Define the exposed constants
-pub trait ExposedConstant {
-    fn name(&self) -> &'static str;
-}
-
-impl ExposedConstant for ConstantTypes {
-    fn name(&self) -> &'static str {
-        match self {
-            ConstantTypes::Pi => "#pi",
-            ConstantTypes::E => "#e",
-            ConstantTypes::Tau => "#tau",
-            ConstantTypes::C => "#c",
-            ConstantTypes::G => "#G",
-            ConstantTypes::Phi => "#phi",
-            ConstantTypes::HalfPi => "#halfpi",
-            ConstantTypes::ThirdPi => "#thirdpi",
-            ConstantTypes::QuarterPi => "#quarterpi",
-            ConstantTypes::SixthPi => "#sixthpi",
-            ConstantTypes::EighthPi => "#eighthpi",
-            ConstantTypes::TwoPi => "#twopi",
-        }
-    }
-}
-
-// TODO: extrapolate constants things into constants file
-/// Build a hashmap of exposed constants
-pub fn build_exposed_constants() -> HashMap<&'static str, ConstantTypes> {
-    let mut exposed_constants = HashMap::new();
-
-    // Add each constant to the hashmap
-    exposed_constants.insert(ConstantTypes::Pi.name(), ConstantTypes::Pi);
-    exposed_constants.insert(ConstantTypes::E.name(), ConstantTypes::E);
-    exposed_constants.insert(ConstantTypes::Tau.name(), ConstantTypes::Tau);
-    exposed_constants.insert(ConstantTypes::C.name(), ConstantTypes::C);
-    exposed_constants.insert(ConstantTypes::G.name(), ConstantTypes::G);
-    exposed_constants.insert(ConstantTypes::Phi.name(), ConstantTypes::Phi);
-
-    exposed_constants
-}
+pub static CONSTANT_IDENTIFIERS: LazyLock<HashMap<&'static str, ConstantTypes>> =
+    LazyLock::new(|| {
+        HashMap::from([
+            ("#pi", ConstantTypes::Pi),
+            ("#e", ConstantTypes::E),
+            ("#tau", ConstantTypes::Tau),
+            ("#c", ConstantTypes::C),
+            ("#G", ConstantTypes::G),
+            ("#phi", ConstantTypes::Phi),
+            ("#halfpi", ConstantTypes::HalfPi),
+            ("#thirdpi", ConstantTypes::ThirdPi),
+            ("#quarterpi", ConstantTypes::QuarterPi),
+            ("#sixthpi", ConstantTypes::SixthPi),
+            ("#eighthpi", ConstantTypes::EighthPi),
+            ("#twopi", ConstantTypes::TwoPi),
+        ])
+    });
 
 /// Types of Buckets
 #[derive(Debug, Clone, PartialEq)]

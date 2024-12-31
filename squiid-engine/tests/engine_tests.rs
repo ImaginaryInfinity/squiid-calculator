@@ -34,6 +34,7 @@ fn test_add_constants_to_stack() {
     let _ = engine.add_item_to_stack("#c".into());
     let _ = engine.add_item_to_stack("#G".into());
     let _ = engine.add_item_to_stack("#phi".into());
+    let _ = engine.add_item_to_stack("#eighthpi".into());
 
     assert_eq!(
         engine.stack,
@@ -44,6 +45,7 @@ fn test_add_constants_to_stack() {
             Bucket::from_constant(ConstantTypes::C),
             Bucket::from_constant(ConstantTypes::G),
             Bucket::from_constant(ConstantTypes::Phi),
+            Bucket::from_constant(ConstantTypes::EighthPi),
         ]
     );
 }

@@ -141,7 +141,7 @@ appimage: require-cargo clean build-musl ## Build the AppImage
 	cp branding/icons/squiid512.png package-build/squiid.AppDir/squiid.png
 	cp branding/icons/squiid512.png package-build/squiid.AppDir/usr/share/icons/squiid.png
 	# Download and add kitty terminal to appimage
-	curl -L https://github.com/kovidgoyal/kitty/releases/download/v0.27.1/kitty-0.27.1-x86_64.txz -o package-build/kitty.txz
+	curl -L https://github.com/kovidgoyal/kitty/releases/download/v0.38.1/kitty-0.38.1-x86_64.txz -o package-build/kitty.txz
 	# Untar kitty
 	tar -xf package-build/kitty.txz --directory package-build/squiid.AppDir/usr/
 	# Make sure kitty is executable

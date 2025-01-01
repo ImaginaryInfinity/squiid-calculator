@@ -3,10 +3,9 @@ use std::{
     fmt,
     fs::File,
     io::Write,
-    panic::{self, PanicInfo},
+    panic::{self, PanicHookInfo},
+    path::PathBuf,
 };
-
-use crate::config_handler;
 
 #[derive(Debug)]
 struct EnvironmentDetails<'a> {
@@ -15,29 +14,19 @@ struct EnvironmentDetails<'a> {
     crate_name: &'a str,
     arch: &'a str,
     os: &'a str,
-    ipc_enabled: bool,
 }
 
 impl fmt::Display for EnvironmentDetails<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Version: {}\nPackage: {}\nCrate: {}\nArchitecture: {}\nOS: {}\nIPC: {}",
-            self.version,
-            self.pkg_name,
-            self.crate_name,
-            self.arch,
-            self.os,
-            if self.ipc_enabled {
-                "Enabled"
-            } else {
-                "Disabled"
-            }
+            "Version: {}\nPackage: {}\nCrate: {}\nArchitecture: {}\nOS: {}",
+            self.version, self.pkg_name, self.crate_name, self.arch, self.os,
         )
     }
 }
 
-pub fn crash_report(panic_info: &PanicInfo, write_dump_file: bool) {
+pub fn crash_report(panic_info: &PanicHookInfo, config_path: Option<PathBuf>) {
     let backtrace = backtrace::Backtrace::new();
 
     // create environment struct
@@ -47,7 +36,6 @@ pub fn crash_report(panic_info: &PanicInfo, write_dump_file: bool) {
         crate_name: env!("CARGO_CRATE_NAME"),
         arch: std::env::consts::ARCH,
         os: std::env::consts::OS,
-        ipc_enabled: cfg!(feature = "ipc"),
     };
 
     // print crash report for user
@@ -63,8 +51,8 @@ pub fn crash_report(panic_info: &PanicInfo, write_dump_file: bool) {
     );
 
     // determine the config directory to write the crash to
-    if write_dump_file {
-        let result = panic::catch_unwind(config_handler::determine_config_path);
+    if let Some(write_path) = config_path {
+        let result = panic::catch_unwind(|| write_path);
 
         let config_directory = match result {
             Ok(value) => value.parent().map(|path| path.to_path_buf()),

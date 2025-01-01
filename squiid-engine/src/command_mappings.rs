@@ -1,6 +1,6 @@
 use std::{borrow::BorrowMut, collections::HashMap};
 
-use crate::{engine::Engine, protocol::server_response::MessageAction};
+use crate::{engine::Engine, EngineSignal};
 
 /// Insert a function and reference name into a hashmap
 macro_rules! function_map_entry {
@@ -12,8 +12,8 @@ macro_rules! function_map_entry {
     };
 }
 
-type EngineFunction = dyn Fn(&mut Engine) -> Result<MessageAction, String>;
-pub type CommandsMap = HashMap<String, Box<dyn Fn(&mut Engine) -> Result<MessageAction, String>>>;
+type EngineFunction = dyn Fn(&mut Engine) -> Result<EngineSignal, String> + Send + Sync + 'static;
+pub type CommandsMap = HashMap<String, Box<EngineFunction>>;
 
 /// Create a map of every available function and it's respective command
 pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
@@ -61,18 +61,12 @@ pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     function_map_entry!(function_map, "clear", clear);
     function_map_entry!(function_map, "undo", undo);
     function_map_entry!(function_map, "redo", redo);
-    function_map_entry!(function_map, "commands", list_commands);
     function_map_entry!(function_map, "quit", quit);
-    function_map_entry!(
-        function_map,
-        "update_previous_answer",
-        update_previous_answer
-    );
 
     // manually insert refresh since it doesn't use an engine method
     function_map.insert(
         String::from("refresh"),
-        Box::new(|_engine: &mut Engine| Ok(MessageAction::SendStack)),
+        Box::new(|_engine: &mut Engine| Ok(EngineSignal::StackUpdated)),
     );
 
     function_map

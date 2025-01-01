@@ -10,19 +10,13 @@ contact: imaginaryinfinity@googlegroups.com
 license: GPL-3.0
 
 grade: stable
-base: core20
+base: core22
 confinement: strict
-build-packages:
-  - cmake
 
 parts:
   squiid:
     plugin: rust
     source: .
-
-plugs:
-  squiid-network:
-    interface: network-bind
 
 apps:
   squiid:

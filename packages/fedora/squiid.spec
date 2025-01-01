@@ -8,7 +8,6 @@ License:  GPL-3.0
 URL:      https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid
 Source:   https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/archive/%{version}/squiid-%{version}.tar.gz
 BuildRequires:   make
-BuildRequires:   cmake
 BuildRequires:   rust
 
 %description

@@ -1,13 +1,7 @@
-use std::{collections::HashMap, io};
+use std::{collections::HashMap, io, sync::LazyLock};
 
-use lazy_static::lazy_static;
-use squiid_engine::{
-    extract_data,
-    protocol::server_response::{ResponsePayload, ResponseType, ServerResponseMessage},
-};
+use squiid_engine::{execute_multiple_rpn, execute_single_rpn, EngineSignalSet};
 use unicode_width::UnicodeWidthStr;
-
-use nng::Socket;
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 
@@ -21,12 +15,12 @@ use ratatui::{
 };
 
 use crate::{
-    config_utils,
-    utils::{current_char_index, input_buffer_is_sci_notate, send_input_data},
+    config_handler::{self, Config},
+    utils::{current_char_index, input_buffer_is_sci_notate},
 };
 
 /// The input mode state of the application
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 enum InputMode {
     /// No input mode (select, info view, etc.)
     None,
@@ -36,9 +30,9 @@ enum InputMode {
     Rpn,
 }
 
-lazy_static! {
-    /// RPN symbols and their corresponding commands
-    static ref RPN_SYMBOL_MAP: HashMap<KeyCode, &'static str> = [
+/// RPN symbols and their corresponding commands
+static RPN_SYMBOL_MAP: LazyLock<HashMap<KeyCode, &'static str>> = LazyLock::new(|| {
+    [
         (KeyCode::Char('+'), "add"),
         (KeyCode::Char('-'), "subtract"),
         (KeyCode::Char('*'), "multiply"),
@@ -51,8 +45,8 @@ lazy_static! {
     ]
     .iter()
     .copied()
-    .collect();
-}
+    .collect()
+});
 
 /// State of the selection view
 struct StatefulTopPanel {
@@ -122,11 +116,9 @@ impl StatefulTopPanel {
 }
 
 /// App holds the state of the application
-pub struct App<'a> {
+pub struct App {
     /// Current value of the input box
     input: String,
-    /// Socket used to communicate with the backend
-    pub socket: &'a Socket,
     /// Current input mode
     input_mode: InputMode,
     /// History of recorded messages
@@ -142,13 +134,14 @@ pub struct App<'a> {
     /// Stack selection state
     top_panel_state: StatefulTopPanel,
     quit_app: bool,
+    pub config: Config,
 }
 
-impl<'a> App<'a> {
-    pub fn new(socket: &'a Socket) -> App<'a> {
+impl App {
+    pub fn new() -> App {
+        config_handler::init_config();
         App {
             input: String::new(),
-            socket,
             input_mode: InputMode::None,
             history: Vec::new(),
             info: vec![
@@ -160,7 +153,7 @@ impl<'a> App<'a> {
                 "   .kWW0dc:,'.          ,c       ".to_string(),
                 "      ;lxO0XWMXx.      .c.       ".to_string(),
                 "             '0MMl     c'        ".to_string(),
-                "   .           NMW    :;     ".to_string() + "        Copyright 2023",
+                "   .           NMW    :;     ".to_string() + "        Copyright 2025",
                 "  OMN:        ;WM0   ,:      ".to_string() + "Connor Sample and Finian Wright",
                 "   cXMW0xoodkNMNo   'c.          ".to_string(),
                 "     .:oxkOkdl'    .c.           ".to_string(),
@@ -173,15 +166,14 @@ impl<'a> App<'a> {
             left_cursor_offset: 0,
             top_panel_state: StatefulTopPanel::with_items(vec![]),
             quit_app: false,
+            config: config_handler::read_user_config().expect("config should've been initialized"),
         }
     }
-}
 
-impl<'a> App<'a> {
     /// Get keybind from config file as string
     pub fn keybind_from_config(&mut self, keybind_name: &str) -> String {
-        config_utils::get_key(self, "keybinds", keybind_name)
-            .as_str()
+        self.config
+            .get_key("keybinds", keybind_name)
             .unwrap()
             .to_string()
     }
@@ -212,33 +204,31 @@ impl<'a> App<'a> {
 }
 
 /// Update the stack if msg is not an error. If it is an error, display that error
-pub fn update_stack_or_error(msg: ServerResponseMessage, app: &mut App) {
+pub fn update_stack_or_error(msg: EngineSignalSet, app: &mut App) {
     // TODO: make a seperate display for commands
-    match msg.response_type {
-        ResponseType::Stack => {
-            app.stack = extract_data!(msg.payload, ResponsePayload::Stack)
-                .iter()
-                .map(|item| item.to_string())
-                .collect();
-        }
-        ResponseType::Error => {
-            let error_message = extract_data!(msg.payload, ResponsePayload::Error);
-            app.error = format!("Error: {}", error_message);
-        }
-        ResponseType::Commands => todo!(),
-        ResponseType::QuitSig => app.quit_app = true,
-        // configuration return is handeled elsewhere
-        ResponseType::Configuration | ResponseType::PrevAnswer => (),
+    if msg.stack_updated() {
+        app.stack = squiid_engine::get_stack()
+            .iter()
+            .map(|i| i.to_string())
+            .collect();
+    }
+
+    if msg.should_quit() {
+        app.quit_app = true;
+    }
+
+    if let Some(error) = msg.get_error() {
+        app.error = format!("Error: {}", error);
     }
 }
 
 /// Handle algebraic expressions
-fn algebraic_eval(app: &mut App, socket: &Socket) {
+fn algebraic_eval(app: &mut App) {
     // Get string from input box and empty it
     let entered_expression: String = app.input.drain(..).collect();
 
     // Clear stack
-    _ = send_input_data(socket, "clear");
+    _ = execute_single_rpn!("clear");
 
     // Special frontend commands
     if entered_expression.as_str() == "clear" {
@@ -271,10 +261,9 @@ fn algebraic_eval(app: &mut App, socket: &Socket) {
         }
     }
 
-    // Iterate through expression
-    for command_raw in rpn_expression.iter() {
-        // Convert operator symbols to engine commands
-        let command = match *command_raw {
+    let transformed_expression = rpn_expression
+        .iter()
+        .map(|&v| match v {
             "+" => "add",
             "-" => "subtract",
             "*" => "multiply",
@@ -287,13 +276,12 @@ fn algebraic_eval(app: &mut App, socket: &Socket) {
             "<" => "lt",
             ">=" => "geq",
             "<=" => "leq",
-            _ => command_raw,
-        };
-        // Send command to server
-        let msg = send_input_data(socket, command);
-        // Update stack
-        update_stack_or_error(msg, app);
-    }
+            _ => v,
+        })
+        .collect::<Vec<&str>>();
+
+    let response = execute_multiple_rpn(transformed_expression);
+    update_stack_or_error(response, app);
 
     // Empty placeholder result in case there is nothing on the stack
     let mut result = "";
@@ -319,19 +307,18 @@ fn algebraic_eval(app: &mut App, socket: &Socket) {
 }
 
 /// Handle typing in RPN mode
-fn rpn_input(app: &mut App, socket: &Socket, c: char) {
+fn rpn_input(app: &mut App, c: char) {
     // Add character to input box
     let index = current_char_index(app.left_cursor_offset as usize, app.input.len());
     app.input.insert(index, c);
 
     // query engine for available commands
-    let binding = send_input_data(socket, "commands");
-    let commands = extract_data!(binding.payload, ResponsePayload::Commands);
+    let commands = squiid_engine::get_commands();
 
     // Check if input box contains a command, if so, automatically execute it
     if commands.contains(&app.input) {
         // Send command
-        let msg = send_input_data(socket, app.input.as_str());
+        let msg = execute_single_rpn!(app.input.as_str());
         // Update stack display
         update_stack_or_error(msg, app);
         // Clear input
@@ -342,7 +329,7 @@ fn rpn_input(app: &mut App, socket: &Socket, c: char) {
 }
 
 /// Handle RPN enter
-fn rpn_enter(app: &mut App, socket: &Socket) {
+fn rpn_enter(app: &mut App) {
     // Get command from input box and empty it
     let command: String = app.input.drain(..).collect();
     // reset cursor offset
@@ -350,24 +337,24 @@ fn rpn_enter(app: &mut App, socket: &Socket) {
     // Send command if there is one, otherwise duplicate last item in stack
     let msg = if !command.is_empty() {
         // Send to backend and get response
-        send_input_data(socket, command.as_str())
+        execute_single_rpn!(command.as_str())
     } else {
         // Empty input, duplicate
-        send_input_data(socket, "dup")
+        execute_single_rpn!("dup")
     };
     // Update stack display
     update_stack_or_error(msg, app);
 }
 
 /// Handle RPN operators
-fn rpn_operator(app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
+fn rpn_operator(app: &mut App, key: crate::event::KeyEvent) {
     // Get operand from input box and empty it
     let command: String = app.input.drain(..).collect();
     // reset cursor offset
     app.left_cursor_offset = 0;
     // Send operand to backend if there is one
     if !command.is_empty() {
-        _ = send_input_data(socket, command.as_str());
+        _ = execute_single_rpn!(command.as_str());
     }
 
     // Select operation
@@ -376,20 +363,19 @@ fn rpn_operator(app: &mut App, socket: &Socket, key: crate::event::KeyEvent) {
         _ => "there is no way for this to occur",
     };
     // Send operation
-    let msg = send_input_data(socket, operation);
+    let msg = execute_single_rpn!(operation);
     // Update stack display
     update_stack_or_error(msg, app);
 }
 
 /// Create the main application and run it
-pub fn run_app<B: Backend>(
-    terminal: &mut Terminal<B>,
-    mut app: App,
-    socket: &Socket,
-) -> io::Result<()> {
+pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<()> {
     // set default start mode
-    let binding = config_utils::get_key(&mut app, "system", "start_mode");
-    let start_mode = binding.as_str().unwrap();
+    let binding = app.config.get_key("system", "start_mode");
+    let start_mode = match binding {
+        Ok(val) => &val.to_string(),
+        Err(_) => "algebraic",
+    };
 
     app.input_mode = match start_mode {
         "algebraic" => InputMode::Algebraic,
@@ -428,7 +414,7 @@ pub fn run_app<B: Backend>(
                     match key.code {
                         // Handle enter
                         _ if key.code == app.keycode_from_config("enter") => {
-                            send_input_data(socket, "update_previous_answer");
+                            // TODO: update previous answer
 
                             if app.top_panel_state.currently_selecting() {
                                 // currently selecting, insert into text
@@ -451,9 +437,9 @@ pub fn run_app<B: Backend>(
 
                                 app.top_panel_state.deselect();
                             } else if app.input_mode == InputMode::Algebraic {
-                                algebraic_eval(&mut app, socket);
+                                algebraic_eval(&mut app);
                             } else {
-                                rpn_enter(&mut app, socket);
+                                rpn_enter(&mut app);
                             }
                         }
                         // Handle single character operators
@@ -461,39 +447,39 @@ pub fn run_app<B: Backend>(
                             && app.input_mode == InputMode::Rpn
                             && !input_buffer_is_sci_notate(&app.input) =>
                         {
-                            rpn_operator(&mut app, socket, key);
+                            rpn_operator(&mut app, key);
                         }
 
                         _ if key.code == app.keycode_from_config("rpn_drop")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_input_data(socket, "drop"), &mut app)
+                            update_stack_or_error(execute_single_rpn!("drop"), &mut app)
                         }
 
                         _ if key.code == app.keycode_from_config("rpn_roll_up")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_input_data(socket, "rollup"), &mut app)
+                            update_stack_or_error(execute_single_rpn!("rollup"), &mut app)
                         }
                         _ if key.code == app.keycode_from_config("rpn_roll_down")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_input_data(socket, "rolldown"), &mut app)
+                            update_stack_or_error(execute_single_rpn!("rolldown"), &mut app)
                         }
                         _ if key.code == app.keycode_from_config("rpn_swap")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_input_data(socket, "swap"), &mut app)
+                            update_stack_or_error(execute_single_rpn!("swap"), &mut app)
                         }
                         _ if key.code == app.keycode_from_config("rpn_undo")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_input_data(socket, "undo"), &mut app)
+                            update_stack_or_error(execute_single_rpn!("undo"), &mut app)
                         }
                         _ if key.code == app.keycode_from_config("rpn_redo")
                             && app.input_mode == InputMode::Rpn =>
                         {
-                            update_stack_or_error(send_input_data(socket, "redo"), &mut app)
+                            update_stack_or_error(execute_single_rpn!("redo"), &mut app)
                         }
                         // Handle typing characters
                         KeyCode::Char(c) => {
@@ -505,7 +491,7 @@ pub fn run_app<B: Backend>(
                                 );
                                 app.input.insert(index, c);
                             } else if app.input_mode == InputMode::Rpn {
-                                rpn_input(&mut app, socket, c);
+                                rpn_input(&mut app, c);
                             }
                         }
                         // Handle backspace
@@ -597,10 +583,11 @@ pub fn run_app<B: Backend>(
         }
         // Update stack if there is currently an error, since the last request will have gotten the error not the stack
         if !app.error.is_empty() {
-            let msg = send_input_data(socket, "refresh");
-            app.stack = extract_data!(msg.payload, ResponsePayload::Stack)
+            let _ = execute_single_rpn!("refresh");
+
+            app.stack = squiid_engine::get_stack()
                 .iter()
-                .map(|item| item.to_string())
+                .map(|b| b.to_string())
                 .collect();
         }
     }

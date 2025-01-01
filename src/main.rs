@@ -1,13 +1,11 @@
-use std::{error::Error, io, thread, time::Duration};
+use std::{error::Error, io};
 
-use clap::arg;
-use nng::{Protocol, Socket};
 use ratatui::{backend::CrosstermBackend, Terminal};
 
 mod app;
 use app::{run_app, App};
 
-mod config_utils;
+mod config_handler;
 mod utils;
 
 use crossterm::{
@@ -18,43 +16,17 @@ use crossterm::{
 use squiid_engine::crash_reporter;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let matches = clap::command!()
-        .args(&[arg!(-p --port [PORT] "an optional port number to use")])
-        .get_matches();
+    let args: Vec<String> = std::env::args().collect();
+    if args.contains(&"--version".to_string()) || args.contains(&"-V".to_string()) {
+        println!("squiid {}", env!("CARGO_PKG_VERSION"));
+        return Ok(());
+    }
 
-    let specified_port = matches.get_one::<String>("port");
-
-    // determine open TCP port
-    let possible_port_num = match specified_port {
-        Some(port) => Some(
-            port.parse::<u16>()
-                .expect("port argument must be an integer"),
-        ),
-        None => utils::get_available_port(20000..30000),
-    };
-
-    let port_num = match possible_port_num {
-        Some(value) => value,
-        None => return Err("Could not find open port in range 20000-30000".into()),
-    };
-
-    // start evaluation server
-    let _ = thread::spawn(move || {
-        squiid_engine::start_server(Some(&format!("tcp://127.0.0.1:{}", port_num)));
-    });
-
-    // Wait for server to start
-    thread::sleep(Duration::from_millis(10));
-
-    // initiate nng connection
-    let socket = Socket::new(Protocol::Req0).unwrap();
-    assert!(socket
-        .dial(&format!("tcp://127.0.0.1:{}", port_num))
-        .is_ok());
+    config_handler::init_config();
 
     std::panic::set_hook(Box::new(|panic| {
         reset_terminal().unwrap();
-        crash_reporter::crash_report(panic, true);
+        crash_reporter::crash_report(panic, Some(config_handler::determine_config_path()));
         std::process::exit(1);
     }));
 
@@ -71,8 +43,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     print!("{}[2J", 27 as char);
 
     // create app and run it
-    let app = App::new(&socket);
-    let res = run_app(&mut terminal, app, &socket);
+    let app = App::new();
+    let res = run_app(&mut terminal, app);
 
     reset_terminal()?;
 

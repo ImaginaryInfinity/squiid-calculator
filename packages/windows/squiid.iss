@@ -7,6 +7,7 @@
 #define MyAppPublisher "ImaginaryInfinity"
 #define MyAppURL "https://imaginaryinfinity.net/projects/squiid/"
 #define MyAppExeName "squiid.exe"
+#define MyAppIcon "squiidsquare.ico"
 ; #define MyAppAssocName MyAppName + " File"
 ; #define MyAppAssocExt ".myp"
 ; #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
@@ -30,11 +31,12 @@ LicenseFile=.\LICENSE.txt
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 OutputBaseFilename=squiid-installer
-SetupIconFile=.\squiidsquare.ico
+SetupIconFile=.\{#MyAppIcon}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 ChangesEnvironment=yes
+UninstallDisplayIcon={app}\{#MyAppIcon}
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -45,6 +47,7 @@ Name: modifypath; Description: &Add application directory to your PATH
 
 [Files]
 Source: ".\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\{#MyAppIcon}"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 ; [Registry]
@@ -55,8 +58,8 @@ Source: ".\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 ; Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes"; ValueType: string; ValueName: ".myp"; ValueData: ""
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppIcon}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; IconFilename: "{app}\{#MyAppIcon}"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent shellexec

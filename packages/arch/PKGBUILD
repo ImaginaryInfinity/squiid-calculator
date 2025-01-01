@@ -9,6 +9,7 @@ license=('GPLv3')
 makedepends=('cargo')
 source=("https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/archive/$pkgver/$pkgname-$pkgver.tar.gz")
 sha512sums=('${SHA512SUM}')
+options=(strip !debug)
 
 prepare() {
 	cd "$pkgname-$pkgver"

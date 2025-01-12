@@ -2,7 +2,6 @@ use std::{
     ffi::{CStr, CString, NulError},
     mem,
     os::raw::{c_char, c_int},
-    ptr,
 };
 
 use crate::parse;
@@ -14,16 +13,18 @@ use crate::parse;
 struct ParseResultFFI {
     /// The array of strings if the result was a success, else null
     result: *mut *mut c_char,
+    /// The length of the result array
+    result_len: c_int,
     /// The error message if an error was encountered, else null
-    /// TODO: check if strings should be freed
     error: *mut c_char,
 }
 
 impl ParseResultFFI {
     /// Construct a new successful ParseResultFFI
-    fn new(result: *mut *mut c_char) -> Self {
+    fn new(result: *mut *mut c_char, result_len: c_int) -> Self {
         Self {
             result,
+            result_len,
             error: std::ptr::null_mut(),
         }
     }
@@ -33,6 +34,7 @@ impl ParseResultFFI {
         let raw_error = CString::new(error).unwrap().into_raw();
         Self {
             result: std::ptr::null_mut(),
+            result_len: 0,
             error: raw_error,
         }
     }
@@ -43,10 +45,9 @@ impl ParseResultFFI {
 /// # Arguments
 ///
 /// * `input` - The string input to parse
-/// * `outlen` - A pointer to an integer to store the length of the result array
 #[no_mangle]
 #[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-extern "C" fn parse_exposed(input: *const c_char, outlen: *mut c_int) -> ParseResultFFI {
+extern "C" fn parse_exposed(input: *const c_char) -> ParseResultFFI {
     let c_str = unsafe { CStr::from_ptr(input) };
     let input_string = match c_str.to_str() {
         Ok(v) => v,
@@ -86,34 +87,38 @@ extern "C" fn parse_exposed(input: *const c_char, outlen: *mut c_int) -> ParseRe
     let vec_ptr = out.as_mut_ptr();
     mem::forget(out);
 
-    unsafe { ptr::write(outlen, len as c_int) };
-
-    ParseResultFFI::new(vec_ptr)
+    ParseResultFFI::new(vec_ptr, len as c_int)
 }
 
 /// Free an array of strings that was returned over the FFI boundary.
 ///
 /// # Arguments
 ///
-/// * `array` - the string array to free
-/// * `len` - the length of the string array
+/// * `parse_result` - the ParseResultFFI object that should be freed
 ///
 /// # Panics
 ///
-/// If the array pointer is null or if the vec or strings are invalid data
+/// If the strings in the vec are invalid data
 #[no_mangle]
-extern "C" fn free_string_array(array: *mut *mut c_char, len: c_int) {
-    let len = len as usize;
+extern "C" fn free_parse_result(parse_result: ParseResultFFI) {
+    let len = parse_result.result_len as usize;
 
-    // Get back our vector.
-    // Previously we shrank to fit, so capacity == length.
-    let v = unsafe { Vec::from_raw_parts(array, len, len) };
+    if !parse_result.result.is_null() {
+        // Get back our vector.
+        // Previously we shrank to fit, so capacity == length.
+        let v = unsafe { Vec::from_raw_parts(parse_result.result, len, len) };
 
-    // Now drop one string at a time.
-    for elem in v {
-        let s = unsafe { CString::from_raw(elem) };
-        mem::drop(s);
+        // Now drop one string at a time.
+        for elem in v {
+            let s = unsafe { CString::from_raw(elem) };
+            mem::drop(s);
+        }
+
+        // Afterwards the vector will be dropped and thus freed.
     }
 
-    // Afterwards the vector will be dropped and thus freed.
+    // Free the error string
+    if !parse_result.error.is_null() {
+        let _ = unsafe { CString::from_raw(parse_result.error) };
+    }
 }

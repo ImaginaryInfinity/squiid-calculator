@@ -10,7 +10,7 @@ contact: imaginaryinfinity@googlegroups.com
 license: GPL-3.0
 
 grade: stable
-base: core22
+base: core20
 confinement: strict
 
 parts:

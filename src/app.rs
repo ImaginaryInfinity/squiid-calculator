@@ -1,6 +1,8 @@
 use std::{collections::HashMap, io, sync::LazyLock};
 
-use squiid_engine::{execute_multiple_rpn, execute_single_rpn, EngineSignalSet};
+use squiid_engine::{
+    execute_multiple_rpn, execute_single_rpn, update_previous_answer, EngineSignalSet,
+};
 use unicode_width::UnicodeWidthStr;
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
@@ -414,7 +416,7 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Resu
                     match key.code {
                         // Handle enter
                         _ if key.code == app.keycode_from_config("enter") => {
-                            // TODO: update previous answer
+                            update_previous_answer();
 
                             if app.top_panel_state.currently_selecting() {
                                 // currently selecting, insert into text

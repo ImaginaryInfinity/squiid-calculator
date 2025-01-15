@@ -140,6 +140,8 @@ appimage: require-cargo clean build-musl ## Build the AppImage
 	# Copy icon
 	cp branding/icons/squiid512.png package-build/squiid.AppDir/squiid.png
 	cp branding/icons/squiid512.png package-build/squiid.AppDir/usr/share/icons/squiid.png
+	# copy the kitty icon (cant be larger than 128x128 on X11)
+	cp branding/icons/squiid128.png package-build/squiid.AppDir/kitty.app.png
 	# Download and add kitty terminal to appimage
 	curl -L https://github.com/kovidgoyal/kitty/releases/download/v0.38.1/kitty-0.38.1-x86_64.txz -o package-build/kitty.txz
 	# Untar kitty

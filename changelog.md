@@ -1,3 +1,9 @@
+# 1.2.1
+
+- Fix previous answer variable not working (#73). Introduced in 26dd43094319e27e9907d2c85205226b59136b2c
+- (re?)introduction of the icon on flathub
+- Added window icon to the AppImage when launched outside of a terminal
+
 # 1.2.0
 
 - Update some flatpak metadata issues

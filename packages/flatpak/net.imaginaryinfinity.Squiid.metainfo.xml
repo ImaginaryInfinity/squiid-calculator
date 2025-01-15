@@ -15,6 +15,7 @@
     <color type="primary" scheme_preference="light">#268bd2</color>
     <color type="primary" scheme_preference="dark">#134263</color>
   </branding>
+  <icon type="stock">net.imaginaryinfinity.Squiid</icon>
   <screenshots>
     <screenshot type="default">
       <caption>Algebraic Mode</caption>

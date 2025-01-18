@@ -13,9 +13,6 @@ test:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "merge_request_event"'
       when: always
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      changes:
-        - '*'
 
 build_snap_amd64:
   extends: [ .snapcraft, .amd64 ]
@@ -24,35 +21,63 @@ build_snap_amd64:
     - apk add make gettext
     - make snap_folder
     - !reference [".snapcraft", "before_script"]
+  # rules:
+  #   - if: '$CI_PIPELINE_SOURCE == "web"'
+  #     when: always
+
+build_snap_i386:
+  extends: [ .snapcraft, .i386 ]
+  before_script:
+    - apk update
+    - apk add make gettext
+    - make snap_folder
+    - !reference [".snapcraft", "before_script"]
+  # rules:
+  #   - if: '$CI_PIPELINE_SOURCE == "web"'
+  #     when: always
+
+build_snap_arm64:
+  extends: [ .snapcraft, .arm64 ]
+  before_script:
+    - apk update
+    - apk add make gettext
+    - make snap_folder
+    - !reference [".snapcraft", "before_script"]
+  # rules:
+  #   - if: '$CI_PIPELINE_SOURCE == "web"'
+  #     when: always
+
+build_snap_armhf:
+  extends: [ .snapcraft, .armhf ]
+  before_script:
+    - apk update
+    - apk add make gettext
+    - make snap_folder
+    - !reference [".snapcraft", "before_script"]
+  # rules:
+  #   - if: '$CI_PIPELINE_SOURCE == "web"'
+  #     when: always
+
+build_snap_ppc64el:
+  extends: [ .snapcraft, .ppc64el ]
+  before_script:
+    - apk update
+    - apk add make gettext
+    - make snap_folder
+    - !reference [".snapcraft", "before_script"]
+  # rules:
+  #   - if: '$CI_PIPELINE_SOURCE == "web"'
+  #     when: always
 
 deploy_snap:
   extends: [ .publish-snap ]
   variables:
-    RELEASE_CHANNEL: edge
+    RELEASE_CHANNEL: stable
   needs:
   - job: build_snap_amd64
     artifacts: true
-
-# deploy-snap:
-#   stage: deploy
-#   image: ubuntudesktop/gnome-3-38-2004
-#   before_script:
-#     - apt update
-#     - apt install cargo gettext-base cmake -y
-#   script:
-#     - echo "$SNAPCRAFT_STORE_CREDENTIALS" > login.priv
-#     - snapcraft login --with login.priv
-#     - make snap
-#     - case "$CI_COMMIT_BRANCH" in
-#       "trunk") snapcraft upload --release=stable squiid*.snap; ;;
-#       *) snapcraft upload --release=edge squiid*.snap; ;;
-#       esac
-#   rules:
-#     - if: '$CI_PIPELINE_SOURCE == "web"'
-#       when: always
-#     - if: '$CI_PIPELINE_SOURCE == "schedule"'
-#       changes:
-#         - '*'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
 
 deploy-aur:
   stage: deploy
@@ -105,9 +130,6 @@ build-appimage:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: always
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      changes:
-        - '*'
 
 build-musl:
   stage: build
@@ -121,9 +143,6 @@ build-musl:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: always
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      changes:
-        - '*'
 
 build-windows:
   stage: build
@@ -144,9 +163,6 @@ build-windows:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: always
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      changes:
-        - '*'
 
 build-windows-installer:
   stage: build
@@ -168,9 +184,6 @@ build-windows-installer:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: always
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      changes:
-        - '*'
 
 # deploy-ppa:
 #   stage: deploy
@@ -203,6 +216,3 @@ build-deb:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: always
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      changes:
-        - '*'

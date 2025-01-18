@@ -8,9 +8,6 @@ stages:
 test:
   stage: test
   image: rust:latest
-  before_script:
-    - apt update
-    - apt install cmake -y
   script:
     - RUST_BACKTRACE=1 cargo test -p squiid -p squiid-engine -p squiid-parser --verbose
   rules:
@@ -22,11 +19,18 @@ test:
 
 build_snap_amd64:
   extends: [ .snapcraft, .amd64 ]
+  before_script:
+    - apt update
+    - apt install cargo gettext-base
+    - make snap
 
 deploy_snap:
   extends: [ .publish-snap ]
   variables:
     RELEASE_CHANNEL: edge
+  needs:
+  - job: build_snap_amd64
+    artifacts: true
 
 # deploy-snap:
 #   stage: deploy
@@ -79,7 +83,7 @@ build-appimage:
   stage: build
   image: archlinux:latest
   before_script:
-    - pacman --noconfirm -Syu curl make cmake musl rustup gcc
+    - pacman --noconfirm -Syu curl make musl rustup gcc
     - curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o /usr/local/bin/appimagetool
     - chmod a+rx /usr/local/bin/appimagetool
     - previous_dir=`pwd`
@@ -125,7 +129,7 @@ build-windows:
   image: alpine:latest
   before_script:
     - apk update
-    - apk add curl make cmake gcc mingw-w64-gcc musl-dev gettext
+    - apk add curl make gcc mingw-w64-gcc musl-dev gettext
     - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -t x86_64-pc-windows-gnu -y
   script:
     - source "$HOME/.cargo/env"

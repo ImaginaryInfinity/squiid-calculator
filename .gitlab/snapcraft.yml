@@ -1,0 +1,191 @@
+.noarch:  { variables: { ARCHITECTURE: '' } }
+.amd64:   { variables: { ARCHITECTURE: amd64 } }
+.i386:    { variables: { ARCHITECTURE: i386 } }
+.arm64:   { variables: { ARCHITECTURE: arm64 } }
+.armhf:   { variables: { ARCHITECTURE: armhf } }
+.ppc64el: { variables: { ARCHITECTURE: ppc64el } }
+.s390x:   { variables: { ARCHITECTURE: s390x } }
+.riscv64: { variables: { ARCHITECTURE: riscv64 } }
+
+.snapcraft:
+  stage: build
+
+  image:
+    name: docker:latest
+
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+
+  services:
+    - docker:dind
+
+  before_script:
+    - docker run --privileged --rm tonistiigi/binfmt --uninstall linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x,linux/riscv64
+    - docker run --privileged --rm tonistiigi/binfmt --install linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x,linux/riscv64
+    - apk add --no-cache bash
+    - |
+      cat > /tmp/run_snapcraft.sh <<'EOF'
+      #!/bin/bash
+      set -x
+
+      if [ -z "$SNAPCRAFT_PROJECT_ROOT" ]; then
+        SNAPCRAFT_PROJECT_ROOT=./
+      else
+        SNAPCRAFT_PROJECT_ROOT="./$SNAPCRAFT_PROJECT_ROOT"
+      fi
+      SNAPCRAFT_PROJECT_ROOT="$(realpath "$SNAPCRAFT_PROJECT_ROOT")"
+
+      POTENTIAL_SNAPCRAFT_YAML_FILES=()
+      POTENTIAL_SNAPCRAFT_YAML_FILES+=("$SNAPCRAFT_PROJECT_ROOT/snap/snapcraft.yaml")
+      POTENTIAL_SNAPCRAFT_YAML_FILES+=("$SNAPCRAFT_PROJECT_ROOT/snapcraft.yaml")
+      POTENTIAL_SNAPCRAFT_YAML_FILES+=("$SNAPCRAFT_PROJECT_ROOT/.snapcraft.yaml")
+      POTENTIAL_SNAPCRAFT_YAML_FILES+=("$SNAPCRAFT_PROJECT_ROOT/build-aux/snap/snapcraft.yaml")
+
+      FOUND_SNAPCRAFT_YAML_FILE=
+      for snapcraftyaml in "${POTENTIAL_SNAPCRAFT_YAML_FILES[@]}"; do
+        if [ -f "$snapcraftyaml" ]; then
+          FOUND_SNAPCRAFT_YAML_FILE=1
+          BASE_SNAP="$(awk '/^build-base:/ { print $2 }' "$snapcraftyaml")"
+          [ -z "$BASE_SNAP" ] && BASE_SNAP="$(awk '/^base:/ { print $2 }' "$snapcraftyaml")"
+          break
+        fi
+      done
+
+      if [ "$FOUND_SNAPCRAFT_YAML_FILE" != 1 ]; then
+        echo "ERROR: No snapcraft.yaml found."
+        exit 1
+      fi
+
+      case "$BASE_SNAP" in
+        "core"|"core18"|"core20"|"core22")
+          ;;
+        *)
+          echo "NOTICE: No base or build-base specified in your snapcraft.yaml. Defaulting to 'core'."
+          BASE_SNAP=core
+          ;;
+      esac
+      
+      ENVVARS="--env SNAPCRAFT_IMAGE_INFO={\"build_url\":\"$CI_PIPELINE_URL\"}"
+      ENVVARS="$ENVVARS --env SNAPCRAFT_ENABLE_ERROR_REPORTING=n"
+      [ -n "$SNAPCRAFT_BUILD_INFO" ] && ENVVARS="$ENVVARS --env SNAPCRAFT_BUILD_INFO='$SNAPCRAFT_BUILD_INFO'" || ENVVARS="$ENVVARS --env SNAPCRAFT_BUILD_INFO=1"
+      [ -n "$USE_SNAPCRAFT_CHANNEL" ] && ENVVARS="$ENVVARS --env USE_SNAPCRAFT_CHANNEL='$USE_SNAPCRAFT_CHANNEL'"
+      
+      case "${ARCHITECTURE:-amd64}" in
+        "amd64")
+          PLATFORM="--platform linux/amd64"
+          ;;
+        "i386")
+          PLATFORM="--platform linux/386"
+          ;;
+        "arm64")
+          PLATFORM="--platform linux/arm64"
+          ;;
+        "armhf")
+          PLATFORM="--platform linux/arm/v7"
+          ;;
+        "ppc64el")
+          PLATFORM="--platform linux/ppc64le"
+          ;;
+        "s390x")
+          PLATFORM="--platform linux/s390x"
+          ;;
+        "riscv64")
+          PLATFORM="--platform linux/riscv64"
+          ;;
+        *)
+          echo "ERROR: unknown architecture '$ARCHITECTURE'."
+          exit 1
+      esac
+
+      if [ "$ARCHITECTURE" = "i386" ]; then
+        case "$BASE_SNAP" in
+          core|core18)
+            ;;
+          *)
+            echo "ERROR: i386 is only supported on core and core18."
+            exit 1
+            ;;
+        esac
+      fi
+
+      docker run --privileged --rm --tty \
+                --volume "$SNAPCRAFT_PROJECT_ROOT:/data" \
+                --workdir /data \
+                $ENVVARS \
+                $PLATFORM \
+                diddledani/snapcraft:$BASE_SNAP \
+                    snapcraft $SNAPCRAFT_PARAMETERS
+      if [ $? -ne 0 ]; then
+        echo "ERROR: Build failed"
+        exit 1
+      fi
+
+      SNAPS="$(ls "$SNAPCRAFT_PROJECT_ROOT"/*.snap 2>/dev/null || true)"
+      if [ -z "$SNAPS" ]; then
+        echo "ERROR: No snap files produced by build"
+        exit 1
+      elif [ "$(echo "$SNAPS" | wc -l)" -gt 1 ]; then
+        echo "WARNING: Multiple snaps found in $SNAPCRAFT_PROJECT_ROOT"
+      fi
+      EOF
+
+  script:
+    - bash /tmp/run_snapcraft.sh
+
+  artifacts:
+    paths:
+      - './$SNAPCRAFT_PROJECT_ROOT/*.snap'
+
+.publish-snap:
+  stage: deploy
+
+  image:
+    name: docker:latest
+
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+
+  services:
+    - docker:dind
+
+  before_script:
+    - apk add --no-cache bash
+    - |
+      cat > /tmp/run_snapcraft.sh <<'EOF'
+      #!/bin/bash
+      set -x
+
+      BUILT_SNAPS=$(find . -name "*.snap")
+      if [ -z "$BUILT_SNAPS" ]; then
+        echo "ERROR: No snap files found"
+        exit 1
+      fi
+
+      errors=0
+
+      if [ -n "$RELEASE_CHANNEL" ]; then
+        channel="--release $RELEASE_CHANNEL"
+      fi
+
+      for SNAP in $BUILT_SNAPS; do
+        docker run --name publisher --privileged --rm --tty \
+                  --volume "$PWD:/data" \
+                  --volume "$STORE_LOGIN:/store_login.txt:ro" \
+                  --workdir /data \
+                  diddledani/snapcraft:core22 \
+                      bash -c "snapcraft login --with /store_login.txt && \
+                              snapcraft push $channel $SNAP"
+        if [ $? -ne 0 ]; then
+          echo "ERROR: Upload failed for $SNAP"
+          errors=1
+        fi
+      done
+
+      if [ $errors -ne 0 ]; then
+        echo "ERROR: Upload job failed for one or more snaps"
+        exit 1
+      fi
+      EOF
+
+  script:
+    - bash /tmp/run_snapcraft.sh

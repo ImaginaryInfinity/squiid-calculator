@@ -21,20 +21,9 @@ build_snap_amd64:
     - apk add make gettext
     - make snap_folder
     - !reference [".snapcraft", "before_script"]
-  # rules:
-  #   - if: '$CI_PIPELINE_SOURCE == "web"'
-  #     when: always
-
-build_snap_i386:
-  extends: [ .snapcraft, .i386 ]
-  before_script:
-    - apk update
-    - apk add make gettext
-    - make snap_folder
-    - !reference [".snapcraft", "before_script"]
-  # rules:
-  #   - if: '$CI_PIPELINE_SOURCE == "web"'
-  #     when: always
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
 
 build_snap_arm64:
   extends: [ .snapcraft, .arm64 ]
@@ -43,9 +32,9 @@ build_snap_arm64:
     - apk add make gettext
     - make snap_folder
     - !reference [".snapcraft", "before_script"]
-  # rules:
-  #   - if: '$CI_PIPELINE_SOURCE == "web"'
-  #     when: always
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
 
 build_snap_armhf:
   extends: [ .snapcraft, .armhf ]
@@ -54,9 +43,9 @@ build_snap_armhf:
     - apk add make gettext
     - make snap_folder
     - !reference [".snapcraft", "before_script"]
-  # rules:
-  #   - if: '$CI_PIPELINE_SOURCE == "web"'
-  #     when: always
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
 
 build_snap_ppc64el:
   extends: [ .snapcraft, .ppc64el ]
@@ -65,9 +54,9 @@ build_snap_ppc64el:
     - apk add make gettext
     - make snap_folder
     - !reference [".snapcraft", "before_script"]
-  # rules:
-  #   - if: '$CI_PIPELINE_SOURCE == "web"'
-  #     when: always
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
 
 deploy_snap:
   extends: [ .publish-snap ]

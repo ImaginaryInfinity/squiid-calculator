@@ -23,6 +23,7 @@ build_snap_amd64:
     - apk update
     - apk add make gettext
     - make snap_folder
+    - !reference [".snapcraft", "before_script"]
 
 deploy_snap:
   extends: [ .publish-snap ]

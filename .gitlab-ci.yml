@@ -20,9 +20,9 @@ test:
 build_snap_amd64:
   extends: [ .snapcraft, .amd64 ]
   before_script:
-    - apt update
-    - apt install cargo gettext-base
-    - make snap
+    - apk update
+    - apk add make gettext
+    - make snap_folder
 
 deploy_snap:
   extends: [ .publish-snap ]

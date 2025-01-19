@@ -79,7 +79,7 @@
   <project_license>GPL-3.0-or-later</project_license>
   <description>
     <p>
-      Squiid is a modular calculator. It is currently very early in development but it is intended to be the successor to ImaginaryInfinity Calculator.
+      Advanced calculator written in Rust, featuring a terminal user interface supporting both RPN and algebraic input.
     </p>
   </description>
   <categories>

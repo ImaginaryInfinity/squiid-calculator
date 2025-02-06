@@ -271,7 +271,75 @@ fn test_modulo() {
     let _ = engine.add_item_to_stack("9".into());
     let _ = engine.add_item_to_stack("4".into());
 
+    let _ = engine.add_item_to_stack("-1".into());
+    let _ = engine.add_item_to_stack("10".into());
+
+    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("-10".into());
+
+    let _ = engine.add_item_to_stack("-1".into());
+    let _ = engine.add_item_to_stack("3".into());
+
+    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.add_item_to_stack("-3".into());
+
+    let _ = engine.add_item_to_stack("6.5".into());
+    let _ = engine.add_item_to_stack("3.2".into());
+
+    let _ = engine.add_item_to_stack("3.3".into());
+    let _ = engine.add_item_to_stack("-2.4".into());
+
+    let _ = engine.add_item_to_stack("-6.5".into());
+    let _ = engine.add_item_to_stack("3.2".into());
+
+    let _ = engine.add_item_to_stack("0".into());
+    let _ = engine.add_item_to_stack("5".into());
+
+    let _ = engine.add_item_to_stack("5".into());
+    let _ = engine.add_item_to_stack("0".into());
+
+    let _ = engine.add_item_to_stack("1000000000000".into());
+    let _ = engine.add_item_to_stack("999999999".into());
+
     // evaluate from last stack entries to first
+    let _ = engine.modulo();
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1000.0);
+
+    let result = engine.modulo();
+    assert!(result.is_err());
+
+    let _ = engine.modulo();
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+
+    // -6.5%3.2 == 3.100000...
+    let _ = engine.modulo();
+    assert_eq!(
+        (engine.get_operands_as_f(1).unwrap()[0] * 10.0).trunc(),
+        31.0
+    );
+
+    let _ = engine.modulo();
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -1.5);
+
+    // 6.5%3.2 == 0.09999...
+    let _ = engine.modulo();
+    assert_eq!(
+        (engine.get_operands_as_f(1).unwrap()[0] * 10000.0).trunc(),
+        999.0
+    );
+
+    let _ = engine.modulo();
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -2.0);
+
+    let _ = engine.modulo();
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
+
+    let _ = engine.modulo();
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -9.0);
+
+    let _ = engine.modulo();
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 9.0);
+
     let _ = engine.modulo();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 
@@ -279,7 +347,7 @@ fn test_modulo() {
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
 
     let _ = engine.modulo();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -1.0);
+    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 3.0);
 }
 
 #[test]

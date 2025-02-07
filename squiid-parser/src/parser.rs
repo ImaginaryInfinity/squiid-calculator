@@ -133,6 +133,7 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
         ("<=", 3),
         (">=", 3),
         ("==", 2),
+        ("=", 2),
         ("(", 1),
     ]);
 

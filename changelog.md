@@ -1,3 +1,9 @@
+# 1.2.2
+
+- Fix negative modulos giving incorrect answers (#76)
+- Fix variable assignments to expressions not working (#75)
+- Fix snap building in the CI (#71)
+
 # 1.2.1
 
 - Fix previous answer variable not working (#73). Introduced in 26dd43094319e27e9907d2c85205226b59136b2c

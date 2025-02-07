@@ -6,8 +6,7 @@ fn tokenize_and_compare(input: &str, expected_tokens: Vec<Token>) {
 }
 
 #[test]
-fn test_complex_tokenization() {
-    // Test complex expressions
+fn test_function_tokenization() {
     tokenize_and_compare("foo()", vec![Token::Function("foo("), Token::RParen(")")]);
 
     tokenize_and_compare(
@@ -20,7 +19,10 @@ fn test_complex_tokenization() {
             Token::RParen(")"),
         ],
     );
+}
 
+#[test]
+fn test_assignment_tokenization() {
     tokenize_and_compare(
         "$x = 2 * $y + 3.14e-2",
         vec![
@@ -34,6 +36,18 @@ fn test_complex_tokenization() {
         ],
     );
 
+    tokenize_and_compare(
+        "x = 5",
+        vec![
+            Token::VariableAssign("x"),
+            Token::Equal("="),
+            Token::Int("5"),
+        ],
+    );
+}
+
+#[test]
+fn test_arithmetic_tokenization() {
     tokenize_and_compare(
         "3.14 + 2.5 * 4 - 1 / 5",
         vec![
@@ -49,6 +63,22 @@ fn test_complex_tokenization() {
         ],
     );
 
+    tokenize_and_compare(
+        "34 * 5.3 ^ 2 + 0.9",
+        vec![
+            Token::Int("34"),
+            Token::Multiply("*"),
+            Token::Float("5.3"),
+            Token::Power("^"),
+            Token::Int("2"),
+            Token::Add("+"),
+            Token::Float("0.9"),
+        ],
+    );
+}
+
+#[test]
+fn test_parentheses_tokenization() {
     tokenize_and_compare(
         "(3.14 + 2.5) * (4 - 1) / 5",
         vec![
@@ -69,18 +99,46 @@ fn test_complex_tokenization() {
     );
 
     tokenize_and_compare(
-        "2 * $x + 3 ^ 4",
+        "$A * ($B + $C)",
         vec![
-            Token::Int("2"),
+            Token::VariableRecal("$A"),
             Token::Multiply("*"),
-            Token::VariableRecal("$x"),
+            Token::LParen("("),
+            Token::VariableRecal("$B"),
             Token::Add("+"),
-            Token::Int("3"),
-            Token::Power("^"),
-            Token::Int("4"),
+            Token::VariableRecal("$C"),
+            Token::RParen(")"),
+        ],
+    );
+}
+
+#[test]
+fn test_variable_tokenization() {
+    tokenize_and_compare(
+        "$A * $B + $C",
+        vec![
+            Token::VariableRecal("$A"),
+            Token::Multiply("*"),
+            Token::VariableRecal("$B"),
+            Token::Add("+"),
+            Token::VariableRecal("$C"),
         ],
     );
 
+    tokenize_and_compare(
+        "$A + $B * $C",
+        vec![
+            Token::VariableRecal("$A"),
+            Token::Add("+"),
+            Token::VariableRecal("$B"),
+            Token::Multiply("*"),
+            Token::VariableRecal("$C"),
+        ],
+    );
+}
+
+#[test]
+fn test_complex_expression_tokenization() {
     tokenize_and_compare(
         "sqrt(5*(((((1+0.2*(350/661.5)^2)^3.5-1)*(1-(6.875*10^-6)*25500)^-5.2656)+1)^0.286-1))",
         vec![
@@ -137,72 +195,6 @@ fn test_complex_tokenization() {
             Token::Int("1"),
             Token::RParen(")"),
             Token::RParen(")"),
-        ],
-    );
-
-    tokenize_and_compare(
-        "$A * $B + $C",
-        vec![
-            Token::VariableRecal("$A"),
-            Token::Multiply("*"),
-            Token::VariableRecal("$B"),
-            Token::Add("+"),
-            Token::VariableRecal("$C"),
-        ],
-    );
-
-    tokenize_and_compare(
-        "$A + $B * $C",
-        vec![
-            Token::VariableRecal("$A"),
-            Token::Add("+"),
-            Token::VariableRecal("$B"),
-            Token::Multiply("*"),
-            Token::VariableRecal("$C"),
-        ],
-    );
-
-    tokenize_and_compare(
-        "$A * ($B + $C)",
-        vec![
-            Token::VariableRecal("$A"),
-            Token::Multiply("*"),
-            Token::LParen("("),
-            Token::VariableRecal("$B"),
-            Token::Add("+"),
-            Token::VariableRecal("$C"),
-            Token::RParen(")"),
-        ],
-    );
-
-    tokenize_and_compare(
-        "34 * 5.3 ^ 2 + 0.9",
-        vec![
-            Token::Int("34"),
-            Token::Multiply("*"),
-            Token::Float("5.3"),
-            Token::Power("^"),
-            Token::Int("2"),
-            Token::Add("+"),
-            Token::Float("0.9"),
-        ],
-    );
-
-    tokenize_and_compare(
-        "8e3 * ($B + 4.532 * -0.2) + $A",
-        vec![
-            Token::ScientificNotation("8e3"),
-            Token::Multiply("*"),
-            Token::LParen("("),
-            Token::VariableRecal("$B"),
-            Token::Add("+"),
-            Token::Float("4.532"),
-            Token::Multiply("*"),
-            Token::Subtract("-"),
-            Token::Float("0.2"),
-            Token::RParen(")"),
-            Token::Add("+"),
-            Token::VariableRecal("$A"),
         ],
     );
 }

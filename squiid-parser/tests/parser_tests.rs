@@ -186,15 +186,25 @@ fn test_parse_implicit_multiplication() {
     );
 }
 
+// #[test]
+// fn test_shunting_yard_parser() {
+//
+//
+// }
+//
 #[test]
-fn test_shunting_yard_parser() {
+fn test_basic_arithmetic() {
     parse_and_compare("5 + 3 * 2", vec!["5", "3", "2", "*", "+"]);
     parse_and_compare("(5 + 3) * 2", vec!["5", "3", "+", "2", "*"]);
-    parse_and_compare("sin(3 * 2) + 4", vec!["3", "2", "*", "sin", "4", "+"]);
     parse_and_compare(
         "5 * 3 + 2 * 4 / 6",
         vec!["5", "3", "*", "2", "4", "*", "6", "/", "+"],
     );
+}
+
+#[test]
+fn test_function_applications() {
+    parse_and_compare("sin(3 * 2) + 4", vec!["3", "2", "*", "sin", "4", "+"]);
     parse_and_compare("5 + 3 * sin(2)", vec!["5", "3", "2", "sin", "*", "+"]);
     parse_and_compare(
         "sqrt(4 + 9) * log(100)",
@@ -205,12 +215,16 @@ fn test_shunting_yard_parser() {
         vec!["3", "2", "^", "4", "16", "sqrt", "*", "-"],
     );
     parse_and_compare(
-        "sin(cos(tan(1))) + blog(2, 8)",
-        vec!["1", "tan", "cos", "sin", "2", "8", "blog", "+"],
-    );
-    parse_and_compare(
         "(2 + 3) * 4 - abs(-5)",
         vec!["2", "3", "+", "4", "*", "5", "chs", "abs", "-"],
+    );
+}
+
+#[test]
+fn test_complex() {
+    parse_and_compare(
+        "sin(cos(tan(1))) + blog(2, 8)",
+        vec!["1", "tan", "cos", "sin", "2", "8", "blog", "+"],
     );
     parse_and_compare(
         "sqrt(5 + 3 * sin(2)) / blog(2, 8)",
@@ -242,6 +256,10 @@ fn test_shunting_yard_parser() {
             "1", "chs", "2", "+", "abs", "16", "sqrt", "ceil", "*", "3.14159", "round", "-",
         ],
     );
+}
+
+#[test]
+fn test_highly_complex() {
     parse_and_compare(
         "sqrt(5*(((((1+0.2*(350/661.5)^2)^3.5-1)*(1-(6.875*10^-6)*25500)^-5.2656)+1)^0.286-1))",
         vec![
@@ -250,13 +268,19 @@ fn test_shunting_yard_parser() {
             "+", "0.286", "^", "1", "-", "*", "sqrt",
         ],
     );
+}
 
+#[test]
+fn test_variables() {
     parse_and_compare("$A * $B + $C", vec!["$A", "$B", "*", "$C", "+"]);
 
     parse_and_compare("$A + $B * $C", vec!["$A", "$B", "$C", "*", "+"]);
 
     parse_and_compare("$A * ($B + $C)", vec!["$A", "$B", "$C", "+", "*"]);
+}
 
+#[test]
+fn test_extra() {
     parse_and_compare(
         "34 * 5.3 ^ 2 + 0.9",
         vec!["34", "5.3", "2", "^", "*", "0.9", "+"],
@@ -266,4 +290,20 @@ fn test_shunting_yard_parser() {
         "8e3 * ($B + 4.532 * -0.2) + $A",
         vec!["8e3", "$B", "4.532", "0.2", "chs", "*", "+", "*", "$A", "+"],
     );
+}
+
+#[test]
+fn test_assignment_operator() {
+    parse_and_compare("x = 5 + 3", vec!["x", "5", "3", "+", "="]);
+    parse_and_compare("y = sin(2) * 4", vec!["y", "2", "sin", "4", "*", "="]);
+    parse_and_compare("var = log(10) / 2", vec!["var", "10", "log", "2", "/", "="]);
+    parse_and_compare(
+        "result = 3 ^ 2 - 4 * sqrt(16)",
+        vec!["result", "3", "2", "^", "4", "16", "sqrt", "*", "-", "="],
+    );
+    parse_and_compare(
+        "final_value = sqrt(5 + 3 * sin(2))",
+        vec!["final_value", "5", "3", "2", "sin", "*", "+", "sqrt", "="],
+    );
+    parse_and_compare("y=($b-$a)$s", vec!["y", "$b", "$a", "-", "$s", "*", "="]);
 }

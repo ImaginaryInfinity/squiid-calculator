@@ -354,13 +354,23 @@ impl Engine {
         Ok(EngineSignal::StackUpdated)
     }
 
-    /// Modulo
+    /// Modulo (euclidean)
     pub fn modulo(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let operands = self.get_operands_as_f(2)?;
 
+        if operands[1] == 0.0 {
+            return Err("cannot divide by zero".to_owned());
+        }
+
         // Put result on stack
-        let result = operands[0] % operands[1];
+        // rem_euclid() only yields positive results so we need to write it ourselves
+        let r = operands[0] % operands[1];
+        let result = if (r < 0.0 && operands[1] > 0.0) || (r > 0.0 && operands[1] < 0.0) {
+            r + operands[1]
+        } else {
+            r
+        };
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
     }

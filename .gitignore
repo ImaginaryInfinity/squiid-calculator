@@ -16,3 +16,4 @@ flatpak-cargo-generator.py
 .vscode
 site/
 venv/
+snap/

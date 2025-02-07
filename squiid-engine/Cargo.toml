@@ -1,6 +1,6 @@
 [package]
 name = "squiid-engine"
-version = "2.0.1"
+version = "2.0.2"
 description = "This repository contains the RPN (postfix) evaluation engine that is used in Squiid Calculator"
 repository = "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-parser"
 license = "GPL-3.0"
@@ -14,7 +14,7 @@ chrono = { version = "0.4.39", default-features = false, optional = true, featur
     "clock",
     "std",
 ] }
-colored = { version = "2.2.0", optional = true }
+colored = { version = "3.0.0", optional = true }
 regex = "1.11.1"
 rust_decimal = { version = "1.36.0", features = ["maths"] }
 rust_decimal_macros = "1.36.0"

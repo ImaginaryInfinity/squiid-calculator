@@ -102,8 +102,7 @@ flatpak: require-cargo clean ## Build the flatpak in package-build/
 
 	# rm -f net.imaginaryinfinity.Squiid* generated-sources.json flatpak-cargo-generator.py
 
-snap: clean ## Build the snap
-	@snapcraft --version >/dev/null 2>&1 || (echo "ERROR: snapcraft is required."; exit 1)
+snap_folder: clean ## Build the snap folder
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 
 	mkdir -p snap/gui
@@ -114,6 +113,8 @@ snap: clean ## Build the snap
 	cp packages/snap/squiid.desktop snap/gui
 	cp branding/icons/squiid512.png snap/gui/squiid.png
 
+snap: snap_folder ## Build the snap
+	@snapcraft --version >/dev/null 2>&1 || (echo "ERROR: snapcraft is required."; exit 1)
 	snapcraft
 
 	rm -rf snap

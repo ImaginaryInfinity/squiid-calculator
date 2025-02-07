@@ -5,8 +5,8 @@ use logos::Logos;
 #[logos(subpattern identifier=r"[_a-zA-Z][_0-9a-zA-Z]*")]
 #[logos(subpattern float=r"[0-9]+\.[0-9]+")]
 pub enum Token<'a> {
-    /// Identifier followed by optional spaces followed by an opening parenthesis
-    #[regex(r"(?&identifier)\s*\(")]
+    /// Identifier followed by an opening parenthesis
+    #[regex(r"(?&identifier)\(")]
     Function(&'a str),
     #[token(",")]
     Comma(&'a str),

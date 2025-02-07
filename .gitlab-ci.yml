@@ -65,6 +65,12 @@ deploy_snap:
   needs:
   - job: build_snap_amd64
     artifacts: true
+  - job: build_snap_arm64
+    artifacts: true
+  - job: build_snap_armhf
+    artifacts: true
+  - job: build_snap_ppc64el
+    artifacts: true
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web"'
 

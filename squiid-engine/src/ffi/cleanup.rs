@@ -32,11 +32,9 @@ use super::data_structs::{BucketFFI, EngineSignalSetFFI};
 /// * `ptr` - Pointer to an [`EngineSignalSetFFI`] struct which was returned from Rust
 #[unsafe(no_mangle)]
 extern "C" fn free_engine_signal_set(ptr: EngineSignalSetFFI) {
-    unsafe {
-        if !ptr.error.is_null() {
-            let _ = CString::from_raw(ptr.error);
-            // the string will be automatically dropped after this
-        }
+    if !ptr.error.is_null() {
+        free_string(ptr.error);
+        // the string will be automatically dropped after this
     }
 }
 
@@ -52,20 +50,32 @@ extern "C" fn free_engine_signal_set(ptr: EngineSignalSetFFI) {
 /// If the array pointer is null or if the vec or strings are invalid data
 #[unsafe(no_mangle)]
 extern "C" fn free_string_array(array: *mut *mut c_char, len: c_int) {
-    if !array.is_null() {
-        let len = len as usize;
+    if array.is_null() {
+        return;
+    }
 
-        // Get back our vector.
-        // Previously we shrank to fit, so capacity == length.
-        let v = unsafe { Vec::from_raw_parts(array, len, len) };
+    let len = len as usize;
 
-        // Now drop one string at a time.
-        for elem in v {
-            let s = unsafe { CString::from_raw(elem) };
-            std::mem::drop(s);
-        }
+    // Get back our vector.
+    // Previously we shrank to fit, so capacity == length.
+    let v = unsafe { Vec::from_raw_parts(array, len, len) };
 
-        // Afterwards the vector will be dropped and thus freed.
+    // Now drop one string at a time.
+    for elem in v {
+        free_string(elem);
+    }
+
+    // Afterwards the vector will be dropped and thus freed.
+}
+
+#[unsafe(no_mangle)]
+extern "C" fn free_string(string: *mut c_char) {
+    if string.is_null() {
+        return;
+    }
+
+    unsafe {
+        std::mem::drop(CString::from_raw(string));
     }
 }
 
@@ -82,19 +92,21 @@ extern "C" fn free_string_array(array: *mut *mut c_char, len: c_int) {
 #[unsafe(no_mangle)]
 extern "C" fn free_bucket_array(array: *mut *mut BucketFFI, len: c_int) {
     if array.is_null() {
-        let len = len as usize;
-
-        // reconstruct vec
-        // Previously we shrank to fit, so capacity == length.
-        let array = unsafe { Vec::from_raw_parts(array, len, len) };
-
-        for bucket_ffi in array {
-            // iterate over each bucket and drop it
-            free_bucket(bucket_ffi);
-        }
-
-        // vec to auto dropped here
+        return;
     }
+
+    let len = len as usize;
+
+    // reconstruct vec
+    // Previously we shrank to fit, so capacity == length.
+    let array = unsafe { Vec::from_raw_parts(array, len, len) };
+
+    for bucket_ffi in array {
+        // iterate over each bucket and drop it
+        free_bucket(bucket_ffi);
+    }
+
+    // vec to auto dropped here
 }
 
 /// Free a Bucket object that was returned over the FFI boundary.
@@ -108,13 +120,15 @@ extern "C" fn free_bucket_array(array: *mut *mut BucketFFI, len: c_int) {
 /// If the bucket pointer is null or if the bucket is invalid data
 #[unsafe(no_mangle)]
 extern "C" fn free_bucket(bucket_ffi: *mut BucketFFI) {
-    if !bucket_ffi.is_null() {
-        let bucket = unsafe { Box::from_raw(bucket_ffi) };
+    if bucket_ffi.is_null() {
+        return;
+    }
 
-        // drop each bucket's string value
-        if !bucket.value.is_null() {
-            let s = unsafe { CString::from_raw(bucket.value) };
-            std::mem::drop(s);
-        }
+    let bucket = unsafe { Box::from_raw(bucket_ffi) };
+
+    // drop each bucket's string value
+    if !bucket.value.is_null() {
+        let s = unsafe { CString::from_raw(bucket.value) };
+        std::mem::drop(s);
     }
 }

@@ -37,6 +37,7 @@ use crate::{execute_multiple_rpn, EngineSignalSet};
 
 mod cleanup;
 mod data_structs;
+mod version;
 
 /// FFI-Exposed function to submit multiple RPN commands to the engine.
 ///

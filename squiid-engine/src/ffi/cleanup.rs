@@ -68,6 +68,11 @@ extern "C" fn free_string_array(array: *mut *mut c_char, len: c_int) {
     // Afterwards the vector will be dropped and thus freed.
 }
 
+/// Free a string that was returned over the FFI boundary.
+///
+/// # Arguments
+///
+/// * `string` - the string to free
 #[unsafe(no_mangle)]
 extern "C" fn free_string(string: *mut c_char) {
     if string.is_null() {

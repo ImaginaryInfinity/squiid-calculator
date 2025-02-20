@@ -59,7 +59,7 @@ pub extern "C" fn check_compatible(
         write_error(
             expected_version_out,
             &format!(
-                "the library version {} is not compatible with the binding version {}",
+                "the library version {} is not compatible with the binding version constraint {}",
                 VERSION, constraint_str
             ),
         );

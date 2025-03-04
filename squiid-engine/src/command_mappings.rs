@@ -1,6 +1,6 @@
 use std::{borrow::BorrowMut, collections::HashMap};
 
-use crate::{engine::Engine, errors::OperandError, EngineSignal};
+use crate::{engine::Engine, EngineSignal};
 
 /// Insert a function and reference name into a hashmap
 macro_rules! function_map_entry {
@@ -13,8 +13,7 @@ macro_rules! function_map_entry {
 }
 
 /// A function from the [`Engine`] impl that can be added to a [`HashMap`]
-type EngineFunction =
-    dyn Fn(&mut Engine) -> Result<EngineSignal, OperandError> + Send + Sync + 'static;
+type EngineFunction = dyn Fn(&mut Engine) -> Result<EngineSignal, String> + Send + Sync + 'static;
 pub type CommandsMap = HashMap<String, Box<EngineFunction>>;
 
 /// Create a map of every available function and it's respective command

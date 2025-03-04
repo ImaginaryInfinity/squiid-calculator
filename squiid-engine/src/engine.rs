@@ -5,7 +5,14 @@ use rust_decimal_macros::dec;
 
 use crate::{
     bucket::{Bucket, BucketTypes, ConstantTypes, CONSTANT_IDENTIFIERS},
-    errors::{OperandError, OperationError},
+    errors::{
+        BaseLogError, CosError, CotError, CscError, DecimalReprError, DivisionError,
+        EmptyStackError, EmptyStackRollError, FloatParseError, InvalidOperandTypeError,
+        LogDomainError, MissingValueError, NotEnoughItemsError, OperandError, PopFailureError,
+        PowerError, PurgeError, RedoLimitError, SecError, SinError, SqrtError,
+        StoreVariableInvalidIDError, TanError, UndefinedVariableReferenceError, UndoLimitError,
+        ZeroDivisionError,
+    },
     utils::ID_REGEX,
     EngineSignal,
 };
@@ -50,7 +57,10 @@ impl Engine {
     /// # Errors
     ///
     /// TODO:
-    pub fn add_item_to_stack(&mut self, item: Bucket) -> Result<EngineSignal, OperandError> {
+    pub fn add_item_to_stack(
+        &mut self,
+        item: Bucket,
+    ) -> Result<EngineSignal, UndefinedVariableReferenceError> {
         // Convert item to string
         let mut item_string = item.to_string();
 
@@ -68,7 +78,7 @@ impl Engine {
 
             match unresolved_var {
                 Some(value) => item_string = value.to_string(),
-                None => return Err(OperandError::UndefinedVariableReferenceError(item_string)),
+                None => return Err(UndefinedVariableReferenceError(item_string)),
             }
         }
 
@@ -108,7 +118,7 @@ impl Engine {
             for item in requested_operands {
                 match item.bucket_type {
                     BucketTypes::String | BucketTypes::Undefined => {
-                        return Err(OperandError::InvalidOperandType);
+                        return Err(InvalidOperandTypeError.into());
                     }
                     BucketTypes::Float | BucketTypes::Constant(_) => (),
                 }
@@ -116,21 +126,17 @@ impl Engine {
 
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
-                let operand = self.stack.pop().ok_or_else(|| OperandError::PopFailure)?;
+                let operand = self.stack.pop().ok_or_else(|| PopFailureError)?;
 
                 // this is safe as we tested above for invalid variants
-                let value = operand.value.ok_or_else(|| OperandError::MissingValue)?;
-                operands.push(
-                    value
-                        .parse::<f64>()
-                        .map_err(|e| OperandError::FloatParseError(e))?,
-                );
+                let value = operand.value.ok_or_else(|| MissingValueError)?;
+                operands.push(value.parse::<f64>().map_err(|e| FloatParseError(e))?);
             }
             // Make the new vector's order match the stack
             operands.reverse();
             Ok(operands)
         } else {
-            Err(OperandError::NotEnoughItems)
+            Err(NotEnoughItemsError.into())
         }
     }
 
@@ -145,7 +151,7 @@ impl Engine {
             for item in requested_operands {
                 match item.bucket_type {
                     BucketTypes::String | BucketTypes::Undefined => {
-                        return Err(OperandError::InvalidOperandType);
+                        return Err(InvalidOperandTypeError.into());
                     }
                     BucketTypes::Float | BucketTypes::Constant(_) => (),
                 }
@@ -153,7 +159,7 @@ impl Engine {
 
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
-                let operand = self.stack.pop().ok_or_else(|| OperandError::PopFailure)?;
+                let operand = self.stack.pop().ok_or_else(|| PopFailureError)?;
                 operands.push(match operand.bucket_type {
                     BucketTypes::Constant(ConstantTypes::Pi) => Decimal::PI,
                     BucketTypes::Constant(ConstantTypes::E) => Decimal::E,
@@ -170,10 +176,10 @@ impl Engine {
                         match Decimal::from_str_exact(
                             &operand
                                 .value
-                                .ok_or_else(|| OperandError::MissingValue)?,
+                                .ok_or_else(|| MissingValueError)?,
                         ) {
                             Ok(value) => value,
-                            Err(e) => return Err(OperandError::DecimalReprError(e)),
+                            Err(e) => return Err(DecimalReprError(e).into()),
                         }
                     }
                     BucketTypes::String | BucketTypes::Undefined => {
@@ -185,7 +191,7 @@ impl Engine {
             operands.reverse();
             Ok(operands)
         } else {
-            Err(OperandError::NotEnoughItems)
+            Err(NotEnoughItemsError.into())
         }
     }
 
@@ -199,7 +205,7 @@ impl Engine {
 
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
-                let operand = self.stack.pop().ok_or_else(|| OperandError::PopFailure)?;
+                let operand = self.stack.pop().ok_or_else(|| PopFailureError)?;
 
                 operands.push(operand.to_string());
             }
@@ -207,7 +213,7 @@ impl Engine {
             operands.reverse();
             Ok(operands)
         } else {
-            Err(OperandError::NotEnoughItems)
+            Err(NotEnoughItemsError.into())
         }
     }
 
@@ -219,7 +225,7 @@ impl Engine {
 
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
-                let operand = self.stack.pop().ok_or_else(|| OperandError::PopFailure)?;
+                let operand = self.stack.pop().ok_or_else(|| PopFailureError)?;
 
                 operands.push(operand);
             }
@@ -227,19 +233,19 @@ impl Engine {
             operands.reverse();
             Ok(operands)
         } else {
-            Err(OperandError::NotEnoughItems)
+            Err(NotEnoughItemsError.into())
         }
     }
 
     /// Update the previous answer variable
     /// TODO: document that this function needs to be called a lot
-    pub fn update_previous_answer(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn update_previous_answer(&mut self) -> Result<EngineSignal, EmptyStackError> {
         match self.stack.last() {
             Some(last) => {
                 self.previous_answer = last.clone();
                 Ok(EngineSignal::NOP)
             }
-            None => Err(OperandError::EmptyStackError),
+            None => Err(EmptyStackError),
         }
     }
 
@@ -289,12 +295,12 @@ impl Engine {
     }
 
     /// Divide
-    pub fn divide(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn divide(&mut self) -> Result<EngineSignal, DivisionError> {
         // Get operands
         let operands = self.get_operands_as_dec(2)?;
 
         if operands[1] == dec!(0.0) {
-            return Err(OperandError::ZeroDivisionError);
+            return Err(ZeroDivisionError.into());
         }
 
         // check for pi/x in order to replace with constants
@@ -329,7 +335,7 @@ impl Engine {
     }
 
     /// Power
-    pub fn power(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn power(&mut self) -> Result<EngineSignal, PowerError> {
         // Get operands
         let operands = self.get_operands_as_dec(2)?;
 
@@ -343,16 +349,16 @@ impl Engine {
             match base.checked_powd(exponent) {
                 Some(value) => value
                     .to_f64()
-                    .ok_or_else(|| OperandError::FloatConversionError(value.to_string()))?,
-                None => return Err(OperandError::PowerOverflowError),
+                    .ok_or_else(|| PowerError::FloatConversionError(value.to_string()))?,
+                None => return Err(PowerError::PowerOverflowError),
             }
         } else {
             // is a decimal
             let exponent = exponent
                 .to_f64()
-                .ok_or_else(|| OperandError::FloatConversionError(exponent.to_string()))?;
+                .ok_or_else(|| PowerError::FloatConversionError(exponent.to_string()))?;
             base.to_f64()
-                .ok_or_else(|| OperandError::FloatConversionError(exponent.to_string()))?
+                .ok_or_else(|| PowerError::FloatConversionError(exponent.to_string()))?
                 .powf(exponent)
         };
 
@@ -362,25 +368,25 @@ impl Engine {
     }
 
     /// Square root
-    pub fn sqrt(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn sqrt(&mut self) -> Result<EngineSignal, SqrtError> {
         // Get operands
         let operands = self.get_operands_as_dec(1)?;
 
         // Put result on stack
         let Some(result) = operands[0].sqrt() else {
-            return Err(OperandError::OperationError(OperationError::Sqrt));
+            return Err(SqrtError::SqrtError);
         };
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
     }
 
     /// Modulo (euclidean)
-    pub fn modulo(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn modulo(&mut self) -> Result<EngineSignal, DivisionError> {
         // Get operands
         let operands = self.get_operands_as_f(2)?;
 
         if operands[1] == 0.0 {
-            return Err(OperandError::ZeroDivisionError);
+            return Err(ZeroDivisionError.into());
         }
 
         // Put result on stack
@@ -396,77 +402,77 @@ impl Engine {
     }
 
     /// Sine
-    pub fn sin(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn sin(&mut self) -> Result<EngineSignal, SinError> {
         // Get operands
         let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
         let Some(result) = operands[0].sin() else {
-            return Err(OperandError::OperationError(OperationError::Sin));
+            return Err(SinError::SinError);
         };
         let _ = self.add_item_to_stack(result);
         Ok(EngineSignal::StackUpdated)
     }
 
     /// Cosine
-    pub fn cos(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn cos(&mut self) -> Result<EngineSignal, CosError> {
         // Get operands
         let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
         let Some(result) = operands[0].cos() else {
-            return Err(OperandError::OperationError(OperationError::Cos));
+            return Err(CosError::CosError);
         };
         let _ = self.add_item_to_stack(result);
         Ok(EngineSignal::StackUpdated)
     }
 
     /// Tangent
-    pub fn tan(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn tan(&mut self) -> Result<EngineSignal, TanError> {
         // Get operands
         let operands = self.get_operands_raw(1)?;
         // Put result on stack
         let Some(result) = operands[0].tan() else {
-            return Err(OperandError::OperationError(OperationError::Tan));
+            return Err(TanError::TanError);
         };
         let _ = self.add_item_to_stack(result);
         Ok(EngineSignal::StackUpdated)
     }
 
     /// Secant
-    pub fn sec(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn sec(&mut self) -> Result<EngineSignal, SecError> {
         // Get operands
         let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
         let Some(result) = operands[0].sec() else {
-            return Err(OperandError::OperationError(OperationError::Sec));
+            return Err(SecError::SecError);
         };
         let _ = self.add_item_to_stack(result);
         Ok(EngineSignal::StackUpdated)
     }
 
     /// Cosecant
-    pub fn csc(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn csc(&mut self) -> Result<EngineSignal, CscError> {
         // Get operands
         let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
         let Some(result) = operands[0].csc() else {
-            return Err(OperandError::OperationError(OperationError::Csc));
+            return Err(CscError::CscError);
         };
         let _ = self.add_item_to_stack(result);
         Ok(EngineSignal::StackUpdated)
     }
 
     /// Cotangent
-    pub fn cot(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn cot(&mut self) -> Result<EngineSignal, CotError> {
         // Get operands
         let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
         let Some(result) = operands[0].cot() else {
-            return Err(OperandError::OperationError(OperationError::Cot));
+            return Err(CotError::CotError);
         };
         let _ = self.add_item_to_stack(result);
         Ok(EngineSignal::StackUpdated)
@@ -514,20 +520,20 @@ impl Engine {
     }
 
     /// Logarithm
-    pub fn log(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn log(&mut self) -> Result<EngineSignal, LogDomainError> {
         // Get operands
         let operands = self.get_operands_as_dec(1)?;
 
         // Put result on stack
         let Some(result) = operands[0].checked_log10() else {
-            return Err(OperandError::OperationError(OperationError::LogDomain));
+            return Err(LogDomainError::LogDomainError.into());
         };
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
     }
 
     /// Logarithm with custom base using the change of base formula
-    pub fn blog(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn blog(&mut self) -> Result<EngineSignal, BaseLogError> {
         // Get operands
         let operands = self.get_operands_as_dec(2)?;
 
@@ -535,14 +541,14 @@ impl Engine {
         // log_b(a) = (log_d(a))/(log_d(b))
 
         let Some(top_log) = operands[0].checked_log10() else {
-            return Err(OperandError::OperationError(OperationError::LogDomain));
+            return Err(BaseLogError::LogDomainError);
         };
         let Some(bottom_log) = operands[1].checked_log10() else {
-            return Err(OperandError::OperationError(OperationError::LogBaseDomain));
+            return Err(BaseLogError::LogBaseDomainError);
         };
 
         let Some(result) = top_log.checked_div(bottom_log) else {
-            return Err(OperandError::ZeroDivisionError);
+            return Err(ZeroDivisionError.into());
         };
 
         // Put result on stack
@@ -551,13 +557,13 @@ impl Engine {
     }
 
     /// Natural logarihm
-    pub fn ln(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn ln(&mut self) -> Result<EngineSignal, LogDomainError> {
         // Get operands
         let operands = self.get_operands_as_dec(1)?;
 
         // Put result on stack
         let Some(result) = operands[0].checked_ln() else {
-            return Err(OperandError::OperationError(OperationError::LogDomain));
+            return Err(LogDomainError::LogDomainError.into());
         };
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
@@ -679,9 +685,9 @@ impl Engine {
     }
 
     /// Roll down
-    pub fn roll_down(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn roll_down(&mut self) -> Result<EngineSignal, EmptyStackRollError> {
         if self.stack.is_empty() {
-            Err(OperandError::OperationError(OperationError::EmptyStackRoll))
+            Err(EmptyStackRollError)
         } else {
             // Rotate stack right
             self.stack.rotate_right(1);
@@ -690,9 +696,9 @@ impl Engine {
     }
 
     /// Roll up
-    pub fn roll_up(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn roll_up(&mut self) -> Result<EngineSignal, EmptyStackRollError> {
         if self.stack.is_empty() {
-            Err(OperandError::OperationError(OperationError::EmptyStackRoll))
+            Err(EmptyStackRollError)
         } else {
             // Rotate stack left
             self.stack.rotate_left(1);
@@ -701,7 +707,7 @@ impl Engine {
     }
 
     /// Store value in variable
-    pub fn store(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn store(&mut self) -> Result<EngineSignal, StoreVariableInvalidIDError> {
         // Get 2 operands from stack
         let operands = self.get_operands_raw(2)?;
 
@@ -712,15 +718,13 @@ impl Engine {
             self.variables.insert(varname, operands[0].clone());
         } else {
             // Error if attempted to store in name which is not a valid ID
-            return Err(OperandError::OperationError(
-                OperationError::StoreVariableInvalidID(varname),
-            ));
+            return Err(StoreVariableInvalidIDError::StoreVariableInvalidIDError(varname).into());
         }
         Ok(EngineSignal::StackUpdated)
     }
 
     /// Delete variable
-    pub fn purge(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn purge(&mut self) -> Result<EngineSignal, PurgeError> {
         // Get operand from stack
         let operands = self.get_operands_raw(1)?;
 
@@ -730,24 +734,20 @@ impl Engine {
                 // Remove variable from hashmap
                 self.variables.remove(&varname);
             } else {
-                return Err(OperandError::OperationError(
-                    OperationError::NonExistantVariable(varname),
-                ));
+                return Err(PurgeError::NonExistantVariableError(varname));
             }
         } else {
             // Error if attempted to purge name which is not a valid ID
-            return Err(OperandError::OperationError(
-                OperationError::DeleteVariableInvalidID(varname),
-            ));
+            return Err(PurgeError::DeleteVariableInvalidIDError(varname));
         }
         Ok(EngineSignal::StackUpdated)
     }
 
     /// Store value in variable, with inverted argument order
-    pub fn invstore(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn invstore(&mut self) -> Result<EngineSignal, StoreVariableInvalidIDError> {
         match self.swap() {
             Ok(_) => {}
-            Err(error) => return Err(error),
+            Err(error) => return Err(error.into()),
         }
         self.store()
     }
@@ -768,7 +768,7 @@ impl Engine {
     }
 
     /// Undo last operation
-    pub fn undo(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn undo(&mut self) -> Result<EngineSignal, UndoLimitError> {
         if self.undo_state_pointer < self.undo_history.len() as u8 {
             if self.undo_state_pointer == 0 {
                 // add current stack and variables to hsitory and increment pointer by 1
@@ -780,18 +780,18 @@ impl Engine {
             self.update_engine_from_history();
             Ok(EngineSignal::StackUpdated)
         } else {
-            Err(OperandError::OperationError(OperationError::UndoLimit))
+            Err(UndoLimitError)
         }
     }
 
     /// Redo the last undo
-    pub fn redo(&mut self) -> Result<EngineSignal, OperandError> {
+    pub fn redo(&mut self) -> Result<EngineSignal, RedoLimitError> {
         if self.undo_state_pointer > 1 {
             self.undo_state_pointer -= 1;
             self.update_engine_from_history();
             Ok(EngineSignal::StackUpdated)
         } else {
-            Err(OperandError::OperationError(OperationError::RedoLimit))
+            Err(RedoLimitError)
         }
     }
 

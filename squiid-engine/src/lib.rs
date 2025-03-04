@@ -23,7 +23,6 @@ use std::{
 use bucket::Bucket;
 use command_mappings::CommandsMap;
 use engine::Engine;
-use errors::OperandError;
 
 static ENGINE: LazyLock<Mutex<Engine>> = LazyLock::new(|| Mutex::new(Engine::new()));
 static COMMAND_MAPPINGS: LazyLock<CommandsMap> =

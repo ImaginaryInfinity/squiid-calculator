@@ -2,11 +2,11 @@ use std::ffi::{c_char, c_int, CString};
 
 use super::data_structs::{BucketFFI, EngineSignalSetFFI};
 
-/// Free the error string contained within the EngineSignalSetFFI struct
+/// Free the error string contained within the [`EngineSignalSetFFI`] struct
 ///
 /// # Arguments
 ///
-/// * `ptr` - Pointer to a EngineSignalSetFFI struct which was returned from Rust
+/// * `ptr` - Pointer to an [`EngineSignalSetFFI`] struct which was returned from Rust
 #[unsafe(no_mangle)]
 extern "C" fn free_engine_signal_set(ptr: EngineSignalSetFFI) {
     unsafe {

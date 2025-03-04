@@ -42,7 +42,7 @@ pub struct BucketFFI {
     pub value: *mut c_char,
     /// The type of the Bucket
     pub bucket_type: BucketTypesFFI,
-    /// The type of the constant if bucket_type is Constant, else will be Pi
+    /// The type of the constant if `bucket_type` is `Constant`, else will be `Pi`
     pub constant_type: ConstantTypesFFI,
 }
 

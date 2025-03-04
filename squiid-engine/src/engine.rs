@@ -20,7 +20,7 @@ pub struct Engine {
     /// Variables vecdeque for undo support
     pub undo_variable_history: VecDeque<HashMap<String, Bucket>>,
     /// Offset pointer to the current index of the undo history.
-    /// Index will be calculated by history.len() - pointer - 1
+    /// Index will be calculated by `history.len() - pointer - 1`
     pub undo_state_pointer: u8,
     /// Previous answer
     pub previous_answer: Bucket,
@@ -121,7 +121,7 @@ impl Engine {
                 operands.push(
                     value
                         .parse::<f64>()
-                        .map_err(|_| String::from("Failed to parse operand as f64"))?,
+                        .map_err(|e| format!("Failed to parse operand as f64: {}", e))?,
                 );
             }
             // Make the new vector's order match the stack

@@ -17,7 +17,7 @@ mod data_structs;
 /// # Safety
 ///
 /// This function is unsafe because it is exposed over the FFI boundary. It dereferences a pointer
-/// to access the rpn_data array
+/// to access the `rpn_data` array
 #[unsafe(no_mangle)]
 extern "C" fn execute_multiple_rpn_exposed(
     rpn_data: *const *const c_char,
@@ -67,10 +67,7 @@ extern "C" fn get_stack_exposed(outlen: *mut c_int) -> *mut *mut BucketFFI {
     unsafe { std::ptr::write(outlen, len as c_int) };
 
     // get the pointer to the vec that we are returning
-    let vec_ptr = stack_ptr.as_mut_ptr();
-    std::mem::forget(stack_ptr);
-
-    vec_ptr
+    stack_ptr.as_mut_ptr()
 }
 
 /// Get the engine's list of currently supported commands.
@@ -98,7 +95,6 @@ extern "C" fn get_commands_exposed(outlen: *mut c_int) -> *mut *mut c_char {
     let len = commands.len();
     // forget pointer so that rust doesnt drop it
     let vec_ptr = commands.as_mut_ptr();
-    std::mem::forget(commands);
 
     // write length to outlen
     unsafe { std::ptr::write(outlen, len as c_int) };

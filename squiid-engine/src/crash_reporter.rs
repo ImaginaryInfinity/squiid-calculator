@@ -88,5 +88,5 @@ pub fn crash_report(panic_info: &PanicHookInfo, config_path: Option<PathBuf>) {
 
     println!(
         "\n\nPlease report this issue at https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/issues/new?issuable_template=Bug%20Report"
-    )
+    );
 }

@@ -89,7 +89,7 @@ pub fn handle_data(engine: &mut Engine, data: &str) -> Result<EngineSignal, Stri
     }
 }
 
-/// Struct to identify which EngineSignals were triggered during the submission of multiple
+/// Struct to identify which [`EngineSignal`]s were triggered during the submission of multiple
 /// commands to the engine (usually in `execute_rpn_data`)
 #[derive(Debug, Default, Clone)]
 pub struct EngineSignalSet {

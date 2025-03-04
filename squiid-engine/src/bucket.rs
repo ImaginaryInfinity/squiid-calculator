@@ -97,8 +97,7 @@ impl Bucket {
                 ConstantTypes::E | ConstantTypes::C | ConstantTypes::G | ConstantTypes::Phi => {
                     Some(Self::from(self.value.clone()?.parse::<f64>().ok()?.sin()))
                 }
-                ConstantTypes::Pi => Some(Self::from(0)),
-                ConstantTypes::TwoPi => Some(Self::from(0)),
+                ConstantTypes::Pi | ConstantTypes::TwoPi => Some(Self::from(0)),
                 ConstantTypes::HalfPi => Some(Self::from(1)),
                 ConstantTypes::QuarterPi => Some(Self::from(consts::FRAC_1_SQRT_2)),
                 ConstantTypes::EighthPi => Some(Self::from(consts::FRAC_PI_8.sin())),
@@ -141,8 +140,7 @@ impl Bucket {
                 ConstantTypes::E | ConstantTypes::C | ConstantTypes::G | ConstantTypes::Phi => {
                     Some(Self::from(self.value.clone()?.parse::<f64>().ok()?.tan()))
                 }
-                ConstantTypes::Pi => Some(Self::from(0)),
-                ConstantTypes::TwoPi => Some(Self::from(0)),
+                ConstantTypes::Pi | ConstantTypes::TwoPi => Some(Self::from(0)),
                 ConstantTypes::HalfPi => Some(Self::new_undefined()),
                 ConstantTypes::QuarterPi => Some(Self::from(1)),
                 ConstantTypes::EighthPi => Some(Self::from(consts::FRAC_PI_8.tan())),

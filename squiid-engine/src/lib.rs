@@ -80,15 +80,13 @@ pub fn handle_data(engine: &mut Engine, data: &str) -> Result<EngineSignal, Stri
             .push_back(engine.variables.clone());
     }
 
-    let result = match COMMAND_MAPPINGS.get(data) {
+    match COMMAND_MAPPINGS.get(data) {
         Some(func) => func(engine.borrow_mut()),
         None => {
             // return result value of adding item to stack
             engine.add_item_to_stack(Bucket::from(data.to_string()))
         }
-    };
-
-    result
+    }
 }
 
 /// Struct to identify which EngineSignals were triggered during the submission of multiple

@@ -23,7 +23,10 @@ impl From<EngineSignalSet> for EngineSignalSetFFI {
             stack_updated: value.stack_updated,
             quit: value.quit,
             error: if let Some(error_str) = value.get_error() {
-                CString::new(error_str).unwrap().into_raw()
+                match CString::new(error_str) {
+                    Ok(s) => s.into_raw(),
+                    Err(e) => return EngineSignalSet::new().set_error(e).into(),
+                }
             } else {
                 std::ptr::null_mut()
             },
@@ -46,8 +49,10 @@ pub struct BucketFFI {
 impl From<Bucket> for BucketFFI {
     fn from(value: Bucket) -> Self {
         let value_ptr = if let Some(str_val) = value.value {
-            let str = CString::new(str_val).unwrap();
-            str.into_raw()
+            match CString::new(str_val) {
+                Ok(s) => s.into_raw(),
+                Err(_) => std::ptr::null_mut(),
+            }
         } else {
             std::ptr::null_mut()
         };

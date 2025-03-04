@@ -7,7 +7,6 @@ use super::data_structs::{BucketFFI, EngineSignalSetFFI};
 /// # Arguments
 ///
 /// * `ptr` - Pointer to a EngineSignalSetFFI struct which was returned from Rust
-#[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 #[unsafe(no_mangle)]
 extern "C" fn free_engine_signal_set(ptr: EngineSignalSetFFI) {
     unsafe {
@@ -28,7 +27,6 @@ extern "C" fn free_engine_signal_set(ptr: EngineSignalSetFFI) {
 /// # Panics
 ///
 /// If the array pointer is null or if the vec or strings are invalid data
-#[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 #[unsafe(no_mangle)]
 extern "C" fn free_string_array(array: *mut *mut c_char, len: c_int) {
     if !array.is_null() {
@@ -58,7 +56,6 @@ extern "C" fn free_string_array(array: *mut *mut c_char, len: c_int) {
 /// # Panics
 ///
 /// If the array pointer is null or if the vec or Bucket are invalid data
-#[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 #[unsafe(no_mangle)]
 extern "C" fn free_bucket_array(array: *mut *mut BucketFFI, len: c_int) {
     if array.is_null() {
@@ -86,7 +83,6 @@ extern "C" fn free_bucket_array(array: *mut *mut BucketFFI, len: c_int) {
 /// # Panics
 ///
 /// If the bucket pointer is null or if the bucket is invalid data
-#[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 #[unsafe(no_mangle)]
 extern "C" fn free_bucket(bucket_ffi: *mut BucketFFI) {
     if !bucket_ffi.is_null() {

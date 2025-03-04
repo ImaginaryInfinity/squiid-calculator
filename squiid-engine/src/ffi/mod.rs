@@ -2,7 +2,7 @@ use std::ffi::{c_char, c_int, CStr, CString};
 
 use data_structs::{BucketFFI, EngineSignalSetFFI};
 
-use crate::execute_multiple_rpn;
+use crate::{execute_multiple_rpn, EngineSignalSet};
 
 mod cleanup;
 mod data_structs;
@@ -18,7 +18,6 @@ mod data_structs;
 ///
 /// This function is unsafe because it is exposed over the FFI boundary. It dereferences a pointer
 /// to access the rpn_data array
-#[deny(clippy::expect_used, clippy::panic)]
 #[unsafe(no_mangle)]
 extern "C" fn execute_multiple_rpn_exposed(
     rpn_data: *const *const c_char,
@@ -32,7 +31,10 @@ extern "C" fn execute_multiple_rpn_exposed(
         unsafe {
             // create new strings from the provided pointers and push them to the vec
             let c_str = CStr::from_ptr(*rpn_data.add(i));
-            rpn_data_vec.push(c_str.to_str().unwrap());
+            rpn_data_vec.push(match c_str.to_str() {
+                Ok(str) => str,
+                Err(e) => return EngineSignalSet::new().set_error(e).into(),
+            });
         }
     }
 
@@ -48,7 +50,6 @@ extern "C" fn execute_multiple_rpn_exposed(
 /// # Arguments
 ///
 /// * `outlen` - A pointer to an integer to store the length of the output array
-#[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 #[unsafe(no_mangle)]
 extern "C" fn get_stack_exposed(outlen: *mut c_int) -> *mut *mut BucketFFI {
     // Create a vector of CStrings from the stack
@@ -77,14 +78,18 @@ extern "C" fn get_stack_exposed(outlen: *mut c_int) -> *mut *mut BucketFFI {
 /// # Arguments
 ///
 /// * `outlen` - A pointer to an integer to store the length of the output array
-#[deny(clippy::expect_used, clippy::panic)]
 #[unsafe(no_mangle)]
 extern "C" fn get_commands_exposed(outlen: *mut c_int) -> *mut *mut c_char {
     // convert Vec of Strings into vec of raw pointers
     let mut commands: Vec<_> = crate::get_commands()
         .into_iter()
-        .map(|s| CString::new(s).unwrap().into_raw())
+        .filter_map(|s| CString::new(s).ok().map(|c| c.into_raw()))
         .collect();
+
+    if commands.len() != crate::get_commands().len() {
+        unsafe { std::ptr::write(outlen, 0) };
+        return std::ptr::null_mut();
+    }
 
     // shrink capacity of vec
     commands.shrink_to_fit();
@@ -102,7 +107,6 @@ extern "C" fn get_commands_exposed(outlen: *mut c_int) -> *mut *mut c_char {
 }
 
 /// Get the current previous answer from the engine.
-#[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 #[unsafe(no_mangle)]
 extern "C" fn get_previous_answer_exposed() -> *mut BucketFFI {
     Box::into_raw(Box::new(BucketFFI::from(crate::get_previous_answer())))
@@ -112,7 +116,6 @@ extern "C" fn get_previous_answer_exposed() -> *mut BucketFFI {
 ///
 /// This should be called after a full algebraic statement in algebraic mode,
 /// or after each RPN command if in RPN mode.
-#[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 #[unsafe(no_mangle)]
 extern "C" fn update_previous_answer_exposed() -> EngineSignalSetFFI {
     let result = crate::update_previous_answer();

@@ -1,19 +1,19 @@
 use std::{collections::HashMap, io, sync::LazyLock};
 
 use squiid_engine::{
-    execute_multiple_rpn, execute_single_rpn, update_previous_answer, EngineSignalSet,
+    EngineSignalSet, execute_multiple_rpn, execute_single_rpn, update_previous_answer,
 };
 use unicode_width::UnicodeWidthStr;
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 
 use ratatui::{
+    Frame, Terminal,
     backend::Backend,
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     text::{Line, Span, Text},
     widgets::{Block, Borders, List, ListDirection, ListItem, ListState, Paragraph},
-    Frame, Terminal,
 };
 
 use crate::{

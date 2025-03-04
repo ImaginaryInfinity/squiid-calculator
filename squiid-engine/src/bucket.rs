@@ -1,6 +1,6 @@
 // items on the stack are called Buckets
 
-use std::{collections::HashMap, f64::consts, sync::LazyLock};
+use std::{collections::HashMap, f64::consts, fmt::Display, sync::LazyLock};
 
 use rust_decimal::{prelude::FromPrimitive, Decimal, MathematicalOps};
 use rust_decimal_macros::dec;
@@ -291,12 +291,12 @@ impl Bucket {
 }
 
 // implementation of .to_string()
-impl ToString for Bucket {
-    fn to_string(&self) -> String {
-        match &self.value {
+impl Display for Bucket {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&match &self.value {
             Some(value) => value.to_string(),
-            None => "Undefined".to_string(),
-        }
+            None => "Undefined".to_owned(),
+        })
     }
 }
 

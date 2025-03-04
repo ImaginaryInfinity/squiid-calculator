@@ -76,7 +76,7 @@ pub enum Token<'a> {
 }
 
 /// PartialEq implementation that ignores the content of the enum
-impl<'a> PartialEq for Token<'a> {
+impl PartialEq for Token<'_> {
     fn eq(&self, other: &Self) -> bool {
         std::mem::discriminant(self) == std::mem::discriminant(other)
     }

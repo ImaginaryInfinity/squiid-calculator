@@ -1,7 +1,7 @@
 [package]
 name = "squiid-engine"
 version = "2.0.2"
-description = "This repository contains the RPN (postfix) evaluation engine that is used in Squiid Calculator"
+description = "Squiid Engine is an RPN mathematical engine written in Rust"
 repository = "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-parser"
 license = "GPL-3.0"
 edition = "2024"

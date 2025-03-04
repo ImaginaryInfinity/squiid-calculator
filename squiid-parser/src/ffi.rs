@@ -45,7 +45,7 @@ impl ParseResultFFI {
 /// # Arguments
 ///
 /// * `input` - The string input to parse
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 extern "C" fn parse_exposed(input: *const c_char) -> ParseResultFFI {
     let c_str = unsafe { CStr::from_ptr(input) };
@@ -68,7 +68,7 @@ extern "C" fn parse_exposed(input: *const c_char) -> ParseResultFFI {
         Err(_) => {
             return ParseResultFFI::new_error(&format!(
                 "found invalid string data when converting data to a string",
-            ))
+            ));
         }
     };
 
@@ -99,7 +99,7 @@ extern "C" fn parse_exposed(input: *const c_char) -> ParseResultFFI {
 /// # Panics
 ///
 /// If the strings in the vec are invalid data
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn free_parse_result(parse_result: ParseResultFFI) {
     let len = parse_result.result_len as usize;
 

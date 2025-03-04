@@ -1,6 +1,6 @@
 use logos::Logos;
 
-#[derive(Logos, Debug)]
+#[derive(Logos, Debug, Copy, Clone, Hash)]
 #[logos(skip r"[ \t\n\f]+")]
 #[logos(subpattern identifier=r"[_a-zA-Z][_0-9a-zA-Z]*")]
 #[logos(subpattern float=r"[0-9]+\.[0-9]+")]

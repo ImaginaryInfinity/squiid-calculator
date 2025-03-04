@@ -4,7 +4,7 @@ version = "2.0.2"
 description = "This repository contains the RPN (postfix) evaluation engine that is used in Squiid Calculator"
 repository = "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-parser"
 license = "GPL-3.0"
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

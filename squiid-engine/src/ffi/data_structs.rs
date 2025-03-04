@@ -25,7 +25,7 @@ impl From<EngineSignalSet> for EngineSignalSetFFI {
             error: if let Some(error_str) = value.get_error() {
                 match CString::new(error_str) {
                     Ok(s) => s.into_raw(),
-                    Err(e) => return EngineSignalSet::new().set_error(e).into(),
+                    Err(e) => return EngineSignalSet::new().set_error(&e).into(),
                 }
             } else {
                 std::ptr::null_mut()

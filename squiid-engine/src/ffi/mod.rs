@@ -33,7 +33,7 @@ extern "C" fn execute_multiple_rpn_exposed(
             let c_str = CStr::from_ptr(*rpn_data.add(i));
             rpn_data_vec.push(match c_str.to_str() {
                 Ok(str) => str,
-                Err(e) => return EngineSignalSet::new().set_error(e).into(),
+                Err(e) => return EngineSignalSet::new().set_error(&e).into(),
             });
         }
     }

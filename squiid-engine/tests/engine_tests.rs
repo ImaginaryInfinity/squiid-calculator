@@ -379,7 +379,7 @@ fn test_sin() {
     assert_eq!(
         (engine.get_operands_as_f(1).unwrap()[0] * 100.0).round(),
         41.0
-    )
+    );
 }
 
 #[test]

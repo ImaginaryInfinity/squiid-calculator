@@ -73,6 +73,10 @@ rustflags = [
     "-Wclippy::useless_transmute",
     "-Wclippy::verbose_file_reads",
     "-Wclippy::zero_sized_map_values",
+    "-Wclippy::manual_let_else",
+    "-Wclippy::missing_errors_doc",
+    "-Wclippy::if_not_else",
+    "-Wclippy::unreadable_literal",
     "-Wfuture_incompatible",
     "-Wnonstandard_style",
     # END - Embark standard lints v6 for Rust 1.55+

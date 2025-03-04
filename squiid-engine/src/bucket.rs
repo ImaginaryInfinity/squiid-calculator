@@ -78,7 +78,7 @@ impl Bucket {
             ConstantTypes::EighthPi => consts::FRAC_PI_8,
             ConstantTypes::TwoPi => consts::TAU,
             ConstantTypes::E => consts::E,
-            ConstantTypes::C => 299792458_f64,
+            ConstantTypes::C => 299_792_458_f64,
             ConstantTypes::G => 6.67430 * 10_f64.powf(-11_f64),
             ConstantTypes::Phi => 1.618_033_988_749_895_f64,
         }

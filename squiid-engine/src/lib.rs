@@ -1,6 +1,7 @@
 #![deny(clippy::unwrap_used)]
 #![deny(clippy::expect_used)]
 #![deny(clippy::panic)]
+#![deny(clippy::missing_panics_doc)]
 
 pub mod bucket;
 pub mod command_mappings;
@@ -124,7 +125,7 @@ impl EngineSignalSet {
     }
 
     /// Set an error in the signal set and return a new [`EngineSignalSet`]
-    pub fn set_error(&mut self, error: impl ToString) -> Self {
+    pub fn set_error(&mut self, error: &(impl ToString + ?Sized)) -> Self {
         self.error = Some(error.to_string());
         self.clone()
     }
@@ -151,9 +152,8 @@ impl EngineSignalSet {
 ///
 /// * `rpn_data` - The list of RPN data to execute
 pub fn execute_multiple_rpn(rpn_data: Vec<&str>) -> EngineSignalSet {
-    let mut engine = match ENGINE.lock() {
-        Ok(lock) => lock,
-        Err(_) => return EngineSignalSet::new().set_error("unable to lock engine mutex"),
+    let Ok(mut engine) = ENGINE.lock() else {
+        return EngineSignalSet::new().set_error("unable to lock engine mutex");
     };
 
     let mut engine_signals = EngineSignalSet::new();
@@ -183,9 +183,9 @@ macro_rules! execute_single_rpn {
 
 /// Get the current stack from the engine.
 ///
-/// # Errors
+/// # Panics
 ///
-/// This function errors if locking the engine mutex fails
+/// This function panics if locking the engine mutex fails
 #[allow(clippy::expect_used)]
 pub fn get_stack() -> Vec<Bucket> {
     let engine = ENGINE.lock().expect("engine mutex is poisoned");
@@ -200,9 +200,9 @@ pub fn get_commands() -> Vec<String> {
 
 /// Get the current previous answer from the engine.
 ///
-/// # Errors
+/// # Panics
 ///
-/// This function errors if locking the engine mutex fails
+/// This function panics if locking the engine mutex fails
 #[allow(clippy::expect_used)]
 pub fn get_previous_answer() -> Bucket {
     let engine = ENGINE.lock().expect("engine mutex is poisoned");
@@ -215,9 +215,8 @@ pub fn get_previous_answer() -> Bucket {
 /// This should be called after a full algebraic statement in algebraic mode,
 /// or after each RPN command if in RPN mode.
 pub fn update_previous_answer() -> EngineSignalSet {
-    let mut engine = match ENGINE.lock() {
-        Ok(lock) => lock,
-        Err(_) => return EngineSignalSet::new().set_error("unable to lock engine mutex"),
+    let Ok(mut engine) = ENGINE.lock() else {
+        return EngineSignalSet::new().set_error("unable to lock engine mutex");
     };
 
     let result = engine.update_previous_answer();

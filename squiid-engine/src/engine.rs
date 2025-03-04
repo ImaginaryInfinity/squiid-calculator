@@ -376,9 +376,8 @@ impl Engine {
         let operands = self.get_operands_as_dec(1)?;
 
         // Put result on stack
-        let result = match operands[0].sqrt() {
-            Some(value) => value,
-            None => return Err("Error calculating sqrt".to_string()),
+        let Some(result) = operands[0].sqrt() else {
+            return Err("Error calculating sqrt".to_string());
         };
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
@@ -411,9 +410,8 @@ impl Engine {
         let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
-        let result = match operands[0].sin() {
-            Some(value) => value,
-            None => return Err("could not sin operand".to_string()),
+        let Some(result) = operands[0].sin() else {
+            return Err("could not sin operand".to_string());
         };
         let _ = self.add_item_to_stack(result);
         Ok(EngineSignal::StackUpdated)
@@ -425,9 +423,8 @@ impl Engine {
         let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
-        let result = match operands[0].cos() {
-            Some(value) => value,
-            None => return Err("could not cos operand".to_string()),
+        let Some(result) = operands[0].cos() else {
+            return Err("could not cos operand".to_string());
         };
         let _ = self.add_item_to_stack(result);
         Ok(EngineSignal::StackUpdated)
@@ -438,9 +435,8 @@ impl Engine {
         // Get operands
         let operands = self.get_operands_raw(1)?;
         // Put result on stack
-        let result = match operands[0].tan() {
-            Some(value) => value,
-            None => return Err("could not tan operand".to_string()),
+        let Some(result) = operands[0].tan() else {
+            return Err("could not tan operand".to_string());
         };
         let _ = self.add_item_to_stack(result);
         Ok(EngineSignal::StackUpdated)
@@ -452,9 +448,8 @@ impl Engine {
         let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
-        let result = match operands[0].sec() {
-            Some(value) => value,
-            None => return Err("could not sec operand".to_string()),
+        let Some(result) = operands[0].sec() else {
+            return Err("could not sec operand".to_string());
         };
         let _ = self.add_item_to_stack(result);
         Ok(EngineSignal::StackUpdated)
@@ -466,9 +461,8 @@ impl Engine {
         let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
-        let result = match operands[0].csc() {
-            Some(value) => value,
-            None => return Err("could not csc operand".to_string()),
+        let Some(result) = operands[0].csc() else {
+            return Err("could not csc operand".to_string());
         };
         let _ = self.add_item_to_stack(result);
         Ok(EngineSignal::StackUpdated)
@@ -480,9 +474,8 @@ impl Engine {
         let operands = self.get_operands_raw(1)?;
 
         // Put result on stack
-        let result = match operands[0].cot() {
-            Some(value) => value,
-            None => return Err("could not sine operand".to_string()),
+        let Some(result) = operands[0].cot() else {
+            return Err("could not sine operand".to_string());
         };
         let _ = self.add_item_to_stack(result);
         Ok(EngineSignal::StackUpdated)
@@ -535,9 +528,8 @@ impl Engine {
         let operands = self.get_operands_as_dec(1)?;
 
         // Put result on stack
-        let result = match operands[0].checked_log10() {
-            Some(value) => value,
-            None => return Err("cannot take log10 of 0 or negative numbers".to_string()),
+        let Some(result) = operands[0].checked_log10() else {
+            return Err("cannot take log10 of 0 or negative numbers".to_string());
         };
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
@@ -551,18 +543,15 @@ impl Engine {
         // change of base formula is defined as follows:
         // log_b(a) = (log_d(a))/(log_d(b))
 
-        let top_log = match operands[0].checked_log10() {
-            Some(value) => value,
-            None => return Err("cannot take log of 0 or negative numbers".to_string()),
+        let Some(top_log) = operands[0].checked_log10() else {
+            return Err("cannot take log of 0 or negative numbers".to_string());
         };
-        let bottom_log = match operands[1].checked_log10() {
-            Some(value) => value,
-            None => return Err("cannot take log with base of 0 or negative numbers".to_string()),
+        let Some(bottom_log) = operands[1].checked_log10() else {
+            return Err("cannot take log with base of 0 or negative numbers".to_string());
         };
 
-        let result = match top_log.checked_div(bottom_log) {
-            Some(value) => value,
-            None => return Err("cannot divide by zero".to_string()),
+        let Some(result) = top_log.checked_div(bottom_log) else {
+            return Err("cannot divide by zero".to_string());
         };
 
         // Put result on stack
@@ -576,9 +565,8 @@ impl Engine {
         let operands = self.get_operands_as_dec(1)?;
 
         // Put result on stack
-        let result = match operands[0].checked_ln() {
-            Some(value) => value,
-            None => return Err("cannot take log10 of 0 or negative numbers".to_string()),
+        let Some(result) = operands[0].checked_ln() else {
+            return Err("cannot take log10 of 0 or negative numbers".to_string());
         };
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
@@ -701,23 +689,23 @@ impl Engine {
 
     /// Roll down
     pub fn roll_down(&mut self) -> Result<EngineSignal, String> {
-        if !self.stack.is_empty() {
+        if self.stack.is_empty() {
+            Err(String::from("Cannot roll empty stack"))
+        } else {
             // Rotate stack right
             self.stack.rotate_right(1);
             Ok(EngineSignal::StackUpdated)
-        } else {
-            Err(String::from("Cannot roll empty stack"))
         }
     }
 
     /// Roll up
     pub fn roll_up(&mut self) -> Result<EngineSignal, String> {
-        if !self.stack.is_empty() {
+        if self.stack.is_empty() {
+            Err(String::from("Cannot roll empty stack"))
+        } else {
             // Rotate stack left
             self.stack.rotate_left(1);
             Ok(EngineSignal::StackUpdated)
-        } else {
-            Err(String::from("Cannot roll empty stack"))
         }
     }
 

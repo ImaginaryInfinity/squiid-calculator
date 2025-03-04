@@ -5,7 +5,7 @@ use rust_decimal_macros::dec;
 
 use crate::{
     bucket::{Bucket, BucketTypes, ConstantTypes, CONSTANT_IDENTIFIERS},
-    utils::{ID_REGEX, NUMERIC_REGEX},
+    utils::ID_REGEX,
     EngineSignal,
 };
 
@@ -72,13 +72,12 @@ impl Engine {
             }
             BucketTypes::Float | BucketTypes::String => {
                 // test all other options
-                if CONSTANT_IDENTIFIERS.contains_key(item_string.as_str()) {
-                    // Replace with value if item is a constant
-                    Bucket::from_constant(*CONSTANT_IDENTIFIERS.get(item_string.as_str()).unwrap())
-                } else if NUMERIC_REGEX.is_match(&item_string) {
-                    Bucket::from(item_string.parse::<f64>().unwrap())
-                } else {
-                    Bucket::from(item_string)
+                match CONSTANT_IDENTIFIERS.get(item_string.as_str()) {
+                    Some(&constant) => Bucket::from_constant(constant),
+                    None => match item_string.parse::<f64>() {
+                        Ok(val) => Bucket::from(val),
+                        Err(_) => Bucket::from(item_string),
+                    },
                 }
             }
         };
@@ -110,10 +109,20 @@ impl Engine {
 
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
-                let operand = self.stack.pop().unwrap();
+                let operand = self
+                    .stack
+                    .pop()
+                    .ok_or_else(|| String::from("Failed to pop operand"))?;
 
                 // this is safe as we tested above for invalid variants
-                operands.push(operand.value.unwrap().parse::<f64>().unwrap());
+                let value = operand
+                    .value
+                    .ok_or_else(|| String::from("Operand value is missing"))?;
+                operands.push(
+                    value
+                        .parse::<f64>()
+                        .map_err(|_| String::from("Failed to parse operand as f64"))?,
+                );
             }
             // Make the new vector's order match the stack
             operands.reverse();
@@ -144,7 +153,10 @@ impl Engine {
 
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
-                let operand = self.stack.pop().unwrap();
+                let operand = self
+                    .stack
+                    .pop()
+                    .ok_or_else(|| String::from("Failed to pop operand"))?;
                 operands.push(match operand.bucket_type {
                     BucketTypes::Constant(ConstantTypes::Pi) => Decimal::PI,
                     BucketTypes::Constant(ConstantTypes::E) => Decimal::E,
@@ -158,13 +170,17 @@ impl Engine {
                     | BucketTypes::Constant(ConstantTypes::SixthPi)
                     | BucketTypes::Constant(ConstantTypes::EighthPi)
                     | BucketTypes::Constant(ConstantTypes::Phi) => {
-                        match Decimal::from_str_exact(&operand.value.unwrap()) {
+                        match Decimal::from_str_exact(
+                            &operand
+                                .value
+                                .ok_or_else(|| String::from("Operand value is missing"))?,
+                        ) {
                             Ok(value) => value,
                             Err(e) => return Err(e.to_string()),
                         }
                     }
                     BucketTypes::String | BucketTypes::Undefined => {
-                        return Err(String::from("you should never get this error"))
+                        unreachable!("we've already checked that each operand on the stack is not an invalid type: operands as dec")
                     }
                 });
             }
@@ -186,7 +202,10 @@ impl Engine {
 
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
-                let operand = self.stack.pop().unwrap();
+                let operand = self
+                    .stack
+                    .pop()
+                    .ok_or_else(|| String::from("Failed to pop operand"))?;
 
                 operands.push(operand.to_string());
             }
@@ -206,7 +225,10 @@ impl Engine {
 
             // Add requested number of operands from stack to vector and converts them to strings
             for _ in 0..number {
-                let operand = self.stack.pop().unwrap();
+                let operand = self
+                    .stack
+                    .pop()
+                    .ok_or_else(|| String::from("Failed to pop operand"))?;
 
                 operands.push(operand);
             }
@@ -221,11 +243,12 @@ impl Engine {
     /// Update the previous answer variable
     /// TODO: document that this function needs to be called a lot
     pub fn update_previous_answer(&mut self) -> Result<EngineSignal, String> {
-        if !self.stack.is_empty() {
-            self.previous_answer = self.stack.last().unwrap().clone();
-            Ok(EngineSignal::NOP)
-        } else {
-            Err(String::from("stack is empty"))
+        match self.stack.last() {
+            Some(last) => {
+                self.previous_answer = last.clone();
+                Ok(EngineSignal::NOP)
+            }
+            None => Err(String::from("stack is empty")),
         }
     }
 
@@ -327,12 +350,19 @@ impl Engine {
         let result = if exponent.fract() == dec!(0.0) {
             // is not a decimal
             match base.checked_powd(exponent) {
-                Some(value) => value.to_f64().unwrap(),
+                Some(value) => value
+                    .to_f64()
+                    .ok_or_else(|| format!("unable to convert {} to f64 in power", value))?,
                 None => return Err("overflow when raising to a power".to_string()),
             }
         } else {
             // is a decimal
-            base.to_f64().unwrap().powf(exponent.to_f64().unwrap())
+            let exponent = exponent
+                .to_f64()
+                .ok_or_else(|| format!("unable to convert {} to an f64 in power", exponent))?;
+            base.to_f64()
+                .ok_or_else(|| format!("unable to convert {} to an f64 in power", base))?
+                .powf(exponent)
         };
 
         // Put result on stack

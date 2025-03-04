@@ -1,14 +1,4 @@
-use squiid_engine::utils::{ID_REGEX, NUMERIC_REGEX};
-
-#[test]
-fn test_numeric_regex() {
-    assert!(!NUMERIC_REGEX.is_match("abc"));
-    assert!(!NUMERIC_REGEX.is_match("1a"));
-    assert!(!NUMERIC_REGEX.is_match("12e.a"));
-    assert!(NUMERIC_REGEX.is_match("123"));
-    assert!(NUMERIC_REGEX.is_match("1.2"));
-    assert!(NUMERIC_REGEX.is_match("1.2e7"));
-}
+use squiid_engine::utils::ID_REGEX;
 
 #[test]
 fn test_id_regex() {

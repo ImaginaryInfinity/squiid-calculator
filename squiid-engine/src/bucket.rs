@@ -95,9 +95,7 @@ impl Bucket {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
                 ConstantTypes::E | ConstantTypes::C | ConstantTypes::G | ConstantTypes::Phi => {
-                    Some(Self::from(
-                        self.value.clone()?.parse::<f64>().unwrap().sin(),
-                    ))
+                    Some(Self::from(self.value.clone()?.parse::<f64>().ok()?.sin()))
                 }
                 ConstantTypes::Pi => Some(Self::from(0)),
                 ConstantTypes::TwoPi => Some(Self::from(0)),
@@ -108,7 +106,7 @@ impl Bucket {
                 ConstantTypes::ThirdPi => Some(Self::from(consts::FRAC_PI_3.sin())),
             },
             BucketTypes::Float => Some(Self::from(
-                Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?.checked_sin()?,
+                Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?.checked_sin()?,
             )),
             BucketTypes::String | BucketTypes::Undefined => None,
         }
@@ -119,9 +117,7 @@ impl Bucket {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
                 ConstantTypes::E | ConstantTypes::C | ConstantTypes::G | ConstantTypes::Phi => {
-                    Some(Self::from(
-                        self.value.clone()?.parse::<f64>().unwrap().cos(),
-                    ))
+                    Some(Self::from(self.value.clone()?.parse::<f64>().ok()?.cos()))
                 }
                 ConstantTypes::Pi => Some(Self::from(-1)),
                 ConstantTypes::TwoPi => Some(Self::from(1)),
@@ -132,7 +128,7 @@ impl Bucket {
                 ConstantTypes::ThirdPi => Some(Self::from(0.5)),
             },
             BucketTypes::Float => Some(Self::from(
-                Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?.checked_cos()?,
+                Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?.checked_cos()?,
             )),
             BucketTypes::String | BucketTypes::Undefined => None,
         }
@@ -143,9 +139,7 @@ impl Bucket {
         match &self.bucket_type {
             BucketTypes::Constant(constant_type) => match constant_type {
                 ConstantTypes::E | ConstantTypes::C | ConstantTypes::G | ConstantTypes::Phi => {
-                    Some(Self::from(
-                        self.value.clone()?.parse::<f64>().unwrap().tan(),
-                    ))
+                    Some(Self::from(self.value.clone()?.parse::<f64>().ok()?.tan()))
                 }
                 ConstantTypes::Pi => Some(Self::from(0)),
                 ConstantTypes::TwoPi => Some(Self::from(0)),
@@ -156,7 +150,7 @@ impl Bucket {
                 ConstantTypes::ThirdPi => Some(Self::from(consts::FRAC_PI_3.tan())),
             },
             BucketTypes::Float => Some(Self::from(
-                Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?.checked_tan()?,
+                Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?.checked_tan()?,
             )),
             BucketTypes::String | BucketTypes::Undefined => None,
         }
@@ -171,7 +165,7 @@ impl Bucket {
                 ConstantTypes::E | ConstantTypes::C | ConstantTypes::G | ConstantTypes::Phi => {
                     Some(Self::from(
                         dec!(1.0)
-                            / Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?
+                            / Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?
                                 .checked_sin()?,
                     ))
                 }
@@ -188,7 +182,7 @@ impl Bucket {
             },
             BucketTypes::Float => match &self.value {
                 Some(value) => {
-                    let float_value = value.parse::<f64>().unwrap();
+                    let float_value = value.parse::<f64>().ok()?;
                     if float_value == 0.0 {
                         Some(Self::new_undefined())
                     } else {
@@ -212,7 +206,7 @@ impl Bucket {
                 ConstantTypes::E | ConstantTypes::C | ConstantTypes::G | ConstantTypes::Phi => {
                     Some(Self::from(
                         dec!(1.0)
-                            / Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?
+                            / Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?
                                 .checked_cos()?,
                     ))
                 }
@@ -230,7 +224,7 @@ impl Bucket {
             },
             BucketTypes::Float => match &self.value {
                 Some(value) => {
-                    let float_value = value.parse::<f64>().unwrap();
+                    let float_value = value.parse::<f64>().ok()?;
                     // check if equal to 3pi/2
                     if float_value == (3.0 * consts::PI) / 2.0 {
                         Some(Self::new_undefined())
@@ -255,7 +249,7 @@ impl Bucket {
                 ConstantTypes::E | ConstantTypes::C | ConstantTypes::G | ConstantTypes::Phi => {
                     Some(Self::from(
                         dec!(1.0)
-                            / Decimal::from_f64(self.value.clone()?.parse::<f64>().unwrap())?
+                            / Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?
                                 .checked_tan()?,
                     ))
                 }
@@ -274,7 +268,7 @@ impl Bucket {
             },
             BucketTypes::Float => match &self.value {
                 Some(value) => {
-                    let float_value = value.parse::<f64>().unwrap();
+                    let float_value = value.parse::<f64>().ok()?;
                     if float_value == 0.0 {
                         Some(Self::new_undefined())
                     } else {

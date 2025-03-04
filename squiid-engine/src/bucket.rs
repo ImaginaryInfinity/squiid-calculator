@@ -292,7 +292,7 @@ impl Display for Bucket {
     }
 }
 
-// float and integer implementations of from
+/// Implement From float types for [`Bucket`]
 macro_rules! generate_float_impl {
     ( $($t:ty),* ) => {
         $( impl From<$t> for Bucket {
@@ -306,6 +306,7 @@ macro_rules! generate_float_impl {
     };
 }
 
+/// Implement From integer types for [`Bucket`]
 macro_rules! generate_int_impl {
     ( $($t:ty),* ) => {
         $( impl From<$t> for Bucket {

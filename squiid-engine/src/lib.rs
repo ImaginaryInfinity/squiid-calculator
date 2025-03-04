@@ -6,6 +6,7 @@
 pub mod bucket;
 pub mod command_mappings;
 pub mod engine;
+pub mod errors;
 pub mod utils;
 
 #[cfg(feature = "crash-reporting")]
@@ -22,6 +23,7 @@ use std::{
 use bucket::Bucket;
 use command_mappings::CommandsMap;
 use engine::Engine;
+use errors::OperandError;
 
 static ENGINE: LazyLock<Mutex<Engine>> = LazyLock::new(|| Mutex::new(Engine::new()));
 static COMMAND_MAPPINGS: LazyLock<CommandsMap> =
@@ -49,7 +51,7 @@ pub enum EngineSignal {
 ///
 /// When the command which was input creates an invalid state in the engine, such as when an
 /// undefined variable is referenced.
-pub fn handle_data(engine: &mut Engine, data: &str) -> Result<EngineSignal, String> {
+pub fn handle_data(engine: &mut Engine, data: &str) -> Result<EngineSignal, OperandError> {
     if engine.undo_history.len() > 20 {
         _ = engine.undo_history.pop_front();
         _ = engine.undo_variable_history.pop_front();
@@ -113,14 +115,14 @@ impl EngineSignalSet {
     /// # Arguments
     ///
     /// * `action` - The action to merge into the set
-    pub fn merge(&mut self, action: Result<EngineSignal, String>) {
+    pub fn merge(&mut self, action: Result<EngineSignal, OperandError>) {
         match action {
             Ok(v) => match v {
                 EngineSignal::StackUpdated => self.stack_updated = true,
                 EngineSignal::Quit => self.quit = true,
                 EngineSignal::NOP => (),
             },
-            Err(e) => self.error = Some(e),
+            Err(e) => self.error = Some(e.to_string()),
         }
     }
 

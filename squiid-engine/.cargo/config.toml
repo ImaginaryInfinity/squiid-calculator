@@ -75,6 +75,7 @@ rustflags = [
     "-Wclippy::zero_sized_map_values",
     "-Wclippy::manual_let_else",
     "-Wclippy::missing_errors_doc",
+    "-Wclippy::missing_docs_in_private_items",
     "-Wclippy::if_not_else",
     "-Wclippy::unreadable_literal",
     "-Wfuture_incompatible",

@@ -6,7 +6,6 @@
 pub mod bucket;
 pub mod command_mappings;
 pub mod engine;
-pub mod errors;
 pub mod utils;
 
 #[cfg(feature = "crash-reporting")]
@@ -50,7 +49,7 @@ pub enum EngineSignal {
 ///
 /// When the command which was input creates an invalid state in the engine, such as when an
 /// undefined variable is referenced.
-pub fn handle_data(engine: &mut Engine, data: &str) -> Result<EngineSignal, OperandError> {
+pub fn handle_data(engine: &mut Engine, data: &str) -> Result<EngineSignal, String> {
     if engine.undo_history.len() > 20 {
         _ = engine.undo_history.pop_front();
         _ = engine.undo_variable_history.pop_front();
@@ -114,14 +113,14 @@ impl EngineSignalSet {
     /// # Arguments
     ///
     /// * `action` - The action to merge into the set
-    pub fn merge(&mut self, action: Result<EngineSignal, OperandError>) {
+    pub fn merge(&mut self, action: Result<EngineSignal, String>) {
         match action {
             Ok(v) => match v {
                 EngineSignal::StackUpdated => self.stack_updated = true,
                 EngineSignal::Quit => self.quit = true,
                 EngineSignal::NOP => (),
             },
-            Err(e) => self.error = Some(e.to_string()),
+            Err(e) => self.error = Some(e),
         }
     }
 

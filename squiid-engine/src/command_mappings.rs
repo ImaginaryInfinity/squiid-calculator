@@ -12,7 +12,6 @@ macro_rules! function_map_entry {
     };
 }
 
-/// A function from the [`Engine`] impl that can be added to a [`HashMap`]
 type EngineFunction = dyn Fn(&mut Engine) -> Result<EngineSignal, String> + Send + Sync + 'static;
 pub type CommandsMap = HashMap<String, Box<EngineFunction>>;
 

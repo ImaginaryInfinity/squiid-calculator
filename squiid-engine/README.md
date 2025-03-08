@@ -7,7 +7,7 @@ This library serves as the backend for Squiid Calculator, handling all mathemati
 ## Features
 
 - Fast and memory-safe RPN evaluation
-- Strongly typed and well-documented API
+- Well-documented API
 - Error handling with the prohibition of `unwrap()`/`expect()`
 - Able to be used through a variety of different languages through the [bindings](https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-bindings)
 
@@ -17,28 +17,19 @@ This library serves as the backend for Squiid Calculator, handling all mathemati
 cargo add squiid-engine
 ```
 
-or, manually add to your Cargo.toml:
-
-```toml
-[dependencies]
-squiid-engine = "0.1"
-```
-
 ## Example Usage
 
 ```rs
-use squiid_engine::SquiidEngine;
+use squiid_engine::{execute_multiple_rpn, get_stack};
 
 fn main() {
-let mut engine = SquiidEngine::new();
-
     // Execute an RPN expression: 3 + (5 * 7)
-    let result = engine.execute_multiple_rpn(&["3", "5", "7", "multiply", "add"]);
+    let result = execute_multiple_rpn(vec!["3", "5", "7", "multiply", "add"]);
 
-    assert!(result.is_ok());
+    assert!(result.get_error().is_none());
 
-    let stack = engine.get_stack();
-    assert_eq!(stack[0].value, "38");
+    let stack = get_stack();
+    assert_eq!(stack[0].value.unwrap(), "38");
 
 }
 ```

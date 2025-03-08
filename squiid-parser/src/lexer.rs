@@ -3,8 +3,6 @@ use logos::Logos;
 use crate::tokens::Token;
 
 /// Lex a given input string into tokens
-
-/// Lex a given input string into tokens
 ///
 /// You will most likely never have to use this unless you're doing some weird preprocessing
 /// validation stuff.

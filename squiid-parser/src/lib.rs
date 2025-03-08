@@ -1,3 +1,8 @@
+#![deny(clippy::unwrap_used)]
+#![deny(clippy::expect_used)]
+#![deny(clippy::panic)]
+#![deny(clippy::missing_panics_doc)]
+
 pub mod lexer;
 pub mod parser;
 pub mod tokens;

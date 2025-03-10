@@ -75,7 +75,7 @@ pub enum Token<'a> {
     Negative(&'a str),
 }
 
-/// PartialEq implementation that ignores the content of the enum
+/// `PartialEq` implementation that ignores the content of the enum
 impl PartialEq for Token<'_> {
     fn eq(&self, other: &Self) -> bool {
         std::mem::discriminant(self) == std::mem::discriminant(other)

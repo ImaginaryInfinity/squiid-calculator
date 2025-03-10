@@ -20,7 +20,7 @@ struct ParseResultFFI {
 }
 
 impl ParseResultFFI {
-    /// Construct a new successful ParseResultFFI
+    /// Construct a new successful [`ParseResultFFI`]
     fn new(result: *mut *mut c_char, result_len: c_int) -> Self {
         Self {
             result,
@@ -29,8 +29,9 @@ impl ParseResultFFI {
         }
     }
 
-    /// Construct a new ParseResultFFI with an error message
+    /// Construct a new [`ParseResultFFI`] with an error message
     fn new_error(error: &str) -> Self {
+        #[allow(clippy::unwrap_used)]
         let raw_error = CString::new(error).unwrap().into_raw();
         Self {
             result: std::ptr::null_mut(),
@@ -49,27 +50,24 @@ impl ParseResultFFI {
 #[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 extern "C" fn parse_exposed(input: *const c_char) -> ParseResultFFI {
     let c_str = unsafe { CStr::from_ptr(input) };
-    let input_string = match c_str.to_str() {
-        Ok(v) => v,
-        Err(_) => return ParseResultFFI::new_error("Invalid UTF-8 string"),
+
+    let Ok(input_string) = c_str.to_str() else {
+        return ParseResultFFI::new_error("Invalid UTF-8 string");
     };
 
     let parsed_input = match parse(input_string) {
         Ok(v) => v,
-        Err(e) => return ParseResultFFI::new_error(&e),
+        Err(e) => return ParseResultFFI::new_error(&e.to_string()),
     };
 
     // Convert parsed input to Vec<CString>
     let c_strings: Result<Vec<CString>, NulError> =
-        parsed_input.into_iter().map(|s| CString::new(s)).collect();
+        parsed_input.into_iter().map(CString::new).collect();
 
-    let c_strings = match c_strings {
-        Ok(v) => v,
-        Err(_) => {
-            return ParseResultFFI::new_error(&format!(
-                "found invalid string data when converting data to a string",
-            ));
-        }
+    let Ok(c_strings) = c_strings else {
+        return ParseResultFFI::new_error(
+            "found invalid string data when converting data to a string",
+        );
     };
 
     // Turning each null-terminated string into a pointer.
@@ -85,7 +83,6 @@ extern "C" fn parse_exposed(input: *const c_char) -> ParseResultFFI {
     // get the pointer to the vector
     let len = out.len();
     let vec_ptr = out.as_mut_ptr();
-    mem::forget(out);
 
     ParseResultFFI::new(vec_ptr, len as c_int)
 }
@@ -94,7 +91,7 @@ extern "C" fn parse_exposed(input: *const c_char) -> ParseResultFFI {
 ///
 /// # Arguments
 ///
-/// * `parse_result` - the ParseResultFFI object that should be freed
+/// * `parse_result` - the [`ParseResultFFI`] object that should be freed
 ///
 /// # Panics
 ///

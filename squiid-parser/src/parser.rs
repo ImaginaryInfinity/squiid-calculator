@@ -3,7 +3,13 @@ use std::collections::HashMap;
 #[cfg(feature = "logging")]
 use log::debug;
 
-use crate::tokens::Token::{self, *};
+use crate::{
+    error::ParserError,
+    tokens::Token::{
+        self, Constant, Float, Function, Int, LParen, Multiply, Negative, PrevAns, RParen,
+        ScientificNotation, Subtract, VariableRecal,
+    },
+};
 
 /// Types of tokens that can be on the left side of implicit multiplication
 const LEFT_SIDE_IMPLICIT: [Token; 7] = [
@@ -28,18 +34,36 @@ const RIGHT_SIDE_IMPLICIT: [Token; 8] = [
     LParen("_"),
 ];
 
-/// Parse whether this is a negative sign or a minus operator.
+/// Parse whether tokens are negative signs or a minus operators.
+///
 /// It is a negative sign if:
 ///
 /// - at the beginning of an expression
 ///
-/// - at the beginning of an opening parenthesis (-3+6)
+/// - at the beginning of an opening parenthesis `(-3+6)`
 ///
-/// - at the beginning of a function (func(-5))
+/// - at the beginning of a function `(func(-5))`
 ///
-/// - after another operator (3+-5, 3*-5, 3^-5)
+/// - after another operator `(3+-5, 3*-5, 3^-5)`
 ///
-/// - as an argument in a function, so after a comma (function(3, -3))
+/// - as an argument in a function, so after a comma `(function(3, -3))`
+///
+/// # Arguments
+///
+/// * `tokens` - the list of tokens to perform the conversions on
+///
+/// # Examples
+///
+/// ```
+/// use squiid_parser::parser::parse_subtract_sign;
+/// use squiid_parser::tokens::Token;
+///
+/// let mut tokens = vec![Token::Subtract("-"), Token::Int("3")];
+/// let expected = vec![Token::Negative("-"), Token::Int("3")];
+///
+/// parse_subtract_sign(&mut tokens);
+/// assert_eq!(expected, tokens);
+/// ```
 pub fn parse_subtract_sign(tokens: &mut [Token]) {
     let mut negative_replacements: Vec<usize> = Vec::new();
 
@@ -73,15 +97,35 @@ pub fn parse_subtract_sign(tokens: &mut [Token]) {
     }
 }
 
+/// Explicitely insert multiplication operations into implicit multiplication scenarios
+///
 /// Left side (current token):
 ///
-/// - Function, VariableRecal, Constant, ScientificNotation, Float, Int, PrevAns, RParen
+/// - [`Function`], [`VariableRecal`], [`Constant`], [`ScientificNotation`], [`Float`], [`Int`], [`PrevAns`], [`RParen`]
 ///
 /// Right Side (peek token):
 ///
-/// - Function, VariableRecal, Constant, ScientificNotation, Float, Int, PrevAns, LParen
+/// - [`Function`], [`VariableRecal`], [`Constant`], [`ScientificNotation`], [`Float`], [`Int`], [`PrevAns`], [`LParen`]
 ///
 /// Implicit multiplication happens if something on the left side list is followed by something on the right side list
+///
+/// # Arguments
+///
+/// * `tokens` - The list of tokens to perform the operation on
+///
+/// # Examples
+///
+/// ```
+/// use squiid_parser::parser::parse_implicit_multiplication;
+/// use squiid_parser::tokens::Token;
+///
+/// let mut tokens = vec![Token::Float("3.4"), Token::Constant("#pi")];
+/// let expected = vec![Token::Float("3.4"), Token::Multiply("*"), Token::Constant("#pi")];
+///
+/// parse_implicit_multiplication(&mut tokens);
+///
+/// assert_eq!(expected, tokens);
+/// ```
 pub fn parse_implicit_multiplication(tokens: &mut Vec<Token>) {
     let mut multiply_insertions = Vec::new();
 
@@ -105,8 +149,49 @@ pub fn parse_implicit_multiplication(tokens: &mut Vec<Token>) {
     }
 }
 
-/// Parse a Vec of tokens using an implementation of the shunting yard algorithm
-pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, String> {
+/// Parse a Vec of tokens into a vec of strings using an implementation of the shunting yard algorithm.
+///
+/// # Arguments
+///
+/// * `tokens` - a list of tokens to parse into RPN notation
+///
+/// # Errors
+///
+/// If there are any parsing errors that occur, this function returns a [`ParserError`]
+///
+/// # Examples
+///
+/// ```
+/// use squiid_parser::parser::shunting_yard_parser;
+/// use squiid_parser::tokens::Token;
+/// use squiid_parser::error::ParserError;
+///
+/// fn main() -> Result<(), ParserError> {
+///
+///     let tokens = vec![
+///         Token::Int("3"),
+///         Token::Add("+"),
+///         Token::Int("4"),
+///         Token::Multiply("*"),
+///         Token::Int("2"),
+///     ];
+///
+///     let expected = vec![
+///         "3",
+///         "4",
+///         "2",
+///         "*",
+///         "+",
+///     ];
+///
+///     let parsed_tokens = shunting_yard_parser(tokens)?;
+///
+///     assert_eq!(expected, parsed_tokens);
+///
+///     Ok(())
+/// }
+/// ```
+pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, ParserError> {
     #[cfg(feature = "logging")]
     debug!("{:?}", tokens);
 
@@ -252,7 +337,7 @@ pub fn shunting_yard_parser<'a>(tokens: Vec<Token<'a>>) -> Result<Vec<&'a str>, 
                     }
                 },
                 None => {
-                    return Err("Trailing negative sign".to_string());
+                    return Err(ParserError::TrailingNegative);
                 }
             },
         }

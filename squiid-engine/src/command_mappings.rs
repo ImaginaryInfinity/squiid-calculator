@@ -12,7 +12,9 @@ macro_rules! function_map_entry {
     };
 }
 
+/// A function within the impl of [`Engine`]
 type EngineFunction = dyn Fn(&mut Engine) -> Result<EngineSignal, String> + Send + Sync + 'static;
+/// A `HashMap` containing commands and [`EngineFunction`]s for dynamic dispatch
 pub type CommandsMap = HashMap<String, Box<EngineFunction>>;
 
 /// Create a map of every available function and it's respective command

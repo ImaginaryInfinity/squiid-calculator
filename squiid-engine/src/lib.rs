@@ -23,11 +23,13 @@ use bucket::Bucket;
 use command_mappings::CommandsMap;
 use engine::Engine;
 
+/// The global engine struct used for processing calculations
 static ENGINE: LazyLock<Mutex<Engine>> = LazyLock::new(|| Mutex::new(Engine::new()));
+/// The mapping of commands to functions in the [`Engine`]
 static COMMAND_MAPPINGS: LazyLock<CommandsMap> =
     LazyLock::new(command_mappings::create_function_map);
 
-/// Server signal type for internal handling
+/// Signal type to denote what has changed after an operation
 #[derive(Debug, PartialEq)]
 pub enum EngineSignal {
     /// The stack was updated

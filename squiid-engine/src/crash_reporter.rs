@@ -7,12 +7,18 @@ use std::{
     path::PathBuf,
 };
 
+/// A struct containing details about the system Squiid was running on when a crash was encountered
 #[derive(Debug)]
 struct EnvironmentDetails<'a> {
+    /// Version of Squiid that was running
     version: &'a str,
+    /// Package name
     pkg_name: &'a str,
+    /// Crate name
     crate_name: &'a str,
+    /// Architecture
     arch: &'a str,
+    /// Operating system
     os: &'a str,
 }
 
@@ -26,6 +32,7 @@ impl fmt::Display for EnvironmentDetails<'_> {
     }
 }
 
+/// Panic hook handler that generates a crash report and gracefully exits
 pub fn crash_report(panic_info: &PanicHookInfo, config_path: Option<PathBuf>) {
     let backtrace = backtrace::Backtrace::new();
 

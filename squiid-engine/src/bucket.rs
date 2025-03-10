@@ -8,16 +8,27 @@ use rust_decimal_macros::dec;
 /// Types of constants
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ConstantTypes {
+    /// Pi
     Pi,
+    /// Pi/2
     HalfPi,
+    /// Pi/3
     ThirdPi,
+    /// Pi/4
     QuarterPi,
+    /// Pi/6
     SixthPi,
+    /// Pi/8
     EighthPi,
+    /// 2*pi
     TwoPi,
+    /// Euler's number
     E,
+    /// Speed of light
     C,
+    /// Gravitational constant
     G,
+    /// Golden ratio
     Phi,
 }
 
@@ -42,9 +53,13 @@ pub static CONSTANT_IDENTIFIERS: LazyLock<HashMap<&'static str, ConstantTypes>> 
 /// Types of Buckets
 #[derive(Debug, Clone, PartialEq)]
 pub enum BucketTypes {
+    /// A floating point number. Also contains integers such as 3.0
     Float,
+    /// A string
     String,
+    /// A constant
     Constant(ConstantTypes),
+    /// Undefined value, such as tan(pi/2)
     // TODO: should undefined error out? in trig and stuff
     Undefined,
 }
@@ -292,7 +307,7 @@ impl Display for Bucket {
     }
 }
 
-// float and integer implementations of from
+/// Generate `From<>` implementations of floating points for [`Bucket`]
 macro_rules! generate_float_impl {
     ( $($t:ty),* ) => {
         $( impl From<$t> for Bucket {
@@ -306,6 +321,7 @@ macro_rules! generate_float_impl {
     };
 }
 
+/// Generate `From<>` implementations of integers for [`Bucket`]
 macro_rules! generate_int_impl {
     ( $($t:ty),* ) => {
         $( impl From<$t> for Bucket {
@@ -331,7 +347,6 @@ impl From<Decimal> for Bucket {
     }
 }
 
-// string implementation of from
 impl From<String> for Bucket {
     fn from(value: String) -> Self {
         Self {

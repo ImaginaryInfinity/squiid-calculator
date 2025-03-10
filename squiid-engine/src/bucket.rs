@@ -162,9 +162,21 @@ impl Bucket {
                 ConstantTypes::SixthPi => Some(Self::from(consts::FRAC_PI_6.tan())),
                 ConstantTypes::ThirdPi => Some(Self::from(consts::FRAC_PI_3.tan())),
             },
-            BucketTypes::Float => Some(Self::from(
-                Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?.checked_tan()?,
-            )),
+            BucketTypes::Float => match &self.value {
+                Some(value) => {
+                    let float_value = value.parse::<f64>().ok()?;
+                    // check if equal to 3pi/2
+                    if float_value == (3.0 * consts::PI) / 2.0 {
+                        Some(Self::new_undefined())
+                    } else {
+                        Some(Self::from(
+                            Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?
+                                .checked_tan()?,
+                        ))
+                    }
+                }
+                None => None,
+            },
             BucketTypes::String | BucketTypes::Undefined => None,
         }
     }
@@ -238,12 +250,15 @@ impl Bucket {
             BucketTypes::Float => match &self.value {
                 Some(value) => {
                     let float_value = value.parse::<f64>().ok()?;
-                    // check if equal to 3pi/2
-                    if float_value == (3.0 * consts::PI) / 2.0 {
-                        Some(Self::new_undefined())
+
+                    // Handle sec(0) correctly, which should return 1
+                    if float_value == 0.0 {
+                        Some(Self::from(1)) // sec(0) = 1
+                    } else if float_value == (3.0 * consts::PI) / 2.0 {
+                        Some(Self::new_undefined()) // sec(3#pi/2) = undefined
                     } else {
                         Some(Self::from(
-                            dec!(1.0) / Decimal::from_f64(float_value)?.checked_sin()?,
+                            dec!(1.0) / Decimal::from_f64(float_value)?.checked_cos()?,
                         ))
                     }
                 }

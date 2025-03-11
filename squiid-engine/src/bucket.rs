@@ -301,7 +301,7 @@ impl Bucket {
                         Some(Self::new_undefined())
                     } else {
                         Some(Self::from(
-                            dec!(1.0) / Decimal::from_f64(float_value)?.checked_sin()?,
+                            dec!(1.0) / Decimal::from_f64(float_value)?.checked_tan()?,
                         ))
                     }
                 }

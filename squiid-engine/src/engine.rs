@@ -26,9 +26,12 @@ pub struct Engine {
     pub previous_answer: Bucket,
 }
 
-/// Evaluation engine implementation
+/// The core evaluation engine responsible for processing Reverse Polish Notation (RPN) operations.
+///
+/// The [`Engine`] maintains a stack, variable storage, and undo history to facilitate command execution
+/// and state management.
 impl Engine {
-    /// Helper to construct a new engine object
+    /// Initializes an empty stack, variable storage, and undo history, with the previous answer set to zero.
     pub fn new() -> Engine {
         Engine {
             stack: Vec::new(),

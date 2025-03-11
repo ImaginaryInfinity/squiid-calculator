@@ -5,17 +5,15 @@
 //!
 //! ## Modules
 //!
-//! - [`bucket`]: Defines the `Bucket` type used for storing values in the engine.
+//! - [`bucket`]: Defines the [`Bucket`] type used for storing values in the engine.
 //! - [`command_mappings`]: Contains the mapping of commands to their respective functions.
 //! - [`engine`]: Implements the core RPN engine.
-//! - [`utils`]: Provides utility functions for internal operations.
 //! - [`crash_reporter`] *(optional)*: Handles crash reporting when the `crash-reporting` feature is enabled.
-//! - [`ffi`] *(optional)*: Exposes a foreign function interface (FFI) for interoperability with other languages.
 //!
 //! ## Global Structures
 //!
-//! - [`ENGINE`]: A globally accessible instance of the RPN engine.
-//! - [`COMMAND_MAPPINGS`]: A lookup table mapping commands to engine operations.
+//! - `ENGINE`: A globally accessible instance of the RPN engine.
+//! - `COMMAND_MAPPINGS`: A lookup table mapping commands to engine operations.
 //!
 //! ## Core Functionality
 //!
@@ -43,7 +41,7 @@
 pub mod bucket;
 pub mod command_mappings;
 pub mod engine;
-pub mod utils;
+mod utils;
 
 #[cfg(feature = "crash-reporting")]
 pub mod crash_reporter;

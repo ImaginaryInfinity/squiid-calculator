@@ -14,11 +14,11 @@ macro_rules! function_map_entry {
 
 /// A function within the impl of [`Engine`]
 type EngineFunction = dyn Fn(&mut Engine) -> Result<EngineSignal, String> + Send + Sync + 'static;
-/// A `HashMap` containing commands and [`EngineFunction`]s for dynamic dispatch
-pub type CommandsMap = HashMap<String, Box<EngineFunction>>;
+/// A `HashMap` containing commands and `EngineFunction`s for dynamic dispatch
+pub(crate) type CommandsMap = HashMap<String, Box<EngineFunction>>;
 
 /// Create a map of every available function and it's respective command
-pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
+pub fn create_function_map() -> CommandsMap {
     let mut function_map = HashMap::new();
 
     // Insert string keys and function objects into the hashmap

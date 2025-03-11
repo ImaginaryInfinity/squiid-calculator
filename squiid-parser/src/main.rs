@@ -1,4 +1,3 @@
-//! Testing REPL which parses user input and shows the parsed RPN output
 use log::LevelFilter;
 use rustyline::error::ReadlineError;
 

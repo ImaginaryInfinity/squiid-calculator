@@ -5,7 +5,7 @@ use squiid_engine::command_mappings;
 // ex: log and blog
 // gt and egt
 
-fn check_commands(strings: &[String]) -> Option<(String, String)> {
+fn check_commands(strings: &Vec<String>) -> Option<(String, String)> {
     for (i, s1) in strings.iter().enumerate() {
         for (j, s2) in strings.iter().enumerate() {
             if i != j && s1.len() < s2.len() && s2.starts_with(s1) {
@@ -18,7 +18,7 @@ fn check_commands(strings: &[String]) -> Option<(String, String)> {
 
 #[test]
 fn test_no_conflicts() {
-    let commands: Vec<String> = command_mappings::create_function_map()
+    let commands = command_mappings::create_function_map()
         .keys()
         .map(|k| k.to_owned())
         .collect();

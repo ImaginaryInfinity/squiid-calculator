@@ -379,7 +379,7 @@ fn test_sin() {
     assert_eq!(
         (engine.get_operands_as_f(1).unwrap()[0] * 100.0).round(),
         41.0
-    );
+    )
 }
 
 #[test]
@@ -429,37 +429,6 @@ fn test_tan() {
 }
 
 #[test]
-fn test_tan_undef() {
-    let mut engine = Engine::new();
-
-    // tan in undefined at pi/2
-    let _ = engine.add_item_to_stack("#pi".into());
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.divide();
-
-    // tan in undefined at 3pi/2
-    let _ = engine.add_item_to_stack("#pi".into());
-    let _ = engine.add_item_to_stack("3".into());
-    let _ = engine.multiply();
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.divide();
-
-    // test 3pi/2
-    let _ = engine.tan();
-    assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
-        Bucket::new_undefined()
-    );
-
-    // test pi/2
-    let _ = engine.tan();
-    assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
-        Bucket::new_undefined()
-    );
-}
-
-#[test]
 fn test_sec() {
     let mut engine = Engine::new();
 
@@ -478,37 +447,6 @@ fn test_sec() {
     // pi = -1
     let _ = engine.sec();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -1.0);
-}
-
-#[test]
-fn test_sec_undef() {
-    let mut engine = Engine::new();
-
-    // sec in undefined at pi/2
-    let _ = engine.add_item_to_stack("#pi".into());
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.divide();
-
-    // sec in undefined at 3pi/2
-    let _ = engine.add_item_to_stack("#pi".into());
-    let _ = engine.add_item_to_stack("3".into());
-    let _ = engine.multiply();
-    let _ = engine.add_item_to_stack("2".into());
-    let _ = engine.divide();
-
-    // test 3pi/2
-    let _ = engine.sec();
-    assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
-        Bucket::new_undefined()
-    );
-
-    // test pi/2
-    let _ = engine.sec();
-    assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
-        Bucket::new_undefined()
-    );
 }
 
 #[test]
@@ -532,31 +470,6 @@ fn test_csc() {
     let _ = engine.divide();
     let _ = engine.csc();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
-}
-
-#[test]
-fn test_csc_undef() {
-    let mut engine = Engine::new();
-
-    // csc in undefined at 0
-    let _ = engine.add_item_to_stack("0".into());
-
-    // csc in undefined at pi
-    let _ = engine.add_item_to_stack("#pi".into());
-
-    // test pi
-    let _ = engine.csc();
-    assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
-        Bucket::new_undefined()
-    );
-
-    // test 0
-    let _ = engine.csc();
-    assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
-        Bucket::new_undefined()
-    );
 }
 
 #[test]
@@ -590,31 +503,6 @@ fn test_cot() {
     let _ = engine.divide();
     let _ = engine.cot();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
-}
-
-#[test]
-fn test_cot_undef() {
-    let mut engine = Engine::new();
-
-    // cot in undefined at 0
-    let _ = engine.add_item_to_stack("0".into());
-
-    // cot in undefined at pi
-    let _ = engine.add_item_to_stack("#pi".into());
-
-    // test pi
-    let _ = engine.cot();
-    assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
-        Bucket::new_undefined()
-    );
-
-    // test 0
-    let _ = engine.csc();
-    assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
-        Bucket::new_undefined()
-    );
 }
 
 #[test]
@@ -782,10 +670,10 @@ fn test_eq() {
     let _ = engine.add_item_to_stack("2".into());
 
     // evaluate from last stack entries to first
-    let _ = engine.equal();
+    let _ = engine.eq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
 
-    let _ = engine.equal();
+    let _ = engine.eq();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 }
 

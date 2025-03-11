@@ -12,13 +12,11 @@ macro_rules! function_map_entry {
     };
 }
 
-/// A function within the impl of [`Engine`]
 type EngineFunction = dyn Fn(&mut Engine) -> Result<EngineSignal, String> + Send + Sync + 'static;
-/// A `HashMap` containing commands and `EngineFunction`s for dynamic dispatch
-pub(crate) type CommandsMap = HashMap<String, Box<EngineFunction>>;
+pub type CommandsMap = HashMap<String, Box<EngineFunction>>;
 
 /// Create a map of every available function and it's respective command
-pub fn create_function_map() -> CommandsMap {
+pub fn create_function_map() -> HashMap<String, Box<EngineFunction>> {
     let mut function_map = HashMap::new();
 
     // Insert string keys and function objects into the hashmap
@@ -43,7 +41,7 @@ pub fn create_function_map() -> CommandsMap {
     function_map_entry!(function_map, "blog", blog);
     function_map_entry!(function_map, "ln", ln);
     function_map_entry!(function_map, "abs", abs);
-    function_map_entry!(function_map, "eq", equal);
+    function_map_entry!(function_map, "eq", eq);
     function_map_entry!(function_map, "gt", gt);
     function_map_entry!(function_map, "lt", lt);
     function_map_entry!(function_map, "leq", geq);

@@ -1,3 +1,34 @@
+//! Foreign Function Interface (FFI) bindings for Squiid engine.
+//!
+//! This module provides FFI-exposed functions to interact with the engine from external code,
+//! such as C or other languages that support C-style linking. It allows submitting RPN commands,
+//! retrieving the stack, fetching available commands, and managing the engine’s state.
+//!
+//! # Safety
+//!
+//! These functions cross the FFI boundary, meaning they deal with raw pointers and manual memory management.
+//! Callers must ensure proper handling of allocated memory and adhere to Rust's ownership model to prevent
+//! undefined behavior.
+//!
+//! # Exposed Functions
+//!
+//! - [`execute_multiple_rpn_exposed`] - Submits multiple RPN commands to the engine.
+//! - [`get_stack_exposed`] - Retrieves the engine’s current stack.
+//! - [`get_commands_exposed`] - Returns the list of supported commands.
+//! - [`get_previous_answer_exposed`] - Fetches the last computed result.
+//! - [`update_previous_answer_exposed`] - Updates the previous answer in the engine.
+//!
+//! # Modules
+//!
+//! - [`cleanup`] - Handles memory cleanup for FFI-exposed data.
+//! - [`data_structs`] - Defines FFI-compatible data structures for interacting with the engine.
+//!
+//! # Usage
+//!
+//! These functions are primarily intended for use in external applications interfacing with the engine
+//! via C bindings. Care should be taken when passing and handling pointers, as improper usage may
+//! lead to memory leaks or undefined behavior.
+
 use std::ffi::{c_char, c_int, CStr, CString};
 
 use data_structs::{BucketFFI, EngineSignalSetFFI};

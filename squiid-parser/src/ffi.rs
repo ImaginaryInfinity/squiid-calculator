@@ -1,3 +1,26 @@
+//! Foreign Function Interface (FFI) bindings for Squiid parser.
+//!
+//! This module provides functions and structures to facilitate parsing algebraic expressions
+//! over an FFI boundary. It defines a [`ParseResultFFI`] structure to encapsulate either
+//! a successful parse result as an array of strings or an error message if parsing fails.
+//!
+//! # Safety
+//!
+//! These functions cross the FFI boundary and involve raw pointers, making them inherently unsafe.
+//! The caller must ensure:
+//! - `input` in [`parse_exposed`] is a valid null-terminated UTF-8 string.
+//! - `parse_result` in [`free_parse_result`] was allocated by [`parse_exposed`] and is not used afterward.
+//!
+//! # Exposed Functions
+//!
+//! - [`parse_exposed`]: Parses an algebraic (infix) notation string into an array of RPN commands.
+//! - [`free_parse_result`]: Frees memory allocated for a [`ParseResultFFI`] structure.
+//!
+//! # Usage
+//!
+//! When calling [`parse_exposed`], ensure to later call [`free_parse_result`] to properly deallocate memory.
+//! Failure to do so will result in memory leaks.
+
 use std::{
     ffi::{CStr, CString, NulError},
     mem,

@@ -47,7 +47,7 @@ mod utils;
 pub mod crash_reporter;
 
 #[cfg(feature = "ffi")]
-pub mod ffi;
+mod ffi;
 
 use std::{
     borrow::BorrowMut,

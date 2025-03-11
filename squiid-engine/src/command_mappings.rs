@@ -43,7 +43,7 @@ pub fn create_function_map() -> CommandsMap {
     function_map_entry!(function_map, "blog", blog);
     function_map_entry!(function_map, "ln", ln);
     function_map_entry!(function_map, "abs", abs);
-    function_map_entry!(function_map, "eq", eq);
+    function_map_entry!(function_map, "eq", equal);
     function_map_entry!(function_map, "gt", gt);
     function_map_entry!(function_map, "lt", lt);
     function_map_entry!(function_map, "leq", geq);

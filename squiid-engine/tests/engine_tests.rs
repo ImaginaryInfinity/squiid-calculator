@@ -782,10 +782,10 @@ fn test_eq() {
     let _ = engine.add_item_to_stack("2".into());
 
     // evaluate from last stack entries to first
-    let _ = engine.eq();
+    let _ = engine.equal();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
 
-    let _ = engine.eq();
+    let _ = engine.equal();
     assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
 }
 

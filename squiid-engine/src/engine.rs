@@ -1534,10 +1534,10 @@ impl Engine {
     /// engine.stack.push(Bucket::from(5.0));
     /// engine.stack.push(Bucket::from(5.0));
     ///
-    /// assert!(engine.eq().is_ok());
+    /// assert!(engine.equal().is_ok());
     /// assert_eq!(engine.stack.last().unwrap(), &Bucket::from(1)); // 5.0 == 5.0, so result is 1
     /// ```
-    pub fn eq(&mut self) -> Result<EngineSignal, String> {
+    pub fn equal(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         // TODO: maybe make this work with strings
         let operands = self.get_operands_as_f(2)?;

@@ -6,7 +6,7 @@ use rust_decimal::{prelude::FromPrimitive, Decimal, MathematicalOps};
 use rust_decimal_macros::dec;
 
 /// Types of constants
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum ConstantTypes {
     /// Pi
     Pi,
@@ -51,7 +51,7 @@ pub static CONSTANT_IDENTIFIERS: LazyLock<HashMap<&'static str, ConstantTypes>> 
     });
 
 /// Types of Buckets
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum BucketTypes {
     /// A floating point number. Also contains integers such as 3.0
     Float,
@@ -65,7 +65,7 @@ pub enum BucketTypes {
 }
 
 /// Bucket contains the items that can be on the stack
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub struct Bucket {
     /// Bucket value. Will be None when undefined
     pub value: Option<String>,

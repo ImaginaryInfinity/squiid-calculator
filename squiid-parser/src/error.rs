@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-#[derive(Error, Debug)]
+#[derive(Error, Clone, Eq, PartialEq, Hash, Debug)]
 pub enum ParserError {
     #[error("Unexpected token: {0}")]
     UnexpectedToken(String),

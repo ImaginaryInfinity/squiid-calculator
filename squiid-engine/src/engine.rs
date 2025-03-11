@@ -9,7 +9,11 @@ use crate::{
     EngineSignal,
 };
 
-/// Evaluation engine struct
+/// The core evaluation engine responsible for processing Reverse Polish Notation (RPN) operations.
+///
+/// The [`Engine`] maintains a stack, variable storage, and undo history to facilitate command execution
+/// and state management.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Engine {
     /// The stack of bucket items
     pub stack: Vec<Bucket>,
@@ -26,10 +30,6 @@ pub struct Engine {
     pub previous_answer: Bucket,
 }
 
-/// The core evaluation engine responsible for processing Reverse Polish Notation (RPN) operations.
-///
-/// The [`Engine`] maintains a stack, variable storage, and undo history to facilitate command execution
-/// and state management.
 impl Engine {
     /// Initializes an empty stack, variable storage, and undo history, with the previous answer set to zero.
     pub fn new() -> Engine {

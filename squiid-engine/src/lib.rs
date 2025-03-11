@@ -65,7 +65,7 @@ static COMMAND_MAPPINGS: LazyLock<CommandsMap> =
     LazyLock::new(command_mappings::create_function_map);
 
 /// Represents the different signals that can be returned by the engine.
-#[derive(Debug, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum EngineSignal {
     /// The stack was updated
     StackUpdated,
@@ -133,7 +133,7 @@ pub fn handle_data(engine: &mut Engine, data: &str) -> Result<EngineSignal, Stri
 
 /// Struct to identify which [`EngineSignal`]s were triggered during the submission of multiple
 /// commands to the engine (usually in `execute_rpn_data`)
-#[derive(Debug, Default, Clone)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct EngineSignalSet {
     /// This is set if the `get_stack` method should be called to retrieve the new stack
     stack_updated: bool,

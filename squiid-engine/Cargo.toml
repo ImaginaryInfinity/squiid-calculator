@@ -4,6 +4,11 @@ version = "2.0.2"
 description = "Squiid Engine is an RPN mathematical engine written in Rust"
 repository = "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-parser"
 license = "GPL-3.0"
+readme = "README.md"
+authors = [
+    "Connor Sample <tabulatejarl8@gmail.com>",
+    "Finian Wright <turbowafflz@gmail.com>",
+]
 edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

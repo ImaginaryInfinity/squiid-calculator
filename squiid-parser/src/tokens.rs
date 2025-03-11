@@ -1,6 +1,6 @@
 use logos::Logos;
 
-#[derive(Logos, Debug)]
+#[derive(Logos, Copy, Clone, Hash, Debug)]
 #[logos(skip r"[ \t\n\f]+")]
 #[logos(subpattern identifier=r"[_a-zA-Z][_0-9a-zA-Z]*")]
 #[logos(subpattern float=r"[0-9]+\.[0-9]+")]
@@ -75,8 +75,8 @@ pub enum Token<'a> {
     Negative(&'a str),
 }
 
-/// PartialEq implementation that ignores the content of the enum
-impl<'a> PartialEq for Token<'a> {
+/// `PartialEq` implementation that ignores the content of the enum
+impl PartialEq for Token<'_> {
     fn eq(&self, other: &Self) -> bool {
         std::mem::discriminant(self) == std::mem::discriminant(other)
     }

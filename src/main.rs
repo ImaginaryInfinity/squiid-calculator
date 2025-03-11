@@ -1,9 +1,9 @@
 use std::{error::Error, io};
 
-use ratatui::{backend::CrosstermBackend, Terminal};
+use ratatui::{Terminal, backend::CrosstermBackend};
 
 mod app;
-use app::{run_app, App};
+use app::{App, run_app};
 
 mod config_handler;
 mod utils;
@@ -11,7 +11,7 @@ mod utils;
 use crossterm::{
     event::{self, DisableMouseCapture},
     execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
 use squiid_engine::crash_reporter;
 

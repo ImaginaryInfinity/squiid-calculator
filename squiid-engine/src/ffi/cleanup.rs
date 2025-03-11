@@ -1,14 +1,36 @@
+//! This module provides functions for freeing memory allocated for FFI (Foreign Function Interface) objects
+//! These functions ensure that memory allocated for strings, arrays, and custom data structures
+//! ([`EngineSignalSetFFI`], [`BucketFFI`], etc.) is properly deallocated when no longer needed.
+//!
+//! # Overview
+//!
+//! The Rust code interacting with foreign code (e.g., C) must manually manage memory
+//! for objects returned over the FFI boundary. This module provides safe deallocation
+//! functions to prevent memory leaks.
+//!
+//! # Functions
+//!
+//! - [`free_engine_signal_set`]: Frees an error string contained within an [`EngineSignalSetFFI`] struct.
+//! - [`free_string_array`]: Frees an array of C strings (`char*`).
+//! - [`free_bucket_array`]: Frees an array of [`BucketFFI`] objects.
+//! - [`free_bucket`]: Frees a single [`BucketFFI`] object.
+//!
+//! # Safety Considerations
+//!
+//! - These functions must be called on objects that were allocated and returned from Rust.
+//! - Calling these functions on invalid or already freed pointers will cause undefined behavior.
+//! - Ensure that memory is properly managed across the FFI boundary to avoid double frees or leaks.
+
 use std::ffi::{c_char, c_int, CString};
 
 use super::data_structs::{BucketFFI, EngineSignalSetFFI};
 
-/// Free the error string contained within the EngineSignalSetFFI struct
+/// Free the error string contained within the [`EngineSignalSetFFI`] struct
 ///
 /// # Arguments
 ///
-/// * `ptr` - Pointer to a EngineSignalSetFFI struct which was returned from Rust
-#[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-#[no_mangle]
+/// * `ptr` - Pointer to an [`EngineSignalSetFFI`] struct which was returned from Rust
+#[unsafe(no_mangle)]
 extern "C" fn free_engine_signal_set(ptr: EngineSignalSetFFI) {
     unsafe {
         if !ptr.error.is_null() {
@@ -28,8 +50,7 @@ extern "C" fn free_engine_signal_set(ptr: EngineSignalSetFFI) {
 /// # Panics
 ///
 /// If the array pointer is null or if the vec or strings are invalid data
-#[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn free_string_array(array: *mut *mut c_char, len: c_int) {
     if !array.is_null() {
         let len = len as usize;
@@ -58,8 +79,7 @@ extern "C" fn free_string_array(array: *mut *mut c_char, len: c_int) {
 /// # Panics
 ///
 /// If the array pointer is null or if the vec or Bucket are invalid data
-#[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn free_bucket_array(array: *mut *mut BucketFFI, len: c_int) {
     if array.is_null() {
         let len = len as usize;
@@ -86,8 +106,7 @@ extern "C" fn free_bucket_array(array: *mut *mut BucketFFI, len: c_int) {
 /// # Panics
 ///
 /// If the bucket pointer is null or if the bucket is invalid data
-#[deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn free_bucket(bucket_ffi: *mut BucketFFI) {
     if !bucket_ffi.is_null() {
         let bucket = unsafe { Box::from_raw(bucket_ffi) };

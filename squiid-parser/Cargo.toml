@@ -5,6 +5,8 @@ description = "The algebraic expression parser for Squiid Calculator."
 repository = "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-parser"
 license = "GPL-3.0"
 readme = "README.md"
+categories = ["text-processing", "parser-implementations", "mathematics"]
+keywords = ["parser", "math", "algebra", "rpn", "shunting-yard"]
 authors = [
     "Connor Sample <tabulatejarl8@gmail.com>",
     "Finian Wright <turbowafflz@gmail.com>",

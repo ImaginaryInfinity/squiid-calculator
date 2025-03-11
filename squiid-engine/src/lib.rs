@@ -1,3 +1,40 @@
+//! # Squiid Engine
+//!
+//! Squiid Engine provides a reverse Polish notation (RPN) calculation engine, along with utilities
+//! for managing commands, processing input, and handling execution signals.
+//!
+//! ## Modules
+//!
+//! - [`bucket`]: Defines the `Bucket` type used for storing values in the engine.
+//! - [`command_mappings`]: Contains the mapping of commands to their respective functions.
+//! - [`engine`]: Implements the core RPN engine.
+//! - [`utils`]: Provides utility functions for internal operations.
+//! - [`crash_reporter`] *(optional)*: Handles crash reporting when the `crash-reporting` feature is enabled.
+//! - [`ffi`] *(optional)*: Exposes a foreign function interface (FFI) for interoperability with other languages.
+//!
+//! ## Global Structures
+//!
+//! - [`ENGINE`]: A globally accessible instance of the RPN engine.
+//! - [`COMMAND_MAPPINGS`]: A lookup table mapping commands to engine operations.
+//!
+//! ## Core Functionality
+//!
+//! - [`handle_data`]: Processes a single RPN command or numeric input.
+//! - [`execute_multiple_rpn`]: Executes a series of RPN commands in sequence.
+//! - [`get_stack`]: Retrieves the current stack state.
+//! - [`get_commands`]: Returns a list of valid commands.
+//! - [`get_previous_answer`]: Fetches the last computed result.
+//! - [`update_previous_answer`]: Updates the stored previous answer in the engine.
+//!
+//! # Example Usage
+//!
+//! ```rust
+//! use squiid_engine::execute_multiple_rpn;
+//!
+//! let result = execute_multiple_rpn(vec!["5", "3", "+"]);
+//! assert!(result.stack_updated());
+//! ```
+
 #![deny(clippy::unwrap_used)]
 #![deny(clippy::expect_used)]
 #![deny(clippy::panic)]
@@ -29,28 +66,32 @@ static ENGINE: LazyLock<Mutex<Engine>> = LazyLock::new(|| Mutex::new(Engine::new
 static COMMAND_MAPPINGS: LazyLock<CommandsMap> =
     LazyLock::new(command_mappings::create_function_map);
 
-/// Signal type to denote what has changed after an operation
+/// Represents the different signals that can be returned by the engine.
 #[derive(Debug, PartialEq)]
 pub enum EngineSignal {
     /// The stack was updated
     StackUpdated,
-    /// A quit was requested
+    /// Signals a request to terminate execution.
     Quit,
     /// No operation
     NOP,
 }
 
-/// This function is an abstraction which allows you to run one RPN operation on an engine.
+/// Processes a single RPN command or numeric input.
 ///
 /// # Arguments
 ///
-/// * `engine` - The engine to use
-/// * `data` - The data (command or number) to execute.
+/// * `engine` - A mutable reference to the engine instance.
+/// * `data` - The command or number to be executed.
 ///
 /// # Errors
 ///
-/// When the command which was input creates an invalid state in the engine, such as when an
-/// undefined variable is referenced.
+/// Returns an error if an invalid command is executed or an undefined variable is referenced.
+///
+/// # Behavior
+///
+/// - Maintains an undo history for up to 20 operations.
+/// - Ignores history updates for "refresh", "undo", and "redo" commands.
 pub fn handle_data(engine: &mut Engine, data: &str) -> Result<EngineSignal, String> {
     if engine.undo_history.len() > 20 {
         _ = engine.undo_history.pop_front();
@@ -105,6 +146,7 @@ pub struct EngineSignalSet {
 }
 
 impl EngineSignalSet {
+    /// Creates a new [`EngineSignalSet`] with default values.
     pub fn new() -> Self {
         Self::default()
     }
@@ -132,27 +174,31 @@ impl EngineSignalSet {
         self.clone()
     }
 
-    /// Whether or not the stack has been updated
+    /// Returns `true` if the stack was updated.
     pub fn stack_updated(&self) -> bool {
         self.stack_updated
     }
 
-    /// Whether or not the frontend should quit
+    /// Returns `true` if a quit signal was triggered.
     pub fn should_quit(&self) -> bool {
         self.quit
     }
 
-    /// Get the last encountered error if available
+    /// Get the last encountered error, if available
     pub fn get_error(&self) -> Option<String> {
         self.error.clone()
     }
 }
 
-/// Execute multiple RPN commands in the engine at once.
+/// Execute multiple RPN commands in the engine sequentially.
 ///
 /// # Arguments
 ///
-/// * `rpn_data` - The list of RPN data to execute
+/// * `rpn_data` - A vector of RPN commands to execute
+///
+/// # Returns
+///
+/// An [`EngineSignalSet`] indicating which actions occurred during execution.
 pub fn execute_multiple_rpn(rpn_data: Vec<&str>) -> EngineSignalSet {
     let Ok(mut engine) = ENGINE.lock() else {
         return EngineSignalSet::new().set_error("unable to lock engine mutex");
@@ -175,7 +221,7 @@ pub fn execute_multiple_rpn(rpn_data: Vec<&str>) -> EngineSignalSet {
     engine_signals
 }
 
-/// Execute a single RPN statement
+/// Executes a single RPN statement
 #[macro_export]
 macro_rules! execute_single_rpn {
     ($i:expr) => {
@@ -187,7 +233,7 @@ macro_rules! execute_single_rpn {
 ///
 /// # Panics
 ///
-/// This function panics if locking the engine mutex fails
+/// Panics if the engine mutex cannot be locked.
 #[allow(clippy::expect_used)]
 pub fn get_stack() -> Vec<Bucket> {
     let engine = ENGINE.lock().expect("engine mutex is poisoned");
@@ -204,7 +250,7 @@ pub fn get_commands() -> Vec<String> {
 ///
 /// # Panics
 ///
-/// This function panics if locking the engine mutex fails
+/// Panics if the engine mutex cannot be locked.
 #[allow(clippy::expect_used)]
 pub fn get_previous_answer() -> Bucket {
     let engine = ENGINE.lock().expect("engine mutex is poisoned");

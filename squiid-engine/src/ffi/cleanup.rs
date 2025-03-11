@@ -1,3 +1,26 @@
+//! This module provides functions for freeing memory allocated for FFI (Foreign Function Interface) objects
+//! These functions ensure that memory allocated for strings, arrays, and custom data structures
+//! ([`EngineSignalSetFFI`], [`BucketFFI`], etc.) is properly deallocated when no longer needed.
+//!
+//! # Overview
+//!
+//! The Rust code interacting with foreign code (e.g., C) must manually manage memory
+//! for objects returned over the FFI boundary. This module provides safe deallocation
+//! functions to prevent memory leaks.
+//!
+//! # Functions
+//!
+//! - [`free_engine_signal_set`]: Frees an error string contained within an [`EngineSignalSetFFI`] struct.
+//! - [`free_string_array`]: Frees an array of C strings (`char*`).
+//! - [`free_bucket_array`]: Frees an array of [`BucketFFI`] objects.
+//! - [`free_bucket`]: Frees a single [`BucketFFI`] object.
+//!
+//! # Safety Considerations
+//!
+//! - These functions must be called on objects that were allocated and returned from Rust.
+//! - Calling these functions on invalid or already freed pointers will cause undefined behavior.
+//! - Ensure that memory is properly managed across the FFI boundary to avoid double frees or leaks.
+
 use std::ffi::{c_char, c_int, CString};
 
 use super::data_structs::{BucketFFI, EngineSignalSetFFI};

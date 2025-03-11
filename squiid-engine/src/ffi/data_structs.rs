@@ -1,3 +1,27 @@
+//! This module defines FFI-compatible representations of core engine structures.
+//! These structures allow safe data exchange between Rust and other languages (e.g., C).
+//!
+//! # Overview
+//!
+//! The FFI (Foreign Function Interface) bindings provided here expose key structures
+//! such as [`EngineSignalSetFFI`], [`BucketFFI`], [`BucketTypesFFI`], and [`ConstantTypesFFI`]
+//! in a C-compatible format. These types ensure seamless communication across language boundaries
+//! while maintaining safety and correctness.
+//!
+//! # Structures
+//!
+//! - [`EngineSignalSetFFI`]: Represents signals indicating actions a frontend should take.
+//! - [`BucketFFI`]: A foreign-compatible representation of [`Bucket`] containing a value and type metadata.
+//! - [`BucketTypesFFI`]: An enum representing different types of buckets (e.g., float, string, constant).
+//! - [`ConstantTypesFFI`]: An enum representing mathematical and physical constants (e.g., Pi, Euler's number).
+//!
+//! # Safety Considerations
+//!
+//! - Strings (`*mut c_char`) must be properly allocated and freed to avoid memory leaks.
+//! - Enum values must match their Rust counterparts to prevent undefined behavior.
+//! - Conversions between Rust and FFI types (`From` implementations) ensure type safety.
+//! - These types should only be used in an FFI context where proper memory management is guaranteed.
+
 use std::ffi::{c_char, CString};
 
 use crate::{
@@ -74,9 +98,13 @@ impl From<Bucket> for BucketFFI {
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub enum BucketTypesFFI {
+    /// A floating point number. Also contains integers such as 3.0
     Float = 1,
+    /// A string
     String,
+    /// A constant
     Constant,
+    /// Undefined value, such as tan(pi/2)
     Undefined,
 }
 
@@ -95,16 +123,27 @@ impl From<BucketTypes> for BucketTypesFFI {
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub enum ConstantTypesFFI {
+    /// Pi
     Pi = 1,
+    /// Pi/2
     HalfPi,
+    /// Pi/3
     ThirdPi,
+    /// Pi/4
     QuarterPi,
+    /// Pi/6
     SixthPi,
+    /// Pi/8
     EighthPi,
+    /// 2*pi
     TwoPi,
+    /// Euler's number
     E,
+    /// Speed of light
     C,
+    /// Gravitational constant
     G,
+    /// Golden ratio
     Phi,
 }
 

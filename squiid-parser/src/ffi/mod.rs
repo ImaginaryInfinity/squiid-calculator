@@ -21,6 +21,8 @@
 //! When calling [`parse_exposed`], ensure to later call [`free_parse_result`] to properly deallocate memory.
 //! Failure to do so will result in memory leaks.
 
+#![allow(clippy::mem_forget)]
+
 use std::{
     ffi::{CStr, CString, NulError},
     mem,
@@ -109,39 +111,7 @@ extern "C" fn parse_exposed(input: *const c_char) -> ParseResultFFI {
     // get the pointer to the vector
     let len = out.len();
     let vec_ptr = out.as_mut_ptr();
+    mem::forget(out);
 
     ParseResultFFI::new(vec_ptr, len as c_int)
-}
-
-/// Free an array of strings that was returned over the FFI boundary.
-///
-/// # Arguments
-///
-/// * `parse_result` - the [`ParseResultFFI`] object that should be freed
-///
-/// # Panics
-///
-/// If the strings in the vec are invalid data
-#[unsafe(no_mangle)]
-extern "C" fn free_parse_result(parse_result: ParseResultFFI) {
-    let len = parse_result.result_len as usize;
-
-    if !parse_result.result.is_null() {
-        // Get back our vector.
-        // Previously we shrank to fit, so capacity == length.
-        let v = unsafe { Vec::from_raw_parts(parse_result.result, len, len) };
-
-        // Now drop one string at a time.
-        for elem in v {
-            let s = unsafe { CString::from_raw(elem) };
-            mem::drop(s);
-        }
-
-        // Afterwards the vector will be dropped and thus freed.
-    }
-
-    // Free the error string
-    if !parse_result.error.is_null() {
-        let _ = unsafe { CString::from_raw(parse_result.error) };
-    }
 }

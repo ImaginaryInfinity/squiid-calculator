@@ -29,6 +29,8 @@
 //! via C bindings. Care should be taken when passing and handling pointers, as improper usage may
 //! lead to memory leaks or undefined behavior.
 
+#![allow(clippy::mem_forget)]
+
 use std::ffi::{c_char, c_int, CStr, CString};
 
 use data_structs::{BucketFFI, EngineSignalSetFFI};
@@ -99,7 +101,10 @@ extern "C" fn get_stack_exposed(outlen: *mut c_int) -> *mut *mut BucketFFI {
     unsafe { std::ptr::write(outlen, len as c_int) };
 
     // get the pointer to the vec that we are returning
-    stack_ptr.as_mut_ptr()
+    let vec_ptr = stack_ptr.as_mut_ptr();
+    std::mem::forget(stack_ptr);
+
+    vec_ptr
 }
 
 /// Get the engine's list of currently supported commands.
@@ -127,6 +132,7 @@ extern "C" fn get_commands_exposed(outlen: *mut c_int) -> *mut *mut c_char {
     let len = commands.len();
     // forget pointer so that rust doesnt drop it
     let vec_ptr = commands.as_mut_ptr();
+    std::mem::forget(commands);
 
     // write length to outlen
     unsafe { std::ptr::write(outlen, len as c_int) };

@@ -1,6 +1,6 @@
 [package]
 name = "squiid-engine"
-version = "2.2.0"
+version = "2.2.1"
 description = "Squiid Engine is an RPN mathematical engine written in Rust"
 repository = "https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-parser"
 license = "GPL-3.0"

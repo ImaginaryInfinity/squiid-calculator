@@ -1054,7 +1054,7 @@ dependencies = [
 
 [[package]]
 name = "squiid-engine"
-version = "2.2.1"
+version = "2.2.2"
 dependencies = [
  "backtrace",
  "chrono",
@@ -1066,7 +1066,7 @@ dependencies = [
 
 [[package]]
 name = "squiid-parser"
-version = "1.5.1"
+version = "1.5.2"
 dependencies = [
  "log",
  "logos",

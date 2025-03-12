@@ -29,6 +29,9 @@ use std::{
 
 use crate::parse;
 
+mod cleanup;
+mod version;
+
 /// Structure containing the result of a parse operation done over FFI. Will contain either a
 /// result array or an error message, but not both.
 #[repr(C)]

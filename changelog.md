@@ -1,3 +1,14 @@
+# 1.3.0
+
+This is mainly a big internal update, however it does fix a few bugs of note:
+
+- Update to 2024 Rust
+- Enforce and fix a strong set of clippy lints in the engine and parser to improve safety, DX, and documentation
+- Added lots of documentation
+- Fix bugs related to trigonometric functions not returning Undefined when they should (Closes #79, see e7a23436ef95b7168ac1edbe510919531321e2c2)
+- Stop requiring leading zero in decimal numbers (e.g. `.5` instead of `0.5`) (#78)
+- Publish engine and parser to crates.io (https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid-bindings/-/issues/8)
+
 # 1.2.2
 
 - Fix negative modulos giving incorrect answers (#76)

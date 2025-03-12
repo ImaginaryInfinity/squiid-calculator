@@ -307,3 +307,10 @@ fn test_assignment_operator() {
     );
     parse_and_compare("y=($b-$a)$s", vec!["y", "$b", "$a", "-", "$s", "*", "="]);
 }
+
+#[test]
+fn test_float_parsing() {
+    parse_and_compare("3.5", vec!["3.5"]);
+    parse_and_compare("-.3", vec![".3", "chs"]);
+    parse_and_compare(".7", vec![".7"]);
+}

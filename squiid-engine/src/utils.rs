@@ -1,5 +1,5 @@
 //! - `utils.rs` contains standard utilities that might be used throughout the calculator, such as
-//! [`ID_REGEX`] for identifying if a variable is a valid ID
+//!   [`ID_REGEX`] for identifying if a variable is a valid ID
 #![allow(clippy::unwrap_used)]
 
 use std::sync::LazyLock;

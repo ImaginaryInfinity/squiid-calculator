@@ -22,6 +22,21 @@ fn test_function_tokenization() {
 }
 
 #[test]
+fn test_float_tokenization() {
+    tokenize_and_compare("3.9", vec![Token::Float("3.9")]);
+    tokenize_and_compare(".6", vec![Token::Float("0.6")]);
+    tokenize_and_compare("-.4", vec![Token::Subtract("-"), Token::Float("0.4")]);
+    tokenize_and_compare(
+        "func(.5)",
+        vec![
+            Token::Function("func("),
+            Token::Float("0.5"),
+            Token::RParen(")"),
+        ],
+    );
+}
+
+#[test]
 fn test_assignment_tokenization() {
     tokenize_and_compare(
         "$x = 2 * $y + 3.14e-2",

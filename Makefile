@@ -231,6 +231,17 @@ aur-metadata: clean ## Build the AUR metadata files for deployment
 arch-package: require-cargo aur-metadata ## Build an Arch package
 	cd package-build; makepkg -s
 
+void-template: clean ## Build the Void Linux template file
+	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
+
+	mkdir -p package-build/
+	@envsubst '$${VERSION}' < packages/void/template > package-build/template
+	# retrieve sha256sum of source
+	export SHA256SUM=$$(curl -sL $$(source package-build/template; echo $$distfiles) | sha256sum | awk '{print $$1}'); \
+	envsubst '$${SHA256SUM}' < package-build/template > package-build/template-new
+
+	mv package-build/template-new package-build/template
+
 homebrew: clean ## Format the homebrew metadata
 	@envsubst --version >/dev/null 2>&1 || (echo "ERROR: envsubst is required."; exit 1)
 

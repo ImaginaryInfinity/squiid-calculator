@@ -18,6 +18,7 @@ ELEVATE ?= sudo
 CARGO ?= cargo
 EXECUTABLE_PERMISSION ?= -m755
 NORMAL_PERMISSION ?= -m644
+KITTY_VERSION ?= 0.38.1
 
 VERSION := $(shell awk -F ' = ' '$$1 ~ /version/ { gsub(/["]/, "", $$2); printf("%s",$$2) }' Cargo.toml)
 export VERSION
@@ -144,7 +145,7 @@ appimage: require-cargo clean build-musl ## Build the AppImage
 	# copy the kitty icon (cant be larger than 128x128 on X11)
 	cp branding/icons/squiid128.png package-build/squiid.AppDir/kitty.app.png
 	# Download and add kitty terminal to appimage
-	curl -L https://github.com/kovidgoyal/kitty/releases/download/v0.38.1/kitty-0.38.1-x86_64.txz -o package-build/kitty.txz
+	curl -L https://github.com/kovidgoyal/kitty/releases/download/v$(KITTY_VERSION)/kitty-$(KITTY_VERSION)-x86_64.txz -o package-build/kitty.txz
 	# Untar kitty
 	tar -xf package-build/kitty.txz --directory package-build/squiid.AppDir/usr/
 	# Make sure kitty is executable

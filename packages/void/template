@@ -18,7 +18,7 @@ do_check() {
 do_install() {
 	vbin target/$RUST_TARGET/release/$pkgname
 
-	vinstall branding/squiidsquare.svg 644 usr/share/icons/hicolor/scalable/apps squiid.svg
+	vinstall branding/squiidsquare-nofont.svg 644 usr/share/icons/hicolor/scalable/apps squiid.svg
 	vinstall branding/icons/squiid512.png 644 usr/share/icons/hicolor/512x512/apps squiid.png
 	vinstall branding/icons/squiid256.png 644 usr/share/icons/hicolor/256x256/apps squiid.png
 	vinstall branding/icons/squiid128.png 644 usr/share/icons/hicolor/128x128/apps squiid.png

@@ -33,7 +33,7 @@ check() {
 package() {
 	cd "$pkgname-$pkgver"
 	install -Dm755 "target/release/$pkgname" "$pkgdir/usr/bin/$pkgname"
-	install -Dm644 "branding/squiidsquare.svg" "$pkgdir/usr/share/icons/hicolor/scalable/apps/squiid.svg"
+	install -Dm644 "branding/squiidsquare-nofont.svg" "$pkgdir/usr/share/icons/hicolor/scalable/apps/squiid.svg"
 	install -Dm644 "branding/icons/squiid512.png" "$pkgdir/usr/share/icons/hicolor/512x512/apps/squiid.png"
 	install -Dm644 "branding/icons/squiid256.png" "$pkgdir/usr/share/icons/hicolor/256x256/apps/squiid.png"
 	install -Dm644 "branding/icons/squiid128.png" "$pkgdir/usr/share/icons/hicolor/128x128/apps/squiid.png"

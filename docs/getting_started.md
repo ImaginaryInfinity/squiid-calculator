@@ -52,6 +52,17 @@ makepkg -si
 
 Ubuntu users have the option to manually install a deb. However, this is not recommended, and we are working on a PPA. For alternatives, see [Snap](#snap) or [Flatpak](#flatpak). The deb may work on debian, however this has not been tested. It was compiled on Ubuntu 18.04, and should work on the versions above that as well. It can be downloaded [here](https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/jobs/artifacts/trunk/download?job=build-deb), or as an artifact on the latest pipeline.
 
+### Void
+
+Void Linux users can install Squiid through the `void-packages` repository. If not already done, follow their [Quickstart Instructions](https://github.com/void-linux/void-packages?tab=readme-ov-file#quick-start). Then, in the `void-packages` directory, run the following commands to install Squiid:
+
+```sh
+# If you have xi installed from the xtools package:
+xi squiid
+# If not, you can install squiid manually:
+sudo xbps-install --repository hostdir/binpkgs squiid
+```
+
 ### Binary
 
 Linux users can find the latest stable portable binary [here](https://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/-/jobs/artifacts/trunk/download?job=build-musl).
@@ -102,4 +113,3 @@ If you would like to manually build Squiid, for example if there isn't a package
 ## Requesting a packaged version of Squiid
 
 If we do not provide a packaged version of Squiid for your operating system, you can [start an issue](http://gitlab.com/ImaginaryInfinity/squiid-calculator/squiid/issues/new?issuable_template=Package%20Request) to request one.
-

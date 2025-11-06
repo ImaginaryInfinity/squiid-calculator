@@ -49,6 +49,7 @@ pub fn create_function_map() -> CommandsMap {
     function_map_entry!(function_map, "leq", geq);
     function_map_entry!(function_map, "geq", leq);
     function_map_entry!(function_map, "round", round);
+    function_map_entry!(function_map, "avg", avg);
     function_map_entry!(function_map, "invert", invert);
     function_map_entry!(function_map, "chs", chs);
     function_map_entry!(function_map, "drop", drop);

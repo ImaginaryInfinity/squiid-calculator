@@ -1771,6 +1771,25 @@ impl Engine {
         Ok(EngineSignal::StackUpdated)
     }
 
+    pub fn avg(&mut self) -> Result<EngineSignal, String> {
+        let mut operands = Vec::new();
+        while !self.stack.is_empty() {
+            match self.get_operands_as_dec(1) {
+                Ok(v) => operands.push(*v.first().unwrap()),
+                Err(_) => break,
+            };
+        }
+
+        let sum = operands
+            .iter()
+            .sum::<Decimal>()
+            .checked_div(operands.len().into())
+            .ok_or("Cannot compute average of given arguments")?;
+
+        let _ = self.add_item_to_stack(sum.into());
+        Ok(EngineSignal::StackUpdated)
+    }
+
     /// Inverts the top operand on the stack.
     ///
     /// This function takes the top operand from the stack and computes its multiplicative inverse (1 / operand).

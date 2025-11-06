@@ -14,7 +14,7 @@ use crate::{error::ParserError, tokens::Token};
 /// # Errors
 ///
 /// An error may arise if an unexpected token is encountered
-pub fn lex(input: &str) -> Result<Vec<Token>, ParserError> {
+pub fn lex(input: &str) -> Result<Vec<Token<'_>>, ParserError> {
     let lex = Token::lexer(input).spanned();
     let mut tokens = Vec::new();
 

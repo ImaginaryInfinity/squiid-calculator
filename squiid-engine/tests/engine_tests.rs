@@ -560,6 +560,32 @@ fn test_csc_undef() {
 }
 
 #[test]
+fn test_avg() {
+    let mut engine = Engine::new();
+
+    let _ = engine.add_item_to_stack("36".into());
+    let _ = engine.add_item_to_stack("23".into());
+    let _ = engine.add_item_to_stack("14".into());
+    let _ = engine.add_item_to_stack("17".into());
+    let _ = engine.add_item_to_stack("176".into());
+    let _ = engine.add_item_to_stack("39".into());
+    let _ = engine.add_item_to_stack("18".into());
+    let _ = engine.add_item_to_stack("9".into());
+    let _ = engine.add_item_to_stack("10".into());
+
+    let _ = engine.avg();
+    assert_eq!(engine.get_operands_raw(1).unwrap()[0], Bucket::from(38));
+
+    let _ = engine.add_item_to_stack("4".into());
+    let _ = engine.add_item_to_stack(Bucket::from("test"));
+
+    let err = engine.avg();
+
+    assert_eq!(engine.get_operands_raw(1).unwrap()[0], Bucket::from("test"));
+    assert!(err.is_err());
+}
+
+#[test]
 fn test_cot() {
     let mut engine = Engine::new();
 

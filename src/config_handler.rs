@@ -173,11 +173,10 @@ impl Config {
         key: &str,
         value: Value,
     ) -> Result<ConfigValue, String> {
-        if let Value::Table(config) = &mut self.config {
-            if let Some(Value::Table(section_config)) = config.get_mut(section) {
+        if let Value::Table(config) = &mut self.config
+            && let Some(Value::Table(section_config)) = config.get_mut(section) {
                 section_config.insert(key.to_string(), value);
                 return Ok(ConfigValue::None(()));
-            }
         }
         Err(format!("could not set {}.{} to {}", section, key, value))
     }
@@ -202,11 +201,10 @@ impl Config {
 
     /// delete a key in a section of the config
     pub fn delete_key(&mut self, section: &str, key: &str) -> Result<ConfigValue, String> {
-        if let Value::Table(config) = &mut self.config {
-            if let Some(Value::Table(section_data)) = config.get_mut(section) {
+        if let Value::Table(config) = &mut self.config
+            && let Some(Value::Table(section_data)) = config.get_mut(section) {
                 section_data.remove(key);
                 return Ok(ConfigValue::None(()));
-            }
         }
         Err(format!("could not delete key {}.{}", section, key))
     }

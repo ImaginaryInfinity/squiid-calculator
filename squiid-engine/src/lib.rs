@@ -40,6 +40,7 @@
 
 pub mod bucket;
 pub mod command_mappings;
+pub mod config_handler;
 pub mod engine;
 mod utils;
 
@@ -57,6 +58,8 @@ use std::{
 use bucket::Bucket;
 use command_mappings::CommandsMap;
 use engine::Engine;
+
+use crate::config_handler::config::Config;
 
 /// The global engine struct used for processing calculations
 static ENGINE: LazyLock<Mutex<Engine>> = LazyLock::new(|| Mutex::new(Engine::new()));
@@ -271,4 +274,26 @@ pub fn update_previous_answer() -> EngineSignalSet {
     signals.merge(result);
 
     signals
+}
+
+/// Perform an action with the engine's configuration
+///
+/// # Arguments
+///
+/// * `f` - a function that takes in the engine's config and produces a result
+///
+/// # Examples
+///
+/// ```ignore
+/// let keyval = squiid_engine::with_config(|config| {
+///     config.get_key("section", "key")
+/// });
+/// ```
+#[allow(clippy::expect_used)]
+pub fn with_config<F, R>(f: F) -> R
+where
+    F: FnOnce(&mut Config) -> R,
+{
+    let mut engine = ENGINE.lock().expect("engine mutex is poisoned");
+    f(&mut engine.config)
 }

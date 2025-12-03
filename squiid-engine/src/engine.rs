@@ -5,6 +5,7 @@ use rust_decimal_macros::dec;
 
 use crate::{
     bucket::{Bucket, BucketTypes, ConstantTypes, CONSTANT_IDENTIFIERS},
+    config_handler::{backend::noop::NoopBackend, config::Config},
     utils::ID_REGEX,
     EngineSignal,
 };
@@ -13,7 +14,7 @@ use crate::{
 ///
 /// The [`Engine`] maintains a stack, variable storage, and undo history to facilitate command execution
 /// and state management.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct Engine {
     /// The stack of bucket items
     pub stack: Vec<Bucket>,
@@ -28,11 +29,19 @@ pub struct Engine {
     pub undo_state_pointer: u8,
     /// Previous answer
     pub previous_answer: Bucket,
+    /// The in-memory config representation
+    pub config: Config,
 }
 
 impl Engine {
     /// Initializes an empty stack, variable storage, and undo history, with the previous answer set to zero.
     pub fn new() -> Engine {
+        let config = if cfg!(any(windows, unix)) {
+            Config::new()
+        } else {
+            Config::new_with_backend(Box::new(NoopBackend::new()))
+        };
+
         Engine {
             stack: Vec::new(),
             variables: HashMap::new(),
@@ -40,6 +49,7 @@ impl Engine {
             undo_variable_history: VecDeque::new(),
             undo_state_pointer: 0,
             previous_answer: Bucket::from(0),
+            config,
         }
     }
 
@@ -2363,11 +2373,5 @@ impl Engine {
     /// ```
     pub fn quit(&mut self) -> Result<EngineSignal, String> {
         Ok(EngineSignal::Quit)
-    }
-}
-
-impl Default for Engine {
-    fn default() -> Self {
-        Self::new()
     }
 }

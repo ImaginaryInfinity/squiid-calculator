@@ -276,68 +276,85 @@ pub fn update_previous_answer() -> EngineSignalSet {
     signals
 }
 
-/// Perform an action with the engine's configuration
-///
-/// # Arguments
-///
-/// * `f` - a function that takes in the engine's config and produces a result
-///
-/// # Examples
-///
-/// ```ignore
-/// let keyval = squiid_engine::with_config(|config| {
-///     config.get_key("section", "key")
-/// });
-/// ```
-#[allow(clippy::expect_used)]
-pub fn with_config<F, R>(f: F) -> R
-where
-    F: FnOnce(&mut Config) -> R,
-{
-    let mut engine = ENGINE.lock().expect("engine mutex is poisoned");
-    f(&mut engine.config)
-}
-
-macro_rules! generate_config_delegations {
-    () => {};
+macro_rules! delegate_config {
     (
-        $(#[$attr:meta])*
-        fn $name:ident $(<$($lt:lifetime),+>)?
-        ($($arg:ident : $ty:ty),*)
-        $(-> $ret:ty)?;
-        $($rest:tt)*
+        $(
+            $(#[$attr:meta])*
+            fn $name:ident
+            ($($arg:ident : $ty:ty),*)
+            $(-> $ret:ty)?;
+        )+
     ) => {
-        paste::paste! {
-            $(#[$attr])*
-            pub fn [<config_ $name>] $(<$($lt),+>)? ($($arg: $ty),*) $(-> $ret)? {
-                let engine = ENGINE.lock().expect("engine mutex is poisoned");
-                engine.config.$name($($arg),*)
-            }
-        }
+        impl ConfigProxy {
+            $(
+                $(#[$attr])*
+                pub fn $name(&self, $($arg : $ty),*) $(-> $ret)? {
+                    self.call(|c| c.$name($($arg),*))
+                }
+            )+
 
-        generate_config_delegations!($($rest)*);
-    };
-
-    (
-        $(#[$attr:meta])*
-        mut fn $name:ident $(<$($lt:lifetime),+>)?
-        ($($arg:ident : $ty:ty),*)
-        $(-> $ret:ty)?;
-        $($rest:tt)*
-    ) => {
-        paste::paste! {
-            $(#[$attr])*
-            pub fn [<config_ $name>] $(<$($lt),+>)? ($($arg: $ty),*) $(-> $ret)? {
+            fn call<F, R>(&self, f: F) -> R
+            where
+                F: FnOnce(&mut Config) -> R,
+            {
                 let mut engine = ENGINE.lock().expect("engine mutex is poisoned");
-                engine.config.$name($($arg),*)
+                f(&mut engine.config)
             }
         }
-
-        generate_config_delegations!($($rest)*);
     };
 }
 
-generate_config_delegations! {
+/// Proxy to delegate the internal configuration management functions
+pub struct ConfigProxy;
+/// Get a [`ConfigProxy`] that can be used to access internal configuration management functions
+pub fn config() -> ConfigProxy {
+    ConfigProxy
+}
+
+delegate_config! {
+    /// Save the config using the set persistence strategy.
+    ///
+    /// By default on supported platforms, this just saves to disk in the appropriate configuration
+    /// folder. See [`crate::config_handler::ConfigBackend`] for more details.
+    fn save() -> Result<(), String>;
+    /// Load the config using the set persistence strategy.
+    ///
+    /// By default on supported platforms, this just loads from disk in the appropriate configuration
+    /// folder. See [`crate::config_handler::ConfigBackend`] for more details.
+    fn load();
+    /// Set the persistence backend. This may be helpful for unsupported targets without disk
+    /// support, such as WASM.
+    fn set_backend(backend: Box<dyn ConfigBackend>);
+    /// Get a key from a given section
+    fn get_key(section: &str, key: &str) -> Result<toml::Value, ConfigError>;
+    /// List available sections
     fn list_sections() -> Vec<String>;
-    mut fn set_backend(backend: Box<dyn ConfigBackend>);
+    /// Check whether a section contains a given key
+    fn contains_key(section: &str, key: &str) -> Result<bool, ConfigError>;
+    /// List available keys from a given section
+    fn list_keys(section: &str) -> Result<Vec<String>, ConfigError>;
+    /// Iterate over the values from a given section
+    fn list_values(section: &str) -> Result<Vec<toml::Value>, ConfigError>;
+    /// Iterate over key-value pairs in a given section
+    fn list_items(section: &str) -> Result<Vec<(String, toml::Value)>, ConfigError>;
+    /// Set a key to a value in a given section
+    fn set_key(section: &str, key: &str, value: toml::Value) -> Result<(), ConfigError>;
+    /// Create a new section
+    fn create_section(section: &str) -> Result<(), ConfigError>;
+    /// Delete an existing section
+    fn delete_section(section: &str) -> Result<(), ConfigError>;
+    /// Delete a key from a given section
+    fn delete_key(section: &str, key: &str) -> Result<(), ConfigError>;
+    /// Merge the loaded user config with a default configuration file.
+    ///
+    /// This is useful for automatic config updating when you update your default frontend config,
+    /// as the new keys will be merged onto the user's existing config, without overwriting the
+    /// keys that are already present.
+    ///
+    /// # Arguments
+    ///
+    /// * `default` - The default config that comes with the base installation of the frontend
+    fn merge_with_default(default: &str) -> Result<(), toml::de::Error>;
+    /// Get the config directory, if applicable
+    fn config_directory() -> Option<std::path::PathBuf>;
 }

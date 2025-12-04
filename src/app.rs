@@ -1,19 +1,19 @@
 use std::{collections::HashMap, io, sync::LazyLock};
 
 use squiid_engine::{
-    execute_multiple_rpn, execute_single_rpn, update_previous_answer, EngineSignalSet,
+    EngineSignalSet, execute_multiple_rpn, execute_single_rpn, update_previous_answer,
 };
 use unicode_width::UnicodeWidthStr;
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 
 use ratatui::{
+    Frame, Terminal,
     backend::Backend,
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     text::{Line, Span, Text},
     widgets::{Block, Borders, List, ListDirection, ListItem, ListState, Paragraph},
-    Frame, Terminal,
 };
 
 use crate::utils::{current_char_index, input_buffer_is_sci_notate};
@@ -168,13 +168,12 @@ impl App {
 
     /// Get keybind from config file as string
     pub fn keybind_from_config(&mut self, keybind_name: &str) -> String {
-        squiid_engine::with_config(|c| {
-            c.get_key("keybinds", keybind_name)
-                .unwrap()
-                .as_str()
-                .unwrap_or("")
-                .to_owned()
-        })
+        squiid_engine::config()
+            .get_key("keybinds", keybind_name)
+            .unwrap()
+            .as_str()
+            .unwrap_or("")
+            .to_owned()
     }
 
     /// Get keycode from config
@@ -370,7 +369,7 @@ fn rpn_operator(app: &mut App, key: crate::event::KeyEvent) {
 /// Create the main application and run it
 pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<()> {
     // set default start mode
-    let binding = squiid_engine::with_config(|c| c.get_key("system", "start_mode"));
+    let binding = squiid_engine::config().get_key("system", "start_mode");
     let start_mode = match binding {
         Ok(val) => &val.as_str().unwrap_or("algebraic").to_owned(),
         Err(_) => "algebraic",

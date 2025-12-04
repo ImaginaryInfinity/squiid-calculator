@@ -5,11 +5,11 @@ pub mod config;
 pub mod backend;
 
 #[derive(thiserror::Error, Debug)]
-pub enum ConfigError<'a> {
+pub enum ConfigError {
     #[error("Could not find section `{0}`")]
-    MissingSection(&'a str),
+    MissingSection(String),
     #[error("Could not find key `{key}` in section `{section}`")]
-    MissingKey { section: &'a str, key: &'a str },
+    MissingKey { section: String, key: String },
     #[error("Attempted to mutate a malformed config")]
     MalformedConfig,
 }

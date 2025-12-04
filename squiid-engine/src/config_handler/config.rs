@@ -70,15 +70,18 @@ impl Config {
 
     /// Get a section/key from the config
     #[allow(dead_code)]
-    pub fn get_key<'a>(&self, section: &'a str, key: &'a str) -> Result<Value, ConfigError<'a>> {
+    pub fn get_key(&self, section: &str, key: &str) -> Result<Value, ConfigError> {
         let section_value = self.config.get(section);
         if let Some(Value::Table(section_table)) = section_value {
             match section_table.get(key) {
                 Some(value) => Ok(value.clone()),
-                None => Err(ConfigError::MissingKey { section, key }),
+                None => Err(ConfigError::MissingKey {
+                    section: section.to_owned(),
+                    key: key.to_owned(),
+                }),
             }
         } else {
-            Err(ConfigError::MissingSection(section))
+            Err(ConfigError::MissingSection(section.to_owned()))
         }
     }
 
@@ -93,32 +96,32 @@ impl Config {
 
     /// List the keys within a section
     #[allow(dead_code)]
-    pub fn list_keys<'a>(&self, section: &'a str) -> Result<Vec<String>, ConfigError<'a>> {
+    pub fn list_keys(&self, section: &str) -> Result<Vec<String>, ConfigError> {
         let section_value = self.config.get(section);
         if let Some(Value::Table(section_table)) = section_value {
             Ok(section_table.keys().map(|s| s.to_owned()).collect())
         } else {
-            Err(ConfigError::MissingSection(section))
+            Err(ConfigError::MissingSection(section.to_owned()))
         }
     }
 
     #[allow(dead_code)]
-    pub fn contains_key<'a>(&self, section: &'a str, key: &str) -> Result<bool, ConfigError<'a>> {
+    pub fn contains_key(&self, section: &str, key: &str) -> Result<bool, ConfigError> {
         if let Some(Value::Table(section_table)) = self.config.get(section) {
             Ok(section_table.keys().filter(|&s| s == key).count() > 0)
         } else {
-            Err(ConfigError::MissingSection(section))
+            Err(ConfigError::MissingSection(section.to_owned()))
         }
     }
 
     /// List the values within a section
     #[allow(dead_code)]
-    pub fn list_values<'a>(&self, section: &'a str) -> Result<Vec<Value>, ConfigError<'a>> {
+    pub fn list_values(&self, section: &str) -> Result<Vec<Value>, ConfigError> {
         let section_value = self.config.get(section);
         if let Some(Value::Table(section_table)) = section_value {
             Ok(section_table.values().map(|v| v.to_owned()).collect())
         } else {
-            Err(ConfigError::MissingSection(section))
+            Err(ConfigError::MissingSection(section.to_owned()))
         }
     }
 
@@ -126,10 +129,7 @@ impl Config {
     /// returns a list of tuples
     /// [(key, value), (key, value)]
     #[allow(dead_code)]
-    pub fn list_items<'a>(
-        &self,
-        section: &'a str,
-    ) -> Result<Vec<(String, Value)>, ConfigError<'a>> {
+    pub fn list_items(&self, section: &str) -> Result<Vec<(String, Value)>, ConfigError> {
         let keys = self.list_keys(section);
         let values = self.list_values(section);
 
@@ -141,24 +141,19 @@ impl Config {
                 .collect();
             Ok(pairs)
         } else {
-            Err(ConfigError::MissingSection(section))
+            Err(ConfigError::MissingSection(section.to_owned()))
         }
     }
 
     /// Set a specific key in a specific section of the config
     #[allow(dead_code)]
-    pub fn set_key<'a>(
-        &mut self,
-        section: &'a str,
-        key: &str,
-        value: Value,
-    ) -> Result<(), ConfigError<'a>> {
+    pub fn set_key(&mut self, section: &str, key: &str, value: Value) -> Result<(), ConfigError> {
         if let Value::Table(config) = &mut self.config {
             if let Some(Value::Table(section_config)) = config.get_mut(section) {
                 section_config.insert(key.to_string(), value);
                 Ok(())
             } else {
-                Err(ConfigError::MissingSection(section))
+                Err(ConfigError::MissingSection(section.to_owned()))
             }
         } else {
             Err(ConfigError::MalformedConfig)
@@ -167,7 +162,7 @@ impl Config {
 
     /// Create a new section in the config
     #[allow(dead_code)]
-    pub fn create_section(&mut self, section: &str) -> Result<(), ConfigError<'_>> {
+    pub fn create_section(&mut self, section: &str) -> Result<(), ConfigError> {
         if let Value::Table(config) = &mut self.config {
             config.insert(section.to_string(), Value::Table(toml::map::Map::new()));
             Ok(())
@@ -178,7 +173,7 @@ impl Config {
 
     /// delete a section in the config
     #[allow(dead_code)]
-    pub fn delete_section(&mut self, section: &str) -> Result<(), ConfigError<'_>> {
+    pub fn delete_section(&mut self, section: &str) -> Result<(), ConfigError> {
         if let Value::Table(config) = &mut self.config {
             config.remove(section);
             Ok(())
@@ -189,20 +184,20 @@ impl Config {
 
     /// delete a key in a section of the config
     #[allow(dead_code)]
-    pub fn delete_key<'a>(&mut self, section: &'a str, key: &str) -> Result<(), ConfigError<'a>> {
+    pub fn delete_key(&mut self, section: &str, key: &str) -> Result<(), ConfigError> {
         if let Value::Table(config) = &mut self.config {
             if let Some(Value::Table(section_data)) = config.get_mut(section) {
                 section_data.remove(key);
                 Ok(())
             } else {
-                Err(ConfigError::MissingSection(section))
+                Err(ConfigError::MissingSection(section.to_owned()))
             }
         } else {
             Err(ConfigError::MalformedConfig)
         }
     }
 
-    /// Merge the loaded uesr config with a default configuration file.
+    /// Merge the loaded user config with a default configuration file.
     ///
     /// This is useful for automatic config updating when you update your default frontend config,
     /// as the new keys will be merged onto the user's existing config, without overwriting the

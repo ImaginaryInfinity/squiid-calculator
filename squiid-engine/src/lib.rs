@@ -59,7 +59,7 @@ use bucket::Bucket;
 use command_mappings::CommandsMap;
 use engine::Engine;
 
-use crate::config_handler::config::Config;
+use crate::config_handler::{config::Config, ConfigBackend, ConfigError};
 
 /// The global engine struct used for processing calculations
 static ENGINE: LazyLock<Mutex<Engine>> = LazyLock::new(|| Mutex::new(Engine::new()));
@@ -296,4 +296,48 @@ where
 {
     let mut engine = ENGINE.lock().expect("engine mutex is poisoned");
     f(&mut engine.config)
+}
+
+macro_rules! generate_config_delegations {
+    () => {};
+    (
+        $(#[$attr:meta])*
+        fn $name:ident $(<$($lt:lifetime),+>)?
+        ($($arg:ident : $ty:ty),*)
+        $(-> $ret:ty)?;
+        $($rest:tt)*
+    ) => {
+        paste::paste! {
+            $(#[$attr])*
+            pub fn [<config_ $name>] $(<$($lt),+>)? ($($arg: $ty),*) $(-> $ret)? {
+                let engine = ENGINE.lock().expect("engine mutex is poisoned");
+                engine.config.$name($($arg),*)
+            }
+        }
+
+        generate_config_delegations!($($rest)*);
+    };
+
+    (
+        $(#[$attr:meta])*
+        mut fn $name:ident $(<$($lt:lifetime),+>)?
+        ($($arg:ident : $ty:ty),*)
+        $(-> $ret:ty)?;
+        $($rest:tt)*
+    ) => {
+        paste::paste! {
+            $(#[$attr])*
+            pub fn [<config_ $name>] $(<$($lt),+>)? ($($arg: $ty),*) $(-> $ret)? {
+                let mut engine = ENGINE.lock().expect("engine mutex is poisoned");
+                engine.config.$name($($arg),*)
+            }
+        }
+
+        generate_config_delegations!($($rest)*);
+    };
+}
+
+generate_config_delegations! {
+    fn list_sections() -> Vec<String>;
+    mut fn set_backend(backend: Box<dyn ConfigBackend>);
 }

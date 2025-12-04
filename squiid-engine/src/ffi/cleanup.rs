@@ -119,10 +119,6 @@ extern "C" fn free_bucket_array(array: *mut *mut BucketFFI, len: c_int) {
 /// # Arguments
 ///
 /// * `bucket_ffi` - The Bucket to free
-///
-/// # Panics
-///
-/// If the bucket pointer is null or if the bucket is invalid data
 #[unsafe(no_mangle)]
 extern "C" fn free_bucket(bucket_ffi: *mut BucketFFI) {
     if bucket_ffi.is_null() {

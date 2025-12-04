@@ -36,6 +36,7 @@ use data_structs::{BucketFFI, EngineSignalSetFFI};
 use crate::{execute_multiple_rpn, EngineSignalSet};
 
 mod cleanup;
+mod config_manager;
 mod data_structs;
 mod version;
 

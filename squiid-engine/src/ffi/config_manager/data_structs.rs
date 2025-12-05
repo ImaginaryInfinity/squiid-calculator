@@ -1,6 +1,6 @@
 use std::ffi::{c_char, c_void, CString};
 
-use crate::ffi::config_manager::to_cstring;
+use crate::ffi::{config_manager::to_cstring, utils::reclaim_ffi_array};
 
 /// FFI-Compatible String Result type
 #[repr(C)]
@@ -28,7 +28,7 @@ impl FFIResult {
         Self {
             ok: false,
             value: std::ptr::null_mut(),
-            error: to_cstring!(e.as_ref()),
+            error: to_cstring(e.as_ref()),
         }
     }
 }
@@ -66,7 +66,7 @@ impl From<toml::Value> for FFIValue {
         match value {
             toml::Value::String(s) => Self {
                 kind: FFIValueKind::String,
-                string_val: to_cstring!(s),
+                string_val: to_cstring(s),
                 ..Default::default()
             },
             toml::Value::Integer(i) => Self {
@@ -86,14 +86,14 @@ impl From<toml::Value> for FFIValue {
             },
             toml::Value::Datetime(datetime) => Self {
                 kind: FFIValueKind::Datetime,
-                string_val: to_cstring!(datetime.to_string()),
+                string_val: to_cstring(datetime.to_string()),
                 ..Default::default()
             },
             toml::Value::Array(values) => {
-                let mut arr: Vec<FFIValue> = values.into_iter().map(Self::from).collect();
-                let ptr = arr.as_mut_ptr();
+                let arr: Vec<FFIValue> = values.into_iter().map(Self::from).collect();
                 let len = arr.len();
-                std::mem::forget(arr);
+                let slice = arr.into_boxed_slice();
+                let ptr = Box::into_raw(slice) as *mut FFIValue;
 
                 Self {
                     kind: FFIValueKind::Array,
@@ -103,20 +103,17 @@ impl From<toml::Value> for FFIValue {
                 }
             }
             toml::Value::Table(map) => {
-                let mut keys: Vec<*mut c_char> = Vec::new();
-                let mut vals: Vec<FFIValue> = Vec::new();
+                let mut keys = Vec::with_capacity(map.len());
+                let mut vals = Vec::with_capacity(map.len());
 
                 for (k, v) in map {
-                    keys.push(to_cstring!(k.clone()));
+                    keys.push(to_cstring(k.clone()));
                     vals.push(Self::from(v));
                 }
 
-                let keys_ptr = keys.as_mut_ptr();
-                let vals_ptr = vals.as_mut_ptr();
                 let len = keys.len();
-
-                std::mem::forget(keys);
-                std::mem::forget(vals);
+                let keys_ptr = Box::into_raw(keys.into_boxed_slice()) as *mut *mut c_char;
+                let vals_ptr = Box::into_raw(vals.into_boxed_slice()) as *mut FFIValue;
 
                 Self {
                     kind: FFIValueKind::Table,
@@ -130,20 +127,66 @@ impl From<toml::Value> for FFIValue {
     }
 }
 
-/// Free an [`FFIStringResult`] object that was returned over the FFI boundary.
-///
-/// # Arguments
-///
-/// * `ffi_result` - The [`FFIStringResult`] to free
-#[unsafe(no_mangle)]
-extern "C" fn free_ffi_string_result(ffi_result: *mut FFIResult) {
-    if !ffi_result.is_null() {
-        let result = unsafe { Box::from_raw(ffi_result) };
-        if !result.value.is_null() {
-            std::mem::drop(unsafe { CString::from_raw(result.value) });
-        }
-        if !result.error.is_null() {
-            std::mem::drop(unsafe { CString::from_raw(result.error) });
+impl Drop for FFIValue {
+    fn drop(&mut self) {
+        unsafe {
+            match self.kind {
+                FFIValueKind::String | FFIValueKind::Datetime => {
+                    if !self.string_val.is_null() {
+                        drop(CString::from_raw(self.string_val));
+                    }
+                }
+                FFIValueKind::Array => {
+                    if !self.array.is_null() {
+                        let slice = std::slice::from_raw_parts_mut(self.array, self.array_len);
+                        drop(Box::from_raw(slice));
+                    }
+                }
+                FFIValueKind::Table => {
+                    if !self.table_vals.is_null() {
+                        let slice = std::slice::from_raw_parts_mut(self.table_keys, self.table_len);
+                        let keys = Box::from_raw(slice);
+                        for k in keys.iter() {
+                            if !k.is_null() {
+                                drop(CString::from_raw(*k));
+                            }
+                        }
+                    }
+
+                    if !self.table_keys.is_null() {
+                        let slice = std::slice::from_raw_parts_mut(self.table_vals, self.table_len);
+                        drop(Box::from_raw(slice));
+                    }
+                }
+                FFIValueKind::Integer | FFIValueKind::Float | FFIValueKind::Boolean => (),
+            }
         }
     }
 }
+
+macro_rules! free_ffi_result {
+    ($name:ident, $ty:ty) => {
+        paste::paste! {
+            #[doc="Free an [`FFIResult`] object containing a `" $name "` that was returned over the FFI boundary."]
+            #[doc=""]
+            #[doc="# Arguments"]
+            #[doc=""]
+            #[doc="* `ffi_result` - The [`FFIResult`] to free"]
+            #[unsafe(no_mangle)]
+            extern "C" fn [<free_ffi_ $name _result>](ffi_result: *mut FFIResult) {
+                if !ffi_result.is_null() {
+                    let result = unsafe { Box::from_raw(ffi_result) };
+                    if !result.value.is_null() {
+                        drop(unsafe { Box::from_raw(result.value as $ty) });
+                    }
+                    if !result.error.is_null() {
+                        drop(unsafe { CString::from_raw(result.error) });
+                    }
+                }
+            }
+        }
+    };
+}
+
+free_ffi_result!(String, *mut c_char);
+free_ffi_result!(FFIValue, *mut FFIValue);

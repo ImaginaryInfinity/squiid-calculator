@@ -139,6 +139,39 @@ extern "C" fn config_list_keys_exposed(section: *const c_char, outlen: *mut c_in
     FFIResult::ok(unsafe { vec_to_ffi_array(keys_raw, outlen) })
 }
 
+#[unsafe(no_mangle)]
+extern "C" fn config_list_values_exposed(section: *const c_char) -> FFIResult {
+    let section = cstr_arg!(section, FFIResult);
+
+    match crate::config().list_items(section) {
+        Ok(items) => {
+            let mut keys: Vec<*mut c_char> = Vec::with_capacity(items.len());
+            let mut vals: Vec<FFIValue> = Vec::with_capacity(items.len());
+
+            for (k, v) in items {
+                keys.push(to_cstring(k));
+                vals.push(FFIValue::from(v));
+            }
+
+            let keys_ptr = keys.as_mut_ptr();
+            let vals_ptr = vals.as_mut_ptr();
+            let len = keys.len();
+
+            std::mem::forget(keys);
+            std::mem::forget(vals);
+
+            FFIResult::ok(FFIValue {
+                kind: data_structs::FFIValueKind::Table,
+                table_keys: keys_ptr,
+                table_vals: vals_ptr,
+                table_len: len,
+                ..Default::default()
+            })
+        }
+        Err(e) => FFIResult::err(e.to_string()),
+    }
+}
+
 // Backend Switching
 
 #[repr(C)]

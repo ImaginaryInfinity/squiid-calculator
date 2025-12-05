@@ -2,15 +2,15 @@ use std::ffi::{c_char, c_int, CStr, CString};
 
 use crate::{
     config_handler::ConfigBackend,
-    ffi::config_manager::data_structs::{FFIStringResult, FFIValue, FFIValueResult},
+    ffi::config_manager::data_structs::{FFIResult, FFIValue},
 };
 
 mod data_structs;
 
 macro_rules! cstr_arg {
-    ($ptr:ident, FFIStringResult) => {{
+    ($ptr:ident, FFIResult) => {{
         if $ptr.is_null() {
-            return $crate::ffi::config_manager::data_structs::FFIStringResult::err(
+            return $crate::ffi::config_manager::data_structs::FFIResult::err(
                 "unexpected null parameter",
             );
         }
@@ -19,26 +19,7 @@ macro_rules! cstr_arg {
             match std::ffi::CStr::from_ptr($ptr).to_str() {
                 Ok(s) => s,
                 Err(e) => {
-                    return $crate::ffi::config_manager::data_structs::FFIStringResult::err(
-                        e.to_string(),
-                    );
-                }
-            }
-        }
-    }};
-
-    ($ptr:ident, FFIValueResult) => {{
-        if $ptr.is_null() {
-            return $crate::ffi::config_manager::data_structs::FFIValueResult::err(
-                "unexpected null parameter",
-            );
-        }
-
-        unsafe {
-            match std::ffi::CStr::from_ptr($ptr).to_str() {
-                Ok(s) => s,
-                Err(e) => {
-                    return $crate::ffi::config_manager::data_structs::FFIValueResult::err(
+                    return $crate::ffi::config_manager::data_structs::FFIResult::err(
                         e.to_string(),
                     );
                 }
@@ -73,38 +54,38 @@ macro_rules! to_cstring {
 }
 pub(super) use to_cstring;
 
-impl<E> Into<FFIStringResult> for Result<String, E>
+impl<E> Into<FFIResult> for Result<String, E>
 where
     E: ToString,
 {
-    fn into(self) -> FFIStringResult {
+    fn into(self) -> FFIResult {
         match self {
-            Ok(v) => FFIStringResult::ok(v),
-            Err(e) => FFIStringResult::err(e.to_string()),
+            Ok(v) => FFIResult::ok(v),
+            Err(e) => FFIResult::err(e.to_string()),
         }
     }
 }
 
-impl<E> Into<FFIStringResult> for Result<(), E>
+impl<E> Into<FFIResult> for Result<(), E>
 where
     E: ToString,
 {
-    fn into(self) -> FFIStringResult {
+    fn into(self) -> FFIResult {
         match self {
-            Ok(_) => FFIStringResult::ok(""),
-            Err(e) => FFIStringResult::err(e.to_string()),
+            Ok(_) => FFIResult::ok(""),
+            Err(e) => FFIResult::err(e.to_string()),
         }
     }
 }
 
-impl<E> Into<FFIValueResult> for Result<toml::Value, E>
+impl<E> Into<FFIResult> for Result<toml::Value, E>
 where
     E: ToString,
 {
-    fn into(self) -> FFIValueResult {
+    fn into(self) -> FFIResult {
         match self {
-            Ok(v) => FFIValueResult::ok(v.into()),
-            Err(e) => FFIValueResult::err(e.to_string()),
+            Ok(v) => FFIResult::ok(FFIValue::from(v)),
+            Err(e) => FFIResult::err(e.to_string()),
         }
     }
 }
@@ -112,7 +93,7 @@ where
 // Config Saving and Loading
 
 #[unsafe(no_mangle)]
-extern "C" fn config_save_exposed() -> FFIStringResult {
+extern "C" fn config_save_exposed() -> FFIResult {
     crate::config().save().into()
 }
 
@@ -132,9 +113,9 @@ extern "C" fn config_directory_exposed() -> *const c_char {
 // Config querying
 
 #[unsafe(no_mangle)]
-extern "C" fn config_get_key_exposed(section: *const c_char, key: *const c_char) -> FFIValueResult {
-    let section = cstr_arg!(section, FFIValueResult);
-    let key = cstr_arg!(key, FFIValueResult);
+extern "C" fn config_get_key_exposed(section: *const c_char, key: *const c_char) -> FFIResult {
+    let section = cstr_arg!(section, FFIResult);
+    let key = cstr_arg!(key, FFIResult);
     crate::config().get_key(section, key).into()
 }
 
@@ -146,7 +127,7 @@ extern "C" fn config_contains_key_exposed(section: *const c_char, key: *const c_
 }
 
 #[unsafe(no_mangle)]
-extern "C" fn list_sections(outlen: *mut c_int) -> *const *mut c_char {
+extern "C" fn config_list_sections_exposed(outlen: *mut c_int) -> *const *mut c_char {
     let sections = crate::config().list_sections();
     let sections_len = sections.len();
 
@@ -166,6 +147,36 @@ extern "C" fn list_sections(outlen: *mut c_int) -> *const *mut c_char {
     unsafe { std::ptr::write(outlen, sections_len as c_int) };
 
     sections_raw.as_ptr()
+}
+
+#[unsafe(no_mangle)]
+extern "C" fn config_list_keys_exposed(section: *const c_char, outlen: *mut c_int) -> FFIResult {
+    let section = cstr_arg!(section, FFIResult);
+
+    let keys = match crate::config().list_keys(section) {
+        Ok(v) => v,
+        Err(e) => {
+            return FFIResult::err(e.to_string());
+        }
+    };
+    let keys_len = keys.len();
+
+    let mut keys_raw: Vec<_> = keys
+        .into_iter()
+        .filter_map(|s| CString::new(s).ok().map(|c| c.into_raw()))
+        .collect();
+
+    if keys_raw.len() != keys_len {
+        unsafe { std::ptr::write(outlen, 0) };
+        return FFIResult::err("transforming key array into FFI array failed");
+    }
+
+    keys_raw.shrink_to_fit();
+    assert!(keys_raw.len() == keys_raw.capacity());
+
+    unsafe { std::ptr::write(outlen, keys_len as c_int) };
+
+    FFIResult::ok(keys_raw.as_ptr())
 }
 
 // Backend Switching

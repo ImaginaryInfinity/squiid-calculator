@@ -1,23 +1,25 @@
-use std::ffi::{c_char, CString};
+use std::ffi::{c_char, c_void, CString};
 
 use crate::ffi::config_manager::to_cstring;
 
 /// FFI-Compatible String Result type
 #[repr(C)]
-pub struct FFIStringResult {
+pub struct FFIResult {
     /// Whether this is ok or err
     pub ok: bool,
     /// The value
-    pub value: *mut c_char,
+    pub value: *mut c_void,
     /// The error message
     pub error: *mut c_char,
 }
 
-impl FFIStringResult {
-    pub fn ok(v: impl AsRef<str>) -> Self {
+impl FFIResult {
+    pub fn ok<V>(v: V) -> Self {
+        let boxed = Box::new(v);
+        let ptr = Box::into_raw(boxed);
         Self {
             ok: true,
-            value: to_cstring!(v.as_ref()),
+            value: ptr as *mut c_void,
             error: std::ptr::null_mut(),
         }
     }
@@ -26,35 +28,6 @@ impl FFIStringResult {
         Self {
             ok: false,
             value: std::ptr::null_mut(),
-            error: to_cstring!(e.as_ref()),
-        }
-    }
-}
-
-/// FFI-Compatible [`FFIValue`] Result type
-#[repr(C)]
-pub struct FFIValueResult {
-    /// Whether this is ok or err
-    pub ok: bool,
-    /// The value
-    pub value: FFIValue,
-    /// The error message
-    pub error: *mut c_char,
-}
-
-impl FFIValueResult {
-    pub fn ok(v: FFIValue) -> Self {
-        Self {
-            ok: true,
-            value: v,
-            error: std::ptr::null_mut(),
-        }
-    }
-
-    pub fn err(e: impl AsRef<str>) -> Self {
-        Self {
-            ok: false,
-            value: FFIValue::default(),
             error: to_cstring!(e.as_ref()),
         }
     }
@@ -163,7 +136,7 @@ impl From<toml::Value> for FFIValue {
 ///
 /// * `ffi_result` - The [`FFIStringResult`] to free
 #[unsafe(no_mangle)]
-extern "C" fn free_ffi_string_result(ffi_result: *mut FFIStringResult) {
+extern "C" fn free_ffi_string_result(ffi_result: *mut FFIResult) {
     if !ffi_result.is_null() {
         let result = unsafe { Box::from_raw(ffi_result) };
         if !result.value.is_null() {

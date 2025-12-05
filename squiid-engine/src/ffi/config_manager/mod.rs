@@ -2,7 +2,10 @@ use std::ffi::{c_char, c_int, CStr, CString};
 
 use crate::{
     config_handler::ConfigBackend,
-    ffi::config_manager::data_structs::{FFIResult, FFIValue},
+    ffi::{
+        config_manager::data_structs::{FFIResult, FFIValue},
+        utils::{to_cstring, vec_to_ffi_array},
+    },
 };
 
 mod data_structs;
@@ -42,17 +45,6 @@ macro_rules! cstr_arg {
         }
     }};
 }
-
-// TODO: maybe move this up 1 mod.rs
-macro_rules! to_cstring {
-    ($s:expr) => {{
-        match std::ffi::CString::new($s) {
-            Ok(c) => c.into_raw(),
-            Err(_) => std::ptr::null_mut(),
-        }
-    }};
-}
-pub(super) use to_cstring;
 
 impl<E> Into<FFIResult> for Result<String, E>
 where
@@ -105,7 +97,7 @@ extern "C" fn config_load_exposed() -> () {
 #[unsafe(no_mangle)]
 extern "C" fn config_directory_exposed() -> *const c_char {
     match crate::config().config_directory() {
-        Some(p) => to_cstring!(p.to_string_lossy().to_string()),
+        Some(p) => to_cstring(p.to_string_lossy().to_string()),
         None => std::ptr::null_mut(),
     }
 }
@@ -129,24 +121,9 @@ extern "C" fn config_contains_key_exposed(section: *const c_char, key: *const c_
 #[unsafe(no_mangle)]
 extern "C" fn config_list_sections_exposed(outlen: *mut c_int) -> *const *mut c_char {
     let sections = crate::config().list_sections();
-    let sections_len = sections.len();
+    let sections_raw: Vec<_> = sections.into_iter().map(|s| to_cstring(s)).collect();
 
-    let mut sections_raw: Vec<_> = sections
-        .into_iter()
-        .filter_map(|s| CString::new(s).ok().map(|c| c.into_raw()))
-        .collect();
-
-    if sections_raw.len() != sections_len {
-        unsafe { std::ptr::write(outlen, 0) };
-        return std::ptr::null();
-    }
-
-    sections_raw.shrink_to_fit();
-    assert!(sections_raw.len() == sections_raw.capacity());
-
-    unsafe { std::ptr::write(outlen, sections_len as c_int) };
-
-    sections_raw.as_ptr()
+    unsafe { vec_to_ffi_array(sections_raw, outlen) }
 }
 
 #[unsafe(no_mangle)]
@@ -155,28 +132,11 @@ extern "C" fn config_list_keys_exposed(section: *const c_char, outlen: *mut c_in
 
     let keys = match crate::config().list_keys(section) {
         Ok(v) => v,
-        Err(e) => {
-            return FFIResult::err(e.to_string());
-        }
+        Err(e) => return FFIResult::err(e.to_string()),
     };
-    let keys_len = keys.len();
 
-    let mut keys_raw: Vec<_> = keys
-        .into_iter()
-        .filter_map(|s| CString::new(s).ok().map(|c| c.into_raw()))
-        .collect();
-
-    if keys_raw.len() != keys_len {
-        unsafe { std::ptr::write(outlen, 0) };
-        return FFIResult::err("transforming key array into FFI array failed");
-    }
-
-    keys_raw.shrink_to_fit();
-    assert!(keys_raw.len() == keys_raw.capacity());
-
-    unsafe { std::ptr::write(outlen, keys_len as c_int) };
-
-    FFIResult::ok(keys_raw.as_ptr())
+    let keys_raw: Vec<_> = keys.into_iter().map(|s| to_cstring(s)).collect();
+    FFIResult::ok(unsafe { vec_to_ffi_array(keys_raw, outlen) })
 }
 
 // Backend Switching

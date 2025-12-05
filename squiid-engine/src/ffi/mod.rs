@@ -29,15 +29,20 @@
 //! via C bindings. Care should be taken when passing and handling pointers, as improper usage may
 //! lead to memory leaks or undefined behavior.
 
-use std::ffi::{c_char, c_int, CStr, CString};
+use std::ffi::{c_char, c_int, CStr};
 
 use data_structs::{BucketFFI, EngineSignalSetFFI};
 
-use crate::{execute_multiple_rpn, EngineSignalSet};
+use crate::{
+    execute_multiple_rpn,
+    ffi::utils::{to_cstring, vec_to_ffi_array},
+    EngineSignalSet,
+};
 
 mod cleanup;
 mod config_manager;
 mod data_structs;
+mod utils;
 mod version;
 
 /// FFI-Exposed function to submit multiple RPN commands to the engine.
@@ -57,17 +62,24 @@ extern "C" fn execute_multiple_rpn_exposed(
     rpn_data_length: usize,
 ) -> EngineSignalSetFFI {
     // construct a new vec to hold the data send from the frontend
-    let mut rpn_data_vec = Vec::new();
+    let mut rpn_data_vec = Vec::with_capacity(rpn_data_length);
 
     // iterate over the submissions
     for i in 0..rpn_data_length {
         unsafe {
             // create new strings from the provided pointers and push them to the vec
-            let c_str = CStr::from_ptr(*rpn_data.add(i));
-            rpn_data_vec.push(match c_str.to_str() {
-                Ok(str) => str,
+            let p = *rpn_data.add(i);
+            if p.is_null() {
+                return EngineSignalSet::new()
+                    .set_error("Received null pointer in command array")
+                    .into();
+            }
+
+            let c_str = CStr::from_ptr(p);
+            match c_str.to_str() {
+                Ok(str) => rpn_data_vec.push(str),
                 Err(e) => return EngineSignalSet::new().set_error(&e).into(),
-            });
+            };
         }
     }
 
@@ -86,21 +98,12 @@ extern "C" fn execute_multiple_rpn_exposed(
 #[unsafe(no_mangle)]
 extern "C" fn get_stack_exposed(outlen: *mut c_int) -> *mut *mut BucketFFI {
     // Create a vector of CStrings from the stack
-    let mut stack_ptr: Vec<*mut BucketFFI> = crate::get_stack()
+    let stack_ptr: Vec<*mut BucketFFI> = crate::get_stack()
         .iter()
         .map(|b| Box::into_raw(Box::new(BucketFFI::from(b.clone()))))
         .collect();
 
-    stack_ptr.shrink_to_fit();
-    // assert that shrink_to_fit worked
-    assert!(stack_ptr.len() == stack_ptr.capacity());
-
-    // write the vec length to the pointer that was passed in
-    let len = stack_ptr.len();
-    unsafe { std::ptr::write(outlen, len as c_int) };
-
-    // get the pointer to the vec that we are returning
-    stack_ptr.as_mut_ptr()
+    unsafe { vec_to_ffi_array(stack_ptr, outlen) }
 }
 
 /// Get the engine's list of currently supported commands.
@@ -111,28 +114,12 @@ extern "C" fn get_stack_exposed(outlen: *mut c_int) -> *mut *mut BucketFFI {
 #[unsafe(no_mangle)]
 extern "C" fn get_commands_exposed(outlen: *mut c_int) -> *mut *mut c_char {
     // convert Vec of Strings into vec of raw pointers
-    let mut commands: Vec<_> = crate::get_commands()
+    let commands: Vec<*mut c_char> = crate::get_commands()
         .into_iter()
-        .filter_map(|s| CString::new(s).ok().map(|c| c.into_raw()))
+        .map(|s| to_cstring(s))
         .collect();
 
-    if commands.len() != crate::get_commands().len() {
-        unsafe { std::ptr::write(outlen, 0) };
-        return std::ptr::null_mut();
-    }
-
-    // shrink capacity of vec
-    commands.shrink_to_fit();
-    assert!(commands.len() == commands.capacity());
-
-    let len = commands.len();
-    // forget pointer so that rust doesnt drop it
-    let vec_ptr = commands.as_mut_ptr();
-
-    // write length to outlen
-    unsafe { std::ptr::write(outlen, len as c_int) };
-
-    vec_ptr
+    unsafe { vec_to_ffi_array(commands, outlen) }
 }
 
 /// Get the current previous answer from the engine.
@@ -147,7 +134,5 @@ extern "C" fn get_previous_answer_exposed() -> *mut BucketFFI {
 /// or after each RPN command if in RPN mode.
 #[unsafe(no_mangle)]
 extern "C" fn update_previous_answer_exposed() -> EngineSignalSetFFI {
-    let result = crate::update_previous_answer();
-
-    EngineSignalSetFFI::from(result)
+    EngineSignalSetFFI::from(crate::update_previous_answer())
 }

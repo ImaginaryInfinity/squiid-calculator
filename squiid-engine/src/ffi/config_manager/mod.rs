@@ -130,12 +130,9 @@ extern "C" fn config_list_items_exposed(section: *const c_char) -> FFIResult {
                 vals.push(FFIValue::from(v));
             }
 
-            let keys_ptr = keys.as_mut_ptr();
-            let vals_ptr = vals.as_mut_ptr();
             let len = keys.len();
-
-            std::mem::forget(keys);
-            std::mem::forget(vals);
+            let keys_ptr = unsafe { vec_to_ffi_array(keys, std::ptr::null_mut()) };
+            let vals_ptr = unsafe { vec_to_ffi_array(vals, std::ptr::null_mut()) };
 
             FFIResult::ok(FFIValue {
                 kind: FFIValueKind::Table,

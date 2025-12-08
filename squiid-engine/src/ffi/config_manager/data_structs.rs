@@ -33,6 +33,27 @@ impl FFIResult {
     }
 }
 
+trait Freeable {
+    unsafe fn free_ffi(self);
+}
+
+impl Freeable for *mut c_char {
+    unsafe fn free_ffi(self) {
+        if !self.is_null() {
+            drop(unsafe { CString::from_raw(self) });
+        }
+    }
+}
+
+impl Freeable for *mut FFIValue {
+    unsafe fn free_ffi(self) {
+        if !self.is_null() {
+            let mut val = unsafe { Box::from_raw(self) };
+            unsafe { val.free() };
+        }
+    }
+}
+
 macro_rules! free_ffi_result {
     ($name:ident, $ty:ty) => {
         paste::paste! {
@@ -46,7 +67,7 @@ macro_rules! free_ffi_result {
                 if !ffi_result.is_null() {
                     let result = unsafe { Box::from_raw(ffi_result) };
                     if !result.value.is_null() {
-                        drop(unsafe { Box::from_raw(result.value as $ty) });
+                        unsafe { <$ty as Freeable>::free_ffi(result.value as $ty) };
                     }
                     if !result.error.is_null() {
                         drop(unsafe { CString::from_raw(result.error) });
@@ -154,8 +175,8 @@ impl From<toml::Value> for FFIValue {
     }
 }
 
-impl Drop for FFIValue {
-    fn drop(&mut self) {
+impl FFIValue {
+    pub unsafe fn free(&mut self) {
         unsafe {
             match self.kind {
                 FFIValueKind::String | FFIValueKind::Datetime => {

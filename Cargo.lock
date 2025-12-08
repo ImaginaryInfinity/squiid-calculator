@@ -1080,6 +1080,7 @@ dependencies = [
  "chrono",
  "colored",
  "directories",
+ "paste",
  "regex",
  "rust_decimal",
  "rust_decimal_macros",

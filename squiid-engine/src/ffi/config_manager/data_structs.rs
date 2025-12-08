@@ -1,6 +1,6 @@
 use std::ffi::{c_char, c_void, CString};
 
-use crate::ffi::{config_manager::to_cstring, utils::reclaim_ffi_array};
+use crate::ffi::config_manager::to_cstring;
 
 /// FFI-Compatible String Result type
 #[repr(C)]
@@ -34,7 +34,7 @@ impl FFIResult {
 }
 
 #[repr(C)]
-#[derive(Default)]
+#[derive(Default, Copy, Clone)]
 pub enum FFIValueKind {
     #[default]
     String,

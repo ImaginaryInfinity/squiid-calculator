@@ -166,6 +166,35 @@ extern "C" fn config_set_key_exposed(
     crate::config().set_key(section, key, value).into()
 }
 
+#[unsafe(no_mangle)]
+extern "C" fn config_create_section_exposed(section: *const c_char) -> FFIResult {
+    let section = cstr_arg!(section, FFIResult);
+
+    crate::config().create_section(section).into()
+}
+
+#[unsafe(no_mangle)]
+extern "C" fn config_delete_section_exposed(section: *const c_char) -> FFIResult {
+    let section = cstr_arg!(section, FFIResult);
+
+    crate::config().delete_section(section).into()
+}
+
+#[unsafe(no_mangle)]
+extern "C" fn config_delete_key_exposed(section: *const c_char, key: *const c_char) -> FFIResult {
+    let section = cstr_arg!(section, FFIResult);
+    let key = cstr_arg!(key, FFIResult);
+
+    crate::config().delete_key(section, key).into()
+}
+
+#[unsafe(no_mangle)]
+extern "C" fn config_merge_with_default_exposed(default: *const c_char) -> FFIResult {
+    let default = cstr_arg!(default, FFIResult);
+
+    crate::config().merge_with_default(default).into()
+}
+
 // Backend Switching
 
 #[repr(C)]

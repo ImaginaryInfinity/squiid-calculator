@@ -78,7 +78,6 @@ rustflags = [
   "-Wnonstandard_style",
   "-Wrust_2018_idioms",
   "-Wnonstandard_style",
-  "-Wclippy::float_arithmetic",
   "-Wclippy::arithmetic_side_effects",
   # END - Embark standard lints v6 for Rust 1.55+
 ]

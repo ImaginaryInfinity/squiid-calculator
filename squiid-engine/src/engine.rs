@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashMap, VecDeque},
-    ops::Div,
-};
+use std::collections::{HashMap, VecDeque};
 
 use rust_decimal::{prelude::ToPrimitive, Decimal, MathematicalOps};
 use rust_decimal_macros::dec;
@@ -224,7 +221,7 @@ impl Engine {
             .collect::<Result<_, _>>()?;
 
         vec.try_into()
-            .map_err(|_| String::from("Stack drain size mismatch"))
+            .map_err(|_e| String::from("Stack drain size mismatch"))
     }
 
     /// Retrieves a specified number of operands from the stack as [`Decimal`] values.
@@ -320,7 +317,7 @@ impl Engine {
         }).collect::<Result<_, _>>()?;
 
         vec.try_into()
-            .map_err(|_| String::from("Stack drain size mismatch"))
+            .map_err(|_e| String::from("Stack drain size mismatch"))
     }
 
     /// Retrieves a specified number of operands from the stack as [`String`] values.
@@ -377,7 +374,7 @@ impl Engine {
             .collect();
 
         vec.try_into()
-            .map_err(|_| String::from("Stack drain size mismatch"))
+            .map_err(|_e| String::from("Stack drain size mismatch"))
     }
 
     /// Retrieves a specified number of operands from the stack as raw [`Bucket`] values.
@@ -429,7 +426,7 @@ impl Engine {
 
         let vec = self.stack.drain(start_index..).collect::<Vec<_>>();
         vec.try_into()
-            .map_err(|_| String::from("Stack drain size mismatch"))
+            .map_err(|_e| String::from("Stack drain size mismatch"))
     }
 
     /// Updates the `previous_answer` variable to the last item on the stack.
@@ -1868,7 +1865,7 @@ impl Engine {
         }
 
         // Put result on stack
-        let _ = self.add_item_to_stack((1_f64.div(operand)).into());
+        let _ = self.add_item_to_stack((1_f64 / operand).into());
         Ok(EngineSignal::StackUpdated)
     }
 

@@ -1,14 +1,8 @@
 // items on the stack are called Buckets
 
-use std::{
-    collections::HashMap,
-    f64::consts,
-    fmt::Display,
-    ops::{Div, Mul},
-    sync::LazyLock,
-};
+use std::{collections::HashMap, f64::consts, fmt::Display, sync::LazyLock};
 
-use rust_decimal::{Decimal, MathematicalOps, prelude::FromPrimitive};
+use rust_decimal::{prelude::FromPrimitive, Decimal, MathematicalOps};
 use rust_decimal_macros::dec;
 
 /// Types of constants
@@ -100,7 +94,7 @@ impl Bucket {
             ConstantTypes::TwoPi => consts::TAU,
             ConstantTypes::E => consts::E,
             ConstantTypes::C => 299_792_458_f64,
-            ConstantTypes::G => 6.67430.mul(10_f64.powf(-11_f64)),
+            ConstantTypes::G => 6.67430 * 10_f64.powf(-11_f64),
             ConstantTypes::Phi => 1.618_033_988_749_895_f64,
         }
         .to_string();
@@ -172,7 +166,7 @@ impl Bucket {
                 Some(value) => {
                     let float_value = value.parse::<f64>().ok()?;
                     // check if equal to 3pi/2
-                    if float_value == (3.0.mul(consts::PI)).div(2.0) {
+                    if float_value == (3.0 * consts::PI) / 2.0 {
                         Some(Self::new_undefined())
                     } else {
                         Some(Self::from(
@@ -262,7 +256,7 @@ impl Bucket {
                     // Handle sec(0) correctly, which should return 1
                     if float_value == 0.0 {
                         Some(Self::from(1)) // sec(0) = 1
-                    } else if float_value == (3.0.mul(consts::PI)).div(2.0) {
+                    } else if float_value == (3.0 * consts::PI) / 2.0 {
                         Some(Self::new_undefined()) // sec(3#pi/2) = undefined
                     } else {
                         Some(Self::from(dec!(1.0).checked_div(

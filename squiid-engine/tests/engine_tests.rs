@@ -1,10 +1,10 @@
 use std::{f64::consts::PI, fs, path::PathBuf};
 
 use squiid_engine::{
+    EngineSignal,
     bucket::{Bucket, BucketTypes, ConstantTypes},
     command_mappings,
     engine::*,
-    EngineSignal,
 };
 
 #[test]

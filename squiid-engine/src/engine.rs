@@ -1,13 +1,16 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::{
+    collections::{HashMap, VecDeque},
+    ops::Div,
+};
 
-use rust_decimal::{Decimal, MathematicalOps, prelude::ToPrimitive};
+use rust_decimal::{prelude::ToPrimitive, Decimal, MathematicalOps};
 use rust_decimal_macros::dec;
 
 use crate::{
-    EngineSignal,
-    bucket::{Bucket, BucketTypes, CONSTANT_IDENTIFIERS, ConstantTypes},
+    bucket::{Bucket, BucketTypes, ConstantTypes, CONSTANT_IDENTIFIERS},
     config_handler::{backend::noop::NoopBackend, config::Config},
     utils::ID_REGEX,
+    EngineSignal,
 };
 
 /// The core evaluation engine responsible for processing Reverse Polish Notation (RPN) operations.
@@ -209,7 +212,8 @@ impl Engine {
         };
 
         // drain, parse, and collect from the stack
-        let vec: Vec<_> = self.stack
+        let vec: Vec<_> = self
+            .stack
             .drain(start_index..)
             .map(|item| {
                 item.value
@@ -219,7 +223,8 @@ impl Engine {
             })
             .collect::<Result<_, _>>()?;
 
-        vec.try_into().map_err(|_| String::from("Stack drain size mismatch"))
+        vec.try_into()
+            .map_err(|_| String::from("Stack drain size mismatch"))
     }
 
     /// Retrieves a specified number of operands from the stack as [`Decimal`] values.
@@ -314,7 +319,8 @@ impl Engine {
                 }
         }).collect::<Result<_, _>>()?;
 
-        vec.try_into().map_err(|_| String::from("Stack drain size mismatch"))
+        vec.try_into()
+            .map_err(|_| String::from("Stack drain size mismatch"))
     }
 
     /// Retrieves a specified number of operands from the stack as [`String`] values.
@@ -370,7 +376,8 @@ impl Engine {
             .map(|i| i.to_string())
             .collect();
 
-        vec.try_into().map_err(|_| String::from("Stack drain size mismatch"))
+        vec.try_into()
+            .map_err(|_| String::from("Stack drain size mismatch"))
     }
 
     /// Retrieves a specified number of operands from the stack as raw [`Bucket`] values.
@@ -421,7 +428,8 @@ impl Engine {
             .ok_or(String::from("Not enough items on stack for operation"))?;
 
         let vec = self.stack.drain(start_index..).collect::<Vec<_>>();
-        vec.try_into().map_err(|_| String::from("Stack drain size mismatch"))
+        vec.try_into()
+            .map_err(|_| String::from("Stack drain size mismatch"))
     }
 
     /// Updates the `previous_answer` variable to the last item on the stack.
@@ -502,11 +510,11 @@ impl Engine {
     /// assert_eq!(engine.stack.last().unwrap(), &Bucket::from(15));
     /// ```
     pub fn add(&mut self) -> Result<EngineSignal, String> {
-        let operands = self.get_operands_as_dec::<2>()?;
+        let [left, right] = self.get_operands_as_dec::<2>()?;
 
         // Put result on stack
-        let result = operands[0]
-            .checked_add(operands[1])
+        let result = left
+            .checked_add(right)
             .ok_or_else(|| String::from("attempt to add with overflow"))?;
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
@@ -547,10 +555,12 @@ impl Engine {
     /// ```
     pub fn subtract(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec::<2>()?;
+        let [left, right] = self.get_operands_as_dec::<2>()?;
 
         // Put result on stack
-        let result = operands[0] - operands[1];
+        let result = left
+            .checked_sub(right)
+            .ok_or_else(|| String::from("attempt to subtract with overflow"))?;
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
     }
@@ -593,19 +603,24 @@ impl Engine {
         let operands = self.get_operands_as_dec::<2>()?;
 
         // manual handling for 2PI precision
-        let check_pi = HashSet::from([Decimal::PI, dec!(2.0)]);
-        let operands_set: HashSet<Decimal> = operands.clone().into_iter().collect();
-        let non_matching_operands = check_pi
-            .symmetric_difference(&operands_set)
-            .collect::<Vec<_>>();
+        // let check_pi = HashSet::from([Decimal::PI, dec!(2.0)]);
+        // let operands_set: HashSet<Decimal> = operands.clone().into_iter().collect();
+        // let non_matching_operands = check_pi
+        //     .symmetric_difference(&operands_set)
+        //     .collect::<Vec<_>>();
 
-        let result = if non_matching_operands.is_empty() {
+        let result = if operands.contains(&Decimal::PI) && operands.contains(&dec!(2.0)) {
             // the only things on the mulitplication stack are 2 and pi, replace with the constant
             Bucket::from_constant(ConstantTypes::TwoPi)
         } else {
             // not 2*pi, perform normal mulitplication
-            Bucket::from(operands[0] * operands[1])
+            let [left, right] = operands;
+            Bucket::from(
+                left.checked_mul(right)
+                    .ok_or_else(|| String::from("attempt to multiply with overflow"))?,
+            )
         };
+
         // Put result on stack
         let _ = self.add_item_to_stack(result);
         Ok(EngineSignal::StackUpdated)
@@ -647,36 +662,42 @@ impl Engine {
     /// ```
     pub fn divide(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec::<2>()?;
+        let [left, right] = self.get_operands_as_dec::<2>()?;
 
-        if operands[1] == dec!(0.0) {
+        if right == dec!(0.0) {
             return Err("cannot divide by 0".to_string());
         }
 
         // check for pi/x in order to replace with constants
-        let result = if operands[0] == Decimal::PI {
-            if operands[1] == dec!(2.0) {
+        let result = if left == Decimal::PI {
+            if right == dec!(2.0) {
                 // pi/2
                 Bucket::from_constant(ConstantTypes::HalfPi)
-            } else if operands[1] == dec!(4.0) {
+            } else if right == dec!(4.0) {
                 // pi/4
                 Bucket::from_constant(ConstantTypes::QuarterPi)
-            } else if operands[1] == dec!(3.0) {
+            } else if right == dec!(3.0) {
                 // pi/3
                 Bucket::from_constant(ConstantTypes::ThirdPi)
-            } else if operands[1] == dec!(6.0) {
+            } else if right == dec!(6.0) {
                 // pi/6
                 Bucket::from_constant(ConstantTypes::SixthPi)
-            } else if operands[1] == dec!(8.0) {
+            } else if right == dec!(8.0) {
                 // pi/8
                 Bucket::from_constant(ConstantTypes::EighthPi)
             } else {
                 // denominator is not 2 or 4, eval normally
-                Bucket::from(operands[0] / operands[1])
+                Bucket::from(
+                    left.checked_div(right)
+                        .ok_or_else(|| String::from("attempt to divide with overflow"))?,
+                )
             }
         } else {
             // numerator is not pi, eval normally
-            Bucket::from(operands[0] / operands[1])
+            Bucket::from(
+                left.checked_div(right)
+                    .ok_or_else(|| String::from("attempt to divide with overflow"))?,
+            )
         };
 
         // Put result on stack
@@ -724,10 +745,7 @@ impl Engine {
     /// ```
     pub fn power(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec::<2>()?;
-
-        let base = operands[0];
-        let exponent = operands[1];
+        let [base, exponent] = self.get_operands_as_dec::<2>()?;
 
         // TODO: consider adding the option to use both rust_decimal and rug
         // detect if exponent is decimal, if so, don't use decimal library as that estimates
@@ -788,12 +806,13 @@ impl Engine {
     /// ```
     pub fn sqrt(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec::<1>()?;
+        let [operand] = self.get_operands_as_dec::<1>()?;
 
         // Put result on stack
-        let Some(result) = operands[0].sqrt() else {
+        let Some(result) = operand.sqrt() else {
             return Err("Error calculating sqrt".to_string());
         };
+
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
     }
@@ -834,20 +853,21 @@ impl Engine {
     /// ```
     pub fn modulo(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f::<2>()?;
+        let [left, right] = self.get_operands_as_f::<2>()?;
 
-        if operands[1] == 0.0 {
+        if right == 0.0 {
             return Err("cannot divide by zero".to_owned());
         }
 
         // Put result on stack
         // rem_euclid() only yields positive results so we need to write it ourselves
-        let r = operands[0] % operands[1];
-        let result = if (r < 0.0 && operands[1] > 0.0) || (r > 0.0 && operands[1] < 0.0) {
-            r + operands[1]
+        let r = left % right;
+        let result = if (r < 0.0 && right > 0.0) || (r > 0.0 && right < 0.0) {
+            r + right
         } else {
             r
         };
+
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
     }
@@ -886,10 +906,10 @@ impl Engine {
     /// ```
     pub fn sin(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_raw::<1>()?;
+        let [operand] = self.get_operands_raw::<1>()?;
 
         // Put result on stack
-        let Some(result) = operands[0].sin() else {
+        let Some(result) = operand.sin() else {
             return Err("could not sin operand".to_string());
         };
         let _ = self.add_item_to_stack(result);
@@ -930,10 +950,10 @@ impl Engine {
     /// ```
     pub fn cos(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_raw::<1>()?;
+        let [operand] = self.get_operands_raw::<1>()?;
 
         // Put result on stack
-        let Some(result) = operands[0].cos() else {
+        let Some(result) = operand.cos() else {
             return Err("could not cos operand".to_string());
         };
         let _ = self.add_item_to_stack(result);
@@ -974,9 +994,9 @@ impl Engine {
     /// ```
     pub fn tan(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_raw::<1>()?;
+        let [operand] = self.get_operands_raw::<1>()?;
         // Put result on stack
-        let Some(result) = operands[0].tan() else {
+        let Some(result) = operand.tan() else {
             return Err("could not tan operand".to_string());
         };
         let _ = self.add_item_to_stack(result);
@@ -1017,10 +1037,10 @@ impl Engine {
     /// ```
     pub fn sec(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_raw::<1>()?;
+        let [operand] = self.get_operands_raw::<1>()?;
 
         // Put result on stack
-        let Some(result) = operands[0].sec() else {
+        let Some(result) = operand.sec() else {
             return Err("could not sec operand".to_string());
         };
         let _ = self.add_item_to_stack(result);
@@ -1061,10 +1081,10 @@ impl Engine {
     /// ```
     pub fn csc(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_raw::<1>()?;
+        let [operand] = self.get_operands_raw::<1>()?;
 
         // Put result on stack
-        let Some(result) = operands[0].csc() else {
+        let Some(result) = operand.csc() else {
             return Err("could not csc operand".to_string());
         };
         let _ = self.add_item_to_stack(result);
@@ -1105,10 +1125,10 @@ impl Engine {
     /// ```
     pub fn cot(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_raw::<1>()?;
+        let [operand] = self.get_operands_raw::<1>()?;
 
         // Put result on stack
-        let Some(result) = operands[0].cot() else {
+        let Some(result) = operand.cot() else {
             return Err("could not sine operand".to_string());
         };
         let _ = self.add_item_to_stack(result);
@@ -1150,10 +1170,10 @@ impl Engine {
     /// ```
     pub fn asin(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f::<1>()?;
+        let [operand] = self.get_operands_as_f::<1>()?;
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].asin().into());
+        let _ = self.add_item_to_stack(operand.asin().into());
         Ok(EngineSignal::StackUpdated)
     }
 
@@ -1192,10 +1212,10 @@ impl Engine {
     /// ```
     pub fn acos(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f::<1>()?;
+        let [operand] = self.get_operands_as_f::<1>()?;
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].acos().into());
+        let _ = self.add_item_to_stack(operand.acos().into());
         Ok(EngineSignal::StackUpdated)
     }
 
@@ -1234,10 +1254,10 @@ impl Engine {
     /// ```
     pub fn atan(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f::<1>()?;
+        let [operand] = self.get_operands_as_f::<1>()?;
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].atan().into());
+        let _ = self.add_item_to_stack(operand.atan().into());
         Ok(EngineSignal::StackUpdated)
     }
 
@@ -1275,10 +1295,12 @@ impl Engine {
     /// ```
     pub fn chs(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f::<1>()?;
+        let [operand] = self.get_operands_as_dec::<1>()?;
 
         // Put result on stack
-        let result = operands[0] * -1.0;
+        let result = operand
+            .checked_mul(dec!(-1.0))
+            .ok_or_else(|| String::from("attempt to negative with overflow"))?;
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
     }
@@ -1317,10 +1339,10 @@ impl Engine {
     /// ```
     pub fn log(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec::<1>()?;
+        let [operand] = self.get_operands_as_dec::<1>()?;
 
         // Put result on stack
-        let Some(result) = operands[0].checked_log10() else {
+        let Some(result) = operand.checked_log10() else {
             return Err("cannot take log10 of 0 or negative numbers".to_string());
         };
         let _ = self.add_item_to_stack(result.into());
@@ -1374,15 +1396,15 @@ impl Engine {
     /// ```
     pub fn blog(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec::<2>()?;
+        let [a, b] = self.get_operands_as_dec::<2>()?;
 
         // change of base formula is defined as follows:
         // log_b(a) = (log_d(a))/(log_d(b))
 
-        let Some(top_log) = operands[0].checked_log10() else {
+        let Some(top_log) = a.checked_log10() else {
             return Err("cannot take log of 0 or negative numbers".to_string());
         };
-        let Some(bottom_log) = operands[1].checked_log10() else {
+        let Some(bottom_log) = b.checked_log10() else {
             return Err("cannot take log with base of 0 or negative numbers".to_string());
         };
 
@@ -1431,10 +1453,10 @@ impl Engine {
     /// ```
     pub fn ln(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec::<1>()?;
+        let [operand] = self.get_operands_as_dec::<1>()?;
 
         // Put result on stack
-        let Some(result) = operands[0].checked_ln() else {
+        let Some(result) = operand.checked_ln() else {
             return Err("cannot take log10 of 0 or negative numbers".to_string());
         };
         let _ = self.add_item_to_stack(result.into());
@@ -1475,10 +1497,10 @@ impl Engine {
     /// ```
     pub fn abs(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f::<1>()?;
+        let [operand] = self.get_operands_as_f::<1>()?;
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].abs().into());
+        let _ = self.add_item_to_stack(operand.abs().into());
         Ok(EngineSignal::StackUpdated)
     }
 
@@ -1519,10 +1541,10 @@ impl Engine {
     pub fn equal(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         // TODO: maybe make this work with strings
-        let operands = self.get_operands_as_f::<2>()?;
+        let [left, right] = self.get_operands_as_f::<2>()?;
 
         // Put result on stack
-        let result = (operands[0] == operands[1]) as u32;
+        let result = (left == right) as u32;
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
     }
@@ -1564,10 +1586,10 @@ impl Engine {
     /// ```
     pub fn gt(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f::<2>()?;
+        let [left, right] = self.get_operands_as_f::<2>()?;
 
         // Put result on stack
-        let result = (operands[0] > operands[1]) as u32;
+        let result = (left > right) as u32;
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
     }
@@ -1609,10 +1631,10 @@ impl Engine {
     /// ```
     pub fn lt(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f::<2>()?;
+        let [left, right] = self.get_operands_as_f::<2>()?;
 
         // Put result on stack
-        let result = (operands[0] < operands[1]) as u32;
+        let result = (left < right) as u32;
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
     }
@@ -1654,10 +1676,10 @@ impl Engine {
     /// ```
     pub fn geq(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f::<2>()?;
+        let [left, right] = self.get_operands_as_f::<2>()?;
 
         // Put result on stack
-        let result = (operands[0] >= operands[1]) as u32;
+        let result = (left >= right) as u32;
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
     }
@@ -1699,10 +1721,10 @@ impl Engine {
     /// ```
     pub fn leq(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f::<2>()?;
+        let [left, right] = self.get_operands_as_f::<2>()?;
 
         // Put result on stack
-        let result = (operands[0] <= operands[1]) as u32;
+        let result = (left <= right) as u32;
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
     }
@@ -1743,10 +1765,10 @@ impl Engine {
     /// ```
     pub fn round(&mut self) -> Result<EngineSignal, String> {
         // Get operand
-        let operands = self.get_operands_as_f::<1>()?;
+        let [operand] = self.get_operands_as_f::<1>()?;
 
         // Put result on stack
-        let _ = self.add_item_to_stack(operands[0].round().into());
+        let _ = self.add_item_to_stack(operand.round().into());
         Ok(EngineSignal::StackUpdated)
     }
 
@@ -1786,10 +1808,8 @@ impl Engine {
     /// ```
     pub fn avg(&mut self) -> Result<EngineSignal, String> {
         let mut operands = Vec::new();
-        while let Ok(v) = self.get_operands_as_dec::<1>()
-            && let Some(first) = v.first()
-        {
-            operands.push(*first);
+        while let Ok([v]) = self.get_operands_as_dec::<1>() {
+            operands.push(v);
         }
 
         let sum = operands
@@ -1841,14 +1861,14 @@ impl Engine {
     /// ```
     pub fn invert(&mut self) -> Result<EngineSignal, String> {
         // Get operand
-        let operands = self.get_operands_as_f::<1>()?;
+        let [operand] = self.get_operands_as_f::<1>()?;
 
-        if operands[0] == 0.0 {
+        if operand == 0.0 {
             return Err("cannot divide by zero".to_string());
         }
 
         // Put result on stack
-        let _ = self.add_item_to_stack((1_f64 / operands[0]).into());
+        let _ = self.add_item_to_stack((1_f64.div(operand)).into());
         Ok(EngineSignal::StackUpdated)
     }
 
@@ -1930,11 +1950,11 @@ impl Engine {
     /// ```
     pub fn swap(&mut self) -> Result<EngineSignal, String> {
         // Get last two values from stack
-        let operands = self.get_operands_raw::<2>()?;
+        let [first, second] = self.get_operands_raw::<2>()?;
 
         // Insert in reverse order
-        let _ = self.add_item_to_stack(operands[1].clone());
-        let _ = self.add_item_to_stack(operands[0].clone());
+        let _ = self.add_item_to_stack(second.clone());
+        let _ = self.add_item_to_stack(first.clone());
         Ok(EngineSignal::StackUpdated)
     }
 
@@ -1970,11 +1990,11 @@ impl Engine {
     /// ```
     pub fn dup(&mut self) -> Result<EngineSignal, String> {
         // Get the last value from the stack
-        let operands = self.get_operands_raw::<1>()?;
+        let [operand] = self.get_operands_raw::<1>()?;
 
         // Insert twice
-        let _ = self.add_item_to_stack(operands[0].clone());
-        let _ = self.add_item_to_stack(operands[0].clone());
+        let _ = self.add_item_to_stack(operand.clone());
+        let _ = self.add_item_to_stack(operand);
         Ok(EngineSignal::StackUpdated)
     }
 
@@ -2095,13 +2115,13 @@ impl Engine {
     /// ```
     pub fn store(&mut self) -> Result<EngineSignal, String> {
         // Get 2 operands from stack
-        let operands = self.get_operands_raw::<2>()?;
+        let [value, var] = self.get_operands_raw::<2>()?;
 
         // Only store if matches the identifier pattern
-        let varname = operands[1].to_string();
+        let varname = var.to_string();
         if ID_REGEX.is_match(&varname) {
             // Add variable to hashmap
-            self.variables.insert(varname, operands[0].clone());
+            self.variables.insert(varname, value);
         } else {
             // Error if attempted to store in name which is not a valid ID
             return Err(format!("Cannot store in non-variable object `{}`", varname));
@@ -2146,9 +2166,9 @@ impl Engine {
     /// ```
     pub fn purge(&mut self) -> Result<EngineSignal, String> {
         // Get operand from stack
-        let operands = self.get_operands_raw::<1>()?;
+        let [var] = self.get_operands_raw::<1>()?;
 
-        let varname = operands[0].to_string();
+        let varname = var.to_string();
         if ID_REGEX.is_match(&varname) {
             if self.variables.contains_key(&varname) {
                 // Remove variable from hashmap

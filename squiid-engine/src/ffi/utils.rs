@@ -1,4 +1,4 @@
-use std::ffi::{c_char, c_int, CString};
+use std::ffi::{CString, c_char, c_int};
 
 pub fn to_cstring<S: Into<Vec<u8>>>(s: S) -> *mut c_char {
     match CString::new(s) {

@@ -22,11 +22,11 @@
 //! - Conversions between Rust and FFI types (`From` implementations) ensure type safety.
 //! - These types should only be used in an FFI context where proper memory management is guaranteed.
 
-use std::ffi::{c_char, CString};
+use std::ffi::{CString, c_char};
 
 use crate::{
-    bucket::{Bucket, BucketTypes, ConstantTypes},
     EngineSignalSet,
+    bucket::{Bucket, BucketTypes, ConstantTypes},
 };
 
 /// Struct containing data about which actions a frontend should take next

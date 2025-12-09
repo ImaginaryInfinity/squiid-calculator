@@ -1,4 +1,4 @@
-use std::ffi::{c_char, c_int, CStr, CString};
+use std::ffi::{CStr, CString, c_char, c_int};
 
 use crate::{
     config_handler::ConfigBackend,

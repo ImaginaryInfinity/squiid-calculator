@@ -59,7 +59,7 @@ use bucket::Bucket;
 use command_mappings::CommandsMap;
 use engine::Engine;
 
-use crate::config_handler::{config::Config, ConfigBackend, ConfigError};
+use crate::config_handler::{ConfigBackend, ConfigError, config::Config};
 
 /// The global engine struct used for processing calculations
 static ENGINE: LazyLock<Mutex<Engine>> = LazyLock::new(|| Mutex::new(Engine::new()));

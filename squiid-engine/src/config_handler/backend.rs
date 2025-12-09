@@ -6,7 +6,7 @@ pub mod fs {
 
     use crate::config_handler::ConfigBackend;
 
-    #[derive(Debug)]
+    #[derive(Debug, Default)]
     pub struct FsBackend {
         path: PathBuf,
     }
@@ -22,7 +22,7 @@ pub mod fs {
         ///
         /// Linux: `~/.config/squiid/`
         ///
-        /// MacOS: `/Users/<NAME>/Library/Application Support/org.ImaginaryInfinity.Squiid/`
+        /// macOS: `/Users/<NAME>/Library/Application Support/org.ImaginaryInfinity.Squiid/`
         ///
         /// Windows: `C:\Users\<NAME>\AppData\Roaming\ImaginaryInfinity\Squiid\config`
         ///
@@ -47,10 +47,11 @@ pub mod fs {
         }
 
         fn save(&self, content: &str) -> Result<(), String> {
-            if let Some(parent) = self.path.parent() && !parent.is_dir() {
-                if let Err(e) = std::fs::create_dir_all(parent) {
-                    return Err(e.to_string());
-                }
+            if let Some(parent) = self.path.parent()
+                && !parent.is_dir()
+                && let Err(e) = std::fs::create_dir_all(parent)
+            {
+                return Err(e.to_string());
             }
 
             match std::fs::write(&self.path, content) {
@@ -68,7 +69,7 @@ pub mod fs {
 pub mod noop {
     use crate::config_handler::ConfigBackend;
 
-    #[derive(Debug)]
+    #[derive(Debug, Default)]
     pub struct NoopBackend {}
 
     impl NoopBackend {
@@ -82,7 +83,9 @@ pub mod noop {
             Some(String::new())
         }
 
-        fn save(&self, _content: &str) -> Result<(), String> { Ok(()) }
+        fn save(&self, _content: &str) -> Result<(), String> {
+            Ok(())
+        }
 
         fn config_directory(&self) -> Option<std::path::PathBuf> {
             None

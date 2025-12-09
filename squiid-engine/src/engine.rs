@@ -1,13 +1,13 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use rust_decimal::{prelude::ToPrimitive, Decimal, MathematicalOps};
+use rust_decimal::{Decimal, MathematicalOps, prelude::ToPrimitive};
 use rust_decimal_macros::dec;
 
 use crate::{
-    bucket::{Bucket, BucketTypes, ConstantTypes, CONSTANT_IDENTIFIERS},
+    EngineSignal,
+    bucket::{Bucket, BucketTypes, CONSTANT_IDENTIFIERS, ConstantTypes},
     config_handler::{backend::noop::NoopBackend, config::Config},
     utils::ID_REGEX,
-    EngineSignal,
 };
 
 /// The core evaluation engine responsible for processing Reverse Polish Notation (RPN) operations.
@@ -185,47 +185,39 @@ impl Engine {
     /// let result = engine.get_operands_as_f(2);
     /// assert_eq!(result, Ok(vec![3.5, 2.0])); // Successfully retrieved operands.
     /// ```
-    pub fn get_operands_as_f(&mut self, number: i32) -> Result<Vec<f64>, String> {
-        // Make sure there are actually enough items on the stack
-        if self.stack.len() as i32 >= number {
-            // Create vector to store operands
-            let mut operands = Vec::new();
-            // check that all items are of expected type
-            let requested_operands = &self.stack[self.stack.len() - number as usize..];
-            for item in requested_operands {
-                match item.bucket_type {
-                    BucketTypes::String | BucketTypes::Undefined => {
-                        return Err(String::from(
-                            "The operation cannot be performed on these operands",
-                        ));
-                    }
-                    BucketTypes::Float | BucketTypes::Constant(_) => (),
-                }
-            }
+    pub fn get_operands_as_f(&mut self, number: usize) -> Result<Vec<f64>, String> {
+        // check that all items are of expected type
+        let start_index = self
+            .stack
+            .len()
+            .checked_sub(number)
+            .ok_or(String::from("Not enough items on stack for operation"))?;
 
-            // Add requested number of operands from stack to vector and converts them to strings
-            for _ in 0..number {
-                let operand = self
-                    .stack
-                    .pop()
-                    .ok_or_else(|| String::from("Failed to pop operand"))?;
+        if self
+            .stack
+            .get(start_index..)
+            .ok_or(String::from("Not enough items on stack for operation"))?
+            .iter()
+            .any(|item| match item.bucket_type {
+                BucketTypes::String | BucketTypes::Undefined => true,
+                BucketTypes::Float | BucketTypes::Constant(_) => false,
+            })
+        {
+            return Err(String::from(
+                "The operation cannot be performed on these operands",
+            ));
+        };
 
-                // this is safe as we tested above for invalid variants
-                let value = operand
-                    .value
-                    .ok_or_else(|| String::from("Operand value is missing"))?;
-                operands.push(
-                    value
-                        .parse::<f64>()
-                        .map_err(|e| format!("Failed to parse operand as f64: {}", e))?,
-                );
-            }
-            // Make the new vector's order match the stack
-            operands.reverse();
-            Ok(operands)
-        } else {
-            Err(String::from("Not enough items on stack for operation"))
-        }
+        // drain, parse, and collect from the stack
+        self.stack
+            .drain(start_index..)
+            .map(|item| {
+                item.value
+                    .ok_or_else(|| String::from("Operand value is missing"))?
+                    .parse::<f64>()
+                    .map_err(|e| format!("Failed to parse operand as f64: {}", e))
+            })
+            .collect()
     }
 
     /// Retrieves a specified number of operands from the stack as [`Decimal`] values.
@@ -275,63 +267,50 @@ impl Engine {
     /// let result = engine.get_operands_as_dec(2);
     /// assert!(result.is_ok()); // Successfully retrieved operands as Decimals.
     /// ```
-    pub fn get_operands_as_dec(&mut self, number: i32) -> Result<Vec<Decimal>, String> {
-        // Make sure there are actually enough items on the stack
-        if self.stack.len() as i32 >= number {
-            // Create vector to store operands
-            let mut operands = Vec::new();
-            // check that all items are of expected type
-            let requested_operands = &self.stack[self.stack.len() - number as usize..];
-            for item in requested_operands {
-                match item.bucket_type {
-                    BucketTypes::String | BucketTypes::Undefined => {
-                        return Err(String::from(
-                            "The operation cannot be performed on these operands",
-                        ));
-                    }
-                    BucketTypes::Float | BucketTypes::Constant(_) => (),
-                }
-            }
+    pub fn get_operands_as_dec(&mut self, number: usize) -> Result<Vec<Decimal>, String> {
+        // check that all items are of expected type
+        let start_index = self
+            .stack
+            .len()
+            .checked_sub(number)
+            .ok_or(String::from("Not enough items on stack for operation"))?;
 
-            // Add requested number of operands from stack to vector and converts them to strings
-            for _ in 0..number {
-                let operand = self
-                    .stack
-                    .pop()
-                    .ok_or_else(|| String::from("Failed to pop operand"))?;
-                operands.push(match operand.bucket_type {
-                    BucketTypes::Constant(ConstantTypes::Pi) => Decimal::PI,
-                    BucketTypes::Constant(ConstantTypes::E) => Decimal::E,
-                    BucketTypes::Constant(ConstantTypes::HalfPi) => Decimal::HALF_PI,
-                    BucketTypes::Constant(ConstantTypes::QuarterPi) => Decimal::QUARTER_PI,
-                    BucketTypes::Constant(ConstantTypes::TwoPi) => Decimal::TWO_PI,
-                    BucketTypes::Float
-                    | BucketTypes::Constant(ConstantTypes::C)
-                    | BucketTypes::Constant(ConstantTypes::G)
-                    | BucketTypes::Constant(ConstantTypes::ThirdPi)
-                    | BucketTypes::Constant(ConstantTypes::SixthPi)
-                    | BucketTypes::Constant(ConstantTypes::EighthPi)
-                    | BucketTypes::Constant(ConstantTypes::Phi) => {
-                        match Decimal::from_str_exact(
-                            &operand
+        if self
+            .stack
+            .get(start_index..)
+            .ok_or_else(|| String::from("Not enough items on stack for operation"))?
+            .iter()
+            .any(|item| match item.bucket_type {
+                BucketTypes::String | BucketTypes::Undefined => true,
+                BucketTypes::Float | BucketTypes::Constant(_) => false,
+            })
+        {
+            return Err(String::from(
+                "The operation cannot be performed on these operands",
+            ));
+        }
+
+        // Drain and convert operands
+        self.stack.drain(start_index..).map(|item| {
+            match item.bucket_type {
+                    BucketTypes::Constant(ConstantTypes::Pi) => Ok(Decimal::PI),
+                    BucketTypes::Constant(ConstantTypes::E) => Ok(Decimal::E),
+                    BucketTypes::Constant(ConstantTypes::HalfPi) => Ok(Decimal::HALF_PI),
+                    BucketTypes::Constant(ConstantTypes::QuarterPi) => Ok(Decimal::QUARTER_PI),
+                    BucketTypes::Constant(ConstantTypes::TwoPi) => Ok(Decimal::TWO_PI),
+                    BucketTypes::Float |
+                        BucketTypes::Constant(_) => {
+                            let val_str = item
                                 .value
-                                .ok_or_else(|| String::from("Operand value is missing"))?,
-                        ) {
-                            Ok(value) => value,
-                            Err(e) => return Err(e.to_string()),
-                        }
+                                .ok_or_else(|| String::from("Operand value is missing"))?;
+
+                        Decimal::from_str_exact(&val_str).map_err(|e| e.to_string())
                     }
                     BucketTypes::String | BucketTypes::Undefined => {
                         unreachable!("we've already checked that each operand on the stack is not an invalid type: operands as dec")
                     }
-                });
-            }
-            // Make the new vector's order match the stack
-            operands.reverse();
-            Ok(operands)
-        } else {
-            Err(String::from("Not enough items on stack for operation"))
-        }
+                }
+        }).collect()
     }
 
     /// Retrieves a specified number of operands from the stack as [`String`] values.
@@ -372,28 +351,26 @@ impl Engine {
     /// let result = engine.get_operands_as_string(2);
     /// assert_eq!(result.unwrap(), vec!["hello", "world"]);
     /// ```
-    pub fn get_operands_as_string(&mut self, number: i32) -> Result<Vec<String>, String> {
-        // Make sure there are actually enough items on the stack
-        if self.stack.len() as i32 >= number {
-            // Create vector to store operands
-            let mut operands = Vec::new();
-            // we can skip the type check since everything is already a string
+    pub fn get_operands_as_string(&mut self, number: usize) -> Result<Vec<String>, String> {
+        // we can skip the type check since everything is already a string
+        let start_index = self
+            .stack
+            .len()
+            .checked_sub(number)
+            .ok_or(String::from("Not enough items on stack for operation"))?;
 
-            // Add requested number of operands from stack to vector and converts them to strings
-            for _ in 0..number {
-                let operand = self
-                    .stack
-                    .pop()
-                    .ok_or_else(|| String::from("Failed to pop operand"))?;
-
-                operands.push(operand.to_string());
-            }
-            // Make the new vector's order match the stack
-            operands.reverse();
-            Ok(operands)
-        } else {
-            Err(String::from("Not enough items on stack for operation"))
+        if start_index > self.stack.len() {
+            return Err(String::from("Not enough items on stack for operation"));
         }
+
+        // collect all the strings from the stack
+        let items: Vec<_> = self
+            .stack
+            .drain(start_index..)
+            .map(|i| i.to_string())
+            .collect();
+
+        Ok(items)
     }
 
     /// Retrieves a specified number of operands from the stack as raw [`Bucket`] values.
@@ -435,26 +412,19 @@ impl Engine {
     /// assert!(result.is_ok());
     /// assert_eq!(result.unwrap(), vec![Bucket::from(3.14), Bucket::from("test")]);
     /// ```
-    pub fn get_operands_raw(&mut self, number: i32) -> Result<Vec<Bucket>, String> {
-        if self.stack.len() as i32 >= number {
-            // Create vector to store operands
-            let mut operands = Vec::new();
+    pub fn get_operands_raw(&mut self, number: usize) -> Result<Vec<Bucket>, String> {
+        // we can skip the type check since everything is already a string
+        let start_index = self
+            .stack
+            .len()
+            .checked_sub(number)
+            .ok_or(String::from("Not enough items on stack for operation"))?;
 
-            // Add requested number of operands from stack to vector and converts them to strings
-            for _ in 0..number {
-                let operand = self
-                    .stack
-                    .pop()
-                    .ok_or_else(|| String::from("Failed to pop operand"))?;
-
-                operands.push(operand);
-            }
-            // Make the new vector's order match the stack
-            operands.reverse();
-            Ok(operands)
-        } else {
-            Err(String::from("Not enough items on stack for operation"))
+        if start_index > self.stack.len() {
+            return Err(String::from("Not enough items on stack for operation"));
         }
+
+        Ok(self.stack.drain(start_index..).collect::<Vec<_>>())
     }
 
     /// Updates the `previous_answer` variable to the last item on the stack.
@@ -538,7 +508,9 @@ impl Engine {
         let operands = self.get_operands_as_dec(2)?;
 
         // Put result on stack
-        let result = operands[0] + operands[1];
+        let result = operands[0]
+            .checked_add(operands[1])
+            .ok_or_else(|| String::from("attempt to add with overflow"))?;
         let _ = self.add_item_to_stack(result.into());
         Ok(EngineSignal::StackUpdated)
     }
@@ -1781,13 +1753,46 @@ impl Engine {
         Ok(EngineSignal::StackUpdated)
     }
 
+    /// Averages the top numbers on the stack.
+    ///
+    /// This function takes all the numbers off the stack, stopping when either the stack is
+    /// emptied or a non-number is encountered. It then computes the average and puts it on the
+    /// stack.
+    ///
+    /// # Behavior
+    ///
+    /// - Retrieves n numbers from the stack
+    /// - Divides the sum of the numbers by n
+    /// - If the first operand is less or equal, pushes `1` (as a `u32`) onto the stack; otherwise, pushes `0`.
+    ///
+    /// # Returns
+    ///
+    /// - `Ok(EngineSignal::StackUpdated)` if the operation is successful.
+    /// - `Err(String)` if the average cannot be computed given the current stack.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use squiid_engine::bucket::Bucket;
+    /// use squiid_engine::engine::Engine;
+    ///
+    /// let mut engine = Engine::new();
+    /// engine.stack.push(Bucket::from("test"));
+    /// engine.stack.push(Bucket::from(9.0));
+    /// engine.stack.push(Bucket::from(10.0));
+    /// engine.stack.push(Bucket::from(11.0));
+    ///
+    /// assert!(engine.avg().is_ok());
+    /// assert_eq!(engine.stack.pop().unwrap(), Bucket::from(10.0));
+    /// // should not modify the string
+    /// assert_eq!(engine.stack.pop().unwrap(), Bucket::from("test"));
+    /// ```
     pub fn avg(&mut self) -> Result<EngineSignal, String> {
         let mut operands = Vec::new();
-        while !self.stack.is_empty() {
-            match self.get_operands_as_dec(1) {
-                Ok(v) => operands.push(*v.first().unwrap()),
-                Err(_) => break,
-            };
+        while let Ok(v) = self.get_operands_as_dec(1)
+            && let Some(first) = v.first()
+        {
+            operands.push(*first);
         }
 
         let sum = operands
@@ -2373,5 +2378,11 @@ impl Engine {
     /// ```
     pub fn quit(&mut self) -> Result<EngineSignal, String> {
         Ok(EngineSignal::Quit)
+    }
+}
+
+impl Default for Engine {
+    fn default() -> Self {
+        Self::new()
     }
 }

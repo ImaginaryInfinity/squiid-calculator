@@ -33,7 +33,7 @@ impl fmt::Display for EnvironmentDetails<'_> {
 }
 
 /// Panic hook handler that generates a crash report and gracefully exits
-pub fn crash_report(panic_info: &PanicHookInfo, config_path: Option<PathBuf>) {
+pub fn crash_report(panic_info: &PanicHookInfo<'_>, config_path: Option<PathBuf>) {
     let backtrace = backtrace::Backtrace::new();
 
     // create environment struct

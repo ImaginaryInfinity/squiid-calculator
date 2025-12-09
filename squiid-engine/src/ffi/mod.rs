@@ -29,14 +29,13 @@
 //! via C bindings. Care should be taken when passing and handling pointers, as improper usage may
 //! lead to memory leaks or undefined behavior.
 
-use std::ffi::{c_char, c_int, CStr};
+use std::ffi::{CStr, c_char, c_int};
 
 use data_structs::{BucketFFI, EngineSignalSetFFI};
 
 use crate::{
-    execute_multiple_rpn,
+    EngineSignalSet, execute_multiple_rpn,
     ffi::utils::{to_cstring, vec_to_ffi_array},
-    EngineSignalSet,
 };
 
 mod cleanup;

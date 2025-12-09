@@ -56,10 +56,10 @@ impl Config {
     }
 
     pub fn load(&mut self) {
-        if let Some(content) = self.backend.load() {
-            if let Ok(val) = toml::from_str(&content) {
-                self.config = val;
-            }
+        if let Some(content) = self.backend.load()
+            && let Ok(val) = toml::from_str(&content)
+        {
+            self.config = val;
         }
     }
 
@@ -208,27 +208,33 @@ impl Config {
     /// * `default` - The default config that comes with the base installation of the frontend
     pub fn merge_with_default(&mut self, default: &str) -> Result<(), toml::de::Error> {
         fn merge(user_config: &mut Value, default_config: &Value) {
-            match (user_config, default_config) {
-                (Value::Table(user_table), Value::Table(system_table)) => {
-                    // Update keys in user table with keys from system table
-                    for (key, system_value) in system_table {
-                        if !user_table.contains_key(key) {
-                            // Key does not exist in user table, add it with system value
-                            user_table.insert(key.clone(), system_value.clone());
-                        } else {
-                            // Key exists in both user and system tables, recursively update values
-                            if let Some(user_value) = user_table.get_mut(key) {
-                                merge(user_value, system_value);
-                            }
+            if let (Value::Table(user_table), Value::Table(system_table)) =
+                (user_config, default_config)
+            {
+                // Update keys in user table with keys from system table
+                for (key, system_value) in system_table {
+                    if !user_table.contains_key(key) {
+                        // Key does not exist in user table, add it with system value
+                        user_table.insert(key.clone(), system_value.clone());
+                    } else {
+                        // Key exists in both user and system tables, recursively update values
+                        if let Some(user_value) = user_table.get_mut(key) {
+                            merge(user_value, system_value);
                         }
                     }
                 }
-                _ => {}
             }
         }
 
         let default_config: Value = toml::from_str(default)?;
         merge(&mut self.config, &default_config);
         Ok(())
+    }
+}
+
+#[cfg(any(unix, windows))]
+impl Default for Config {
+    fn default() -> Self {
+        Self::new()
     }
 }

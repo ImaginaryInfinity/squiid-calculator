@@ -21,7 +21,7 @@
 //! - Calling these functions on invalid or already freed pointers will cause undefined behavior.
 //! - Ensure that memory is properly managed across the FFI boundary to avoid double frees or leaks.
 
-use std::ffi::{c_char, c_int, CString};
+use std::ffi::{CString, c_char, c_int};
 
 use crate::ffi::utils::reclaim_ffi_array;
 

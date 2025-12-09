@@ -41,7 +41,7 @@
 //! - The caller is responsible for freeing any allocated error messages returned through
 //!   `expected_version_out`.
 
-use std::ffi::{c_char, CStr, CString};
+use std::ffi::{CStr, CString, c_char};
 
 use semver::{Version, VersionReq};
 

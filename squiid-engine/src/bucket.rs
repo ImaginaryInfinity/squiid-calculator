@@ -1,8 +1,14 @@
 // items on the stack are called Buckets
 
-use std::{collections::HashMap, f64::consts, fmt::Display, sync::LazyLock};
+use std::{
+    collections::HashMap,
+    f64::consts,
+    fmt::Display,
+    ops::{Div, Mul},
+    sync::LazyLock,
+};
 
-use rust_decimal::{prelude::FromPrimitive, Decimal, MathematicalOps};
+use rust_decimal::{Decimal, MathematicalOps, prelude::FromPrimitive};
 use rust_decimal_macros::dec;
 
 /// Types of constants
@@ -94,7 +100,7 @@ impl Bucket {
             ConstantTypes::TwoPi => consts::TAU,
             ConstantTypes::E => consts::E,
             ConstantTypes::C => 299_792_458_f64,
-            ConstantTypes::G => 6.67430 * 10_f64.powf(-11_f64),
+            ConstantTypes::G => 6.67430.mul(10_f64.powf(-11_f64)),
             ConstantTypes::Phi => 1.618_033_988_749_895_f64,
         }
         .to_string();
@@ -166,7 +172,7 @@ impl Bucket {
                 Some(value) => {
                     let float_value = value.parse::<f64>().ok()?;
                     // check if equal to 3pi/2
-                    if float_value == (3.0 * consts::PI) / 2.0 {
+                    if float_value == (3.0.mul(consts::PI)).div(2.0) {
                         Some(Self::new_undefined())
                     } else {
                         Some(Self::from(
@@ -189,20 +195,21 @@ impl Bucket {
                 // 1 / sin(value)
                 ConstantTypes::E | ConstantTypes::C | ConstantTypes::G | ConstantTypes::Phi => {
                     Some(Self::from(
-                        dec!(1.0)
-                            / Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?
+                        dec!(1.0).checked_div(
+                            Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?
                                 .checked_sin()?,
+                        )?,
                     ))
                 }
                 ConstantTypes::Pi | ConstantTypes::TwoPi => Some(Self::new_undefined()),
                 ConstantTypes::HalfPi => Some(Self::from(1)),
                 ConstantTypes::QuarterPi => Some(Self::from(consts::SQRT_2)),
                 ConstantTypes::EighthPi => Some(Self::from(
-                    dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_8.sin())?,
+                    dec!(1.0).checked_div(Decimal::from_f64(consts::FRAC_PI_8.sin())?)?,
                 )),
                 ConstantTypes::SixthPi => Some(Self::from(2)),
                 ConstantTypes::ThirdPi => Some(Self::from(
-                    dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_3.sin())?,
+                    dec!(1.0).checked_div(Decimal::from_f64(consts::FRAC_PI_3.sin())?)?,
                 )),
             },
             BucketTypes::Float => match &self.value {
@@ -211,9 +218,9 @@ impl Bucket {
                     if float_value == 0.0 {
                         Some(Self::new_undefined())
                     } else {
-                        Some(Self::from(
-                            dec!(1.0) / Decimal::from_f64(float_value)?.checked_sin()?,
-                        ))
+                        Some(Self::from(dec!(1.0).checked_div(
+                            Decimal::from_f64(float_value)?.checked_sin()?,
+                        )?))
                     }
                 }
                 None => None,
@@ -230,9 +237,10 @@ impl Bucket {
                 // 1 / cos(value)
                 ConstantTypes::E | ConstantTypes::C | ConstantTypes::G | ConstantTypes::Phi => {
                     Some(Self::from(
-                        dec!(1.0)
-                            / Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?
+                        dec!(1.0).checked_div(
+                            Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?
                                 .checked_cos()?,
+                        )?,
                     ))
                 }
                 ConstantTypes::Pi => Some(Self::from(-1)),
@@ -240,10 +248,10 @@ impl Bucket {
                 ConstantTypes::HalfPi => Some(Self::new_undefined()),
                 ConstantTypes::QuarterPi => Some(Self::from(consts::SQRT_2)),
                 ConstantTypes::EighthPi => Some(Self::from(
-                    dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_8.cos())?,
+                    dec!(1.0).checked_div(Decimal::from_f64(consts::FRAC_PI_8.cos())?)?,
                 )),
                 ConstantTypes::SixthPi => Some(Self::from(
-                    dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_6.cos())?,
+                    dec!(1.0).checked_div(Decimal::from_f64(consts::FRAC_PI_6.cos())?)?,
                 )),
                 ConstantTypes::ThirdPi => Some(Self::from(2)),
             },
@@ -254,12 +262,12 @@ impl Bucket {
                     // Handle sec(0) correctly, which should return 1
                     if float_value == 0.0 {
                         Some(Self::from(1)) // sec(0) = 1
-                    } else if float_value == (3.0 * consts::PI) / 2.0 {
+                    } else if float_value == (3.0.mul(consts::PI)).div(2.0) {
                         Some(Self::new_undefined()) // sec(3#pi/2) = undefined
                     } else {
-                        Some(Self::from(
-                            dec!(1.0) / Decimal::from_f64(float_value)?.checked_cos()?,
-                        ))
+                        Some(Self::from(dec!(1.0).checked_div(
+                            Decimal::from_f64(float_value)?.checked_cos()?,
+                        )?))
                     }
                 }
                 None => None,
@@ -276,22 +284,23 @@ impl Bucket {
                 // 1 / tan(value)
                 ConstantTypes::E | ConstantTypes::C | ConstantTypes::G | ConstantTypes::Phi => {
                     Some(Self::from(
-                        dec!(1.0)
-                            / Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?
+                        dec!(1.0).checked_div(
+                            Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?
                                 .checked_tan()?,
+                        )?,
                     ))
                 }
                 ConstantTypes::Pi | ConstantTypes::TwoPi => Some(Self::new_undefined()),
                 ConstantTypes::HalfPi => Some(Self::from(0)),
                 ConstantTypes::QuarterPi => Some(Self::from(1)),
                 ConstantTypes::EighthPi => Some(Self::from(
-                    dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_8.tan())?,
+                    dec!(1.0).checked_div(Decimal::from_f64(consts::FRAC_PI_8.tan())?)?,
                 )),
                 ConstantTypes::SixthPi => Some(Self::from(
-                    dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_6.tan())?,
+                    dec!(1.0).checked_div(Decimal::from_f64(consts::FRAC_PI_6.tan())?)?,
                 )),
                 ConstantTypes::ThirdPi => Some(Self::from(
-                    dec!(1.0) / Decimal::from_f64(consts::FRAC_PI_3.tan())?,
+                    dec!(1.0).checked_div(Decimal::from_f64(consts::FRAC_PI_3.tan())?)?,
                 )),
             },
             BucketTypes::Float => match &self.value {
@@ -300,9 +309,9 @@ impl Bucket {
                     if float_value == 0.0 {
                         Some(Self::new_undefined())
                     } else {
-                        Some(Self::from(
-                            dec!(1.0) / Decimal::from_f64(float_value)?.checked_tan()?,
-                        ))
+                        Some(Self::from(dec!(1.0).checked_div(
+                            Decimal::from_f64(float_value)?.checked_tan()?,
+                        )?))
                     }
                 }
                 None => None,
@@ -315,10 +324,14 @@ impl Bucket {
 // implementation of .to_string()
 impl Display for Bucket {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&match &self.value {
-            Some(value) => value.to_string(),
-            None => "Undefined".to_owned(),
-        })
+        write!(
+            f,
+            "{}",
+            match &self.value {
+                Some(v) => v.as_str(),
+                None => "Undefined",
+            }
+        )
     }
 }
 

@@ -126,7 +126,10 @@ impl Engine {
                 match CONSTANT_IDENTIFIERS.get(item_string.as_str()) {
                     Some(&constant) => Bucket::from_constant(constant),
                     None => match item_string.parse::<f64>() {
-                        Ok(val) => Bucket::from(val),
+                        Ok(_) => Bucket {
+                            value: Some(item_string),
+                            bucket_type: BucketTypes::Float,
+                        },
                         Err(_) => Bucket::from(item_string),
                     },
                 }
@@ -1451,6 +1454,11 @@ impl Engine {
     pub fn ln(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         let [operand] = self.get_operands_as_dec::<1>()?;
+
+        if operand == Decimal::E {
+            let _ = self.add_item_to_stack(Bucket::from(1));
+            return Ok(EngineSignal::StackUpdated);
+        }
 
         // Put result on stack
         let Some(result) = operand.checked_ln() else {

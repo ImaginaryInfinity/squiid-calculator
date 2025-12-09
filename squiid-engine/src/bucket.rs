@@ -119,9 +119,18 @@ impl Bucket {
                 ConstantTypes::SixthPi => Some(Self::from(0.5)),
                 ConstantTypes::ThirdPi => Some(Self::from(consts::FRAC_PI_3.sin())),
             },
-            BucketTypes::Float => Some(Self::from(
-                Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?.checked_sin()?,
-            )),
+            BucketTypes::Float => {
+                let val_str = self.value.as_ref()?;
+
+                if let Ok(dec) = rust_decimal::Decimal::from_str_exact(val_str)
+                    && let Some(res) = dec.checked_sin()
+                {
+                    return Some(Self::from(res));
+                }
+
+                let float = val_str.parse::<f64>().ok()?;
+                Some(Self::from(float.sin()))
+            }
             BucketTypes::String | BucketTypes::Undefined => None,
         }
     }
@@ -141,9 +150,18 @@ impl Bucket {
                 ConstantTypes::SixthPi => Some(Self::from(consts::FRAC_PI_6.cos())),
                 ConstantTypes::ThirdPi => Some(Self::from(0.5)),
             },
-            BucketTypes::Float => Some(Self::from(
-                Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?.checked_cos()?,
-            )),
+            BucketTypes::Float => {
+                let val_str = self.value.as_ref()?;
+
+                if let Ok(dec) = rust_decimal::Decimal::from_str_exact(val_str)
+                    && let Some(res) = dec.checked_cos()
+                {
+                    return Some(Self::from(res));
+                }
+
+                let float = val_str.parse::<f64>().ok()?;
+                Some(Self::from(float.cos()))
+            }
             BucketTypes::String | BucketTypes::Undefined => None,
         }
     }
@@ -162,21 +180,20 @@ impl Bucket {
                 ConstantTypes::SixthPi => Some(Self::from(consts::FRAC_PI_6.tan())),
                 ConstantTypes::ThirdPi => Some(Self::from(consts::FRAC_PI_3.tan())),
             },
-            BucketTypes::Float => match &self.value {
-                Some(value) => {
-                    let float_value = value.parse::<f64>().ok()?;
-                    // check if equal to 3pi/2
-                    if float_value == (3.0 * consts::PI) / 2.0 {
-                        Some(Self::new_undefined())
-                    } else {
-                        Some(Self::from(
-                            Decimal::from_f64(self.value.clone()?.parse::<f64>().ok()?)?
-                                .checked_tan()?,
-                        ))
-                    }
+            BucketTypes::Float => {
+                let val_str = self.value.as_ref()?;
+                let float = val_str.parse::<f64>().ok()?;
+
+                if float == (3.0 * consts::PI) / 2.0 {
+                    return Some(Self::new_undefined());
+                } else if let Ok(dec) = rust_decimal::Decimal::from_str_exact(val_str)
+                    && let Some(res) = dec.checked_tan()
+                {
+                    return Some(Self::from(res));
                 }
-                None => None,
-            },
+
+                Some(Self::from(float.tan()))
+            }
             BucketTypes::String | BucketTypes::Undefined => None,
         }
     }
@@ -206,19 +223,25 @@ impl Bucket {
                     dec!(1.0).checked_div(Decimal::from_f64(consts::FRAC_PI_3.sin())?)?,
                 )),
             },
-            BucketTypes::Float => match &self.value {
-                Some(value) => {
-                    let float_value = value.parse::<f64>().ok()?;
-                    if float_value == 0.0 {
-                        Some(Self::new_undefined())
-                    } else {
-                        Some(Self::from(dec!(1.0).checked_div(
-                            Decimal::from_f64(float_value)?.checked_sin()?,
-                        )?))
-                    }
+            BucketTypes::Float => {
+                let val_str = self.value.as_ref()?;
+                let float = val_str.parse::<f64>().ok()?;
+
+                if float == 0.0 {
+                    return Some(Self::new_undefined());
+                } else if let Ok(dec) = rust_decimal::Decimal::from_str_exact(val_str)
+                    && let Some(res) = dec.checked_sin()
+                {
+                    return Some(Self::from(dec!(1.0).checked_div(res)?));
                 }
-                None => None,
-            },
+
+                let sin = float.sin();
+                if sin == 0.0 {
+                    return Some(Self::new_undefined());
+                }
+
+                Some(Self::from(1_f64 / sin))
+            }
             BucketTypes::String | BucketTypes::Undefined => None,
         }
     }
@@ -249,23 +272,27 @@ impl Bucket {
                 )),
                 ConstantTypes::ThirdPi => Some(Self::from(2)),
             },
-            BucketTypes::Float => match &self.value {
-                Some(value) => {
-                    let float_value = value.parse::<f64>().ok()?;
+            BucketTypes::Float => {
+                let val_str = self.value.as_ref()?;
+                let float = val_str.parse::<f64>().ok()?;
 
-                    // Handle sec(0) correctly, which should return 1
-                    if float_value == 0.0 {
-                        Some(Self::from(1)) // sec(0) = 1
-                    } else if float_value == (3.0 * consts::PI) / 2.0 {
-                        Some(Self::new_undefined()) // sec(3#pi/2) = undefined
-                    } else {
-                        Some(Self::from(dec!(1.0).checked_div(
-                            Decimal::from_f64(float_value)?.checked_cos()?,
-                        )?))
-                    }
+                if float == 0.0 {
+                    return Some(Self::from(1)); // sec(0) = 1
+                } else if float == (3.0 * consts::PI) / 2.0 {
+                    return Some(Self::new_undefined()); // sec(3#pi/2) = undefined
+                } else if let Ok(dec) = rust_decimal::Decimal::from_str_exact(val_str)
+                    && let Some(res) = dec.checked_cos()
+                {
+                    return Some(Self::from(dec!(1.0).checked_div(res)?));
                 }
-                None => None,
-            },
+
+                let cos = float.cos();
+                if cos == 0.0 {
+                    return Some(Self::new_undefined());
+                }
+
+                Some(Self::from(1.0 / cos))
+            }
             BucketTypes::String | BucketTypes::Undefined => None,
         }
     }
@@ -297,19 +324,25 @@ impl Bucket {
                     dec!(1.0).checked_div(Decimal::from_f64(consts::FRAC_PI_3.tan())?)?,
                 )),
             },
-            BucketTypes::Float => match &self.value {
-                Some(value) => {
-                    let float_value = value.parse::<f64>().ok()?;
-                    if float_value == 0.0 {
-                        Some(Self::new_undefined())
-                    } else {
-                        Some(Self::from(dec!(1.0).checked_div(
-                            Decimal::from_f64(float_value)?.checked_tan()?,
-                        )?))
-                    }
+            BucketTypes::Float => {
+                let val_str = self.value.as_ref()?;
+                let float = val_str.parse::<f64>().ok()?;
+
+                if float == 0.0 {
+                    return Some(Self::new_undefined());
+                } else if let Ok(dec) = rust_decimal::Decimal::from_str_exact(val_str)
+                    && let Some(res) = dec.checked_tan()
+                {
+                    return Some(Self::from(dec!(1.0).checked_div(res)?));
                 }
-                None => None,
-            },
+
+                let tan = float.tan();
+                if tan == 0.0 {
+                    return Some(Self::new_undefined());
+                }
+
+                Some(Self::from(1.0 / tan))
+            }
             BucketTypes::String | BucketTypes::Undefined => None,
         }
     }
@@ -363,7 +396,7 @@ generate_int_impl! { u8, u16, u32, u64, i8, i16, i32, i64 }
 impl From<Decimal> for Bucket {
     fn from(value: Decimal) -> Self {
         Self {
-            value: Some(value.to_string()),
+            value: Some(value.normalize().to_string()),
             bucket_type: BucketTypes::Float,
         }
     }

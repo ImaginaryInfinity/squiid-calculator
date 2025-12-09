@@ -1,10 +1,10 @@
 use std::{f64::consts::PI, fs, path::PathBuf};
 
 use squiid_engine::{
-    EngineSignal,
     bucket::{Bucket, BucketTypes, ConstantTypes},
     command_mappings,
     engine::*,
+    EngineSignal,
 };
 
 #[test]
@@ -1288,16 +1288,16 @@ fn test_overflow_handled() {
     let mut engine = Engine::new();
 
     let _ = engine.add_item_to_stack("99999999999999999999999999999".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.dup();
 
     let _ = engine.add_item_to_stack("99999999999999999999999999999".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.dup();
 
     let _ = engine.add_item_to_stack("99999999999999999999999999999".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.dup();
 
     let _ = engine.add_item_to_stack("99999999999999999999999999999".into());
-    let _ = engine.add_item_to_stack("1".into());
+    let _ = engine.dup();
 
     let result = engine.add();
     assert!(result.is_err());

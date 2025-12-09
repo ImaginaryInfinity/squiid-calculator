@@ -1,4 +1,4 @@
-use squiid_engine::bucket::{Bucket, BucketTypes, CONSTANT_IDENTIFIERS, ConstantTypes};
+use squiid_engine::bucket::{Bucket, BucketTypes, ConstantTypes, CONSTANT_IDENTIFIERS};
 
 #[test]
 fn test_bucket_creation() {

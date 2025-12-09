@@ -1,10 +1,10 @@
 use std::{f64::consts::PI, fs, path::PathBuf};
 
 use squiid_engine::{
-    EngineSignal,
     bucket::{Bucket, BucketTypes, ConstantTypes},
     command_mappings,
     engine::*,
+    EngineSignal,
 };
 
 #[test]
@@ -101,19 +101,19 @@ fn test_get_operands() {
     let _ = engine.add_item_to_stack("1.5".into());
 
     // retrieve things off of stack
-    let raw = engine.get_operands_raw(2);
-    let strings = engine.get_operands_as_string(2);
-    let invalid_float = engine.get_operands_as_f(1);
-    let _ = engine.get_operands_as_string(1); // clear the invalid float off the stack
-    let valid_floats = engine.get_operands_as_f(2);
+    let raw = engine.get_operands_raw::<2>();
+    let strings = engine.get_operands_as_string::<2>();
+    let invalid_float = engine.get_operands_as_f::<1>();
+    let _ = engine.get_operands_as_string::<1>(); // clear the invalid float off the stack
+    let valid_floats = engine.get_operands_as_f::<2>();
 
-    assert_eq!(raw, Ok(vec![Bucket::from("test"), Bucket::from(1.5),]));
+    assert_eq!(raw, Ok([Bucket::from("test"), Bucket::from(1.5),]));
 
-    assert_eq!(strings, Ok(vec![String::from("abc"), String::from("1.5"),]));
+    assert_eq!(strings, Ok([String::from("abc"), String::from("1.5"),]));
 
     assert!(invalid_float.is_err());
 
-    assert_eq!(valid_floats, Ok(vec![1.0, 1.5,]));
+    assert_eq!(valid_floats, Ok([1.0, 1.5,]));
 }
 
 #[test]
@@ -131,13 +131,13 @@ fn test_add() {
 
     // evaluate from last stack entries to first
     let _ = engine.add();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -2.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], -2.0);
 
     let _ = engine.add();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     let _ = engine.add();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 2.0);
 }
 
 #[test]
@@ -155,13 +155,13 @@ fn test_subtract() {
 
     // evaluate from last stack entries to first
     let _ = engine.subtract();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     let _ = engine.subtract();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -2.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], -2.0);
 
     let _ = engine.subtract();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 }
 
 #[test]
@@ -179,13 +179,13 @@ fn test_multiply() {
 
     // evaluate from last stack entries to first
     let _ = engine.multiply();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 8.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 8.0);
 
     let _ = engine.multiply();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -2.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], -2.0);
 
     let _ = engine.multiply();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 6.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 6.0);
 }
 
 #[test]
@@ -209,13 +209,13 @@ fn test_divide() {
     assert!(result.is_err());
 
     let _ = engine.divide();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 2.0);
 
     let _ = engine.divide();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -0.5);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], -0.5);
 
     let _ = engine.divide();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 3.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 3.0);
 }
 
 #[test]
@@ -233,13 +233,13 @@ fn test_power() {
 
     // evaluate from last stack entries to first
     let _ = engine.power();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.5);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.5);
 
     let _ = engine.power();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 2.0);
 
     let _ = engine.power();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 8.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 8.0);
 }
 
 #[test]
@@ -252,10 +252,10 @@ fn test_sqrt() {
 
     // evaluate from last stack entries to first
     let _ = engine.sqrt();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 3.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 3.0);
 
     let _ = engine.sqrt();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 2.0);
 }
 
 #[test]
@@ -303,51 +303,51 @@ fn test_modulo() {
 
     // evaluate from last stack entries to first
     let _ = engine.modulo();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1000.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1000.0);
 
     let result = engine.modulo();
     assert!(result.is_err());
 
     let _ = engine.modulo();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     // -6.5%3.2 == 3.100000...
     let _ = engine.modulo();
     assert_eq!(
-        (engine.get_operands_as_f(1).unwrap()[0] * 10.0).trunc(),
+        (engine.get_operands_as_f::<1>().unwrap()[0] * 10.0).trunc(),
         31.0
     );
 
     let _ = engine.modulo();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -1.5);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], -1.5);
 
     // 6.5%3.2 == 0.09999...
     let _ = engine.modulo();
     assert_eq!(
-        (engine.get_operands_as_f(1).unwrap()[0] * 10000.0).trunc(),
+        (engine.get_operands_as_f::<1>().unwrap()[0] * 10000.0).trunc(),
         999.0
     );
 
     let _ = engine.modulo();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -2.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], -2.0);
 
     let _ = engine.modulo();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 2.0);
 
     let _ = engine.modulo();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -9.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], -9.0);
 
     let _ = engine.modulo();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 9.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 9.0);
 
     let _ = engine.modulo();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 
     let _ = engine.modulo();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     let _ = engine.modulo();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 3.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 3.0);
 }
 
 #[test]
@@ -367,17 +367,17 @@ fn test_sin() {
     // 2pi = 0
     let _ = engine.multiply();
     let _ = engine.sin();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     // pi/2 = 1
     let _ = engine.divide();
     let _ = engine.sin();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 
     // sin(#e) to 2 decimal places
     let _ = engine.sin();
     assert_eq!(
-        (engine.get_operands_as_f(1).unwrap()[0] * 100.0).round(),
+        (engine.get_operands_as_f::<1>().unwrap()[0] * 100.0).round(),
         41.0
     );
 }
@@ -397,12 +397,12 @@ fn test_cos() {
     // 2pi = 1
     let _ = engine.multiply();
     let _ = engine.cos();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 
     // pi/2 = 0
     let _ = engine.divide();
     let _ = engine.cos();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 }
 
 #[test]
@@ -420,12 +420,12 @@ fn test_tan() {
     // 2pi = 1
     let _ = engine.multiply();
     let _ = engine.tan();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     // pi/4 = 1
     let _ = engine.divide();
     let _ = engine.tan();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 }
 
 #[test]
@@ -447,14 +447,14 @@ fn test_tan_undef() {
     // test 3pi/2
     let _ = engine.tan();
     assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
+        engine.get_operands_raw::<1>().unwrap()[0],
         Bucket::new_undefined()
     );
 
     // test pi/2
     let _ = engine.tan();
     assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
+        engine.get_operands_raw::<1>().unwrap()[0],
         Bucket::new_undefined()
     );
 }
@@ -473,11 +473,11 @@ fn test_sec() {
     // pi/3 = 2
     let _ = engine.divide();
     let _ = engine.sec();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 2.0);
 
     // pi = -1
     let _ = engine.sec();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], -1.0);
 }
 
 #[test]
@@ -499,14 +499,14 @@ fn test_sec_undef() {
     // test 3pi/2
     let _ = engine.sec();
     assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
+        engine.get_operands_raw::<1>().unwrap()[0],
         Bucket::new_undefined()
     );
 
     // test pi/2
     let _ = engine.sec();
     assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
+        engine.get_operands_raw::<1>().unwrap()[0],
         Bucket::new_undefined()
     );
 }
@@ -526,12 +526,12 @@ fn test_csc() {
     // pi/2 = 1
     let _ = engine.divide();
     let _ = engine.csc();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 
     // pi/6 = 2
     let _ = engine.divide();
     let _ = engine.csc();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 2.0);
 }
 
 #[test]
@@ -547,14 +547,14 @@ fn test_csc_undef() {
     // test pi
     let _ = engine.csc();
     assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
+        engine.get_operands_raw::<1>().unwrap()[0],
         Bucket::new_undefined()
     );
 
     // test 0
     let _ = engine.csc();
     assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
+        engine.get_operands_raw::<1>().unwrap()[0],
         Bucket::new_undefined()
     );
 }
@@ -574,14 +574,17 @@ fn test_avg() {
     let _ = engine.add_item_to_stack("10".into());
 
     let _ = engine.avg();
-    assert_eq!(engine.get_operands_raw(1).unwrap()[0], Bucket::from(38));
+    assert_eq!(engine.get_operands_raw::<1>().unwrap()[0], Bucket::from(38));
 
     let _ = engine.add_item_to_stack("4".into());
     let _ = engine.add_item_to_stack(Bucket::from("test"));
 
     let err = engine.avg();
 
-    assert_eq!(engine.get_operands_raw(1).unwrap()[0], Bucket::from("test"));
+    assert_eq!(
+        engine.get_operands_raw::<1>().unwrap()[0],
+        Bucket::from("test")
+    );
     assert!(err.is_err());
 }
 
@@ -610,12 +613,12 @@ fn test_cot() {
     // pi/2 = 0
     let _ = engine.divide();
     let _ = engine.cot();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     // pi/4 = 1
     let _ = engine.divide();
     let _ = engine.cot();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 }
 
 #[test]
@@ -631,14 +634,14 @@ fn test_cot_undef() {
     // test pi
     let _ = engine.cot();
     assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
+        engine.get_operands_raw::<1>().unwrap()[0],
         Bucket::new_undefined()
     );
 
     // test 0
     let _ = engine.csc();
     assert_eq!(
-        engine.get_operands_raw(1).unwrap()[0],
+        engine.get_operands_raw::<1>().unwrap()[0],
         Bucket::new_undefined()
     );
 }
@@ -656,14 +659,14 @@ fn test_asin() {
     // 1 = pi/2
     let _ = engine.asin();
     assert_eq!(
-        format!("{:.7}", engine.get_operands_as_f(1).unwrap()[0]),
+        format!("{:.7}", engine.get_operands_as_f::<1>().unwrap()[0]),
         format!("{:.7}", PI / 2.0)
     );
 
     // 0.5 = pi/6
     let _ = engine.asin();
     assert_eq!(
-        format!("{:.7}", engine.get_operands_as_f(1).unwrap()[0]),
+        format!("{:.7}", engine.get_operands_as_f::<1>().unwrap()[0]),
         format!("{:.7}", PI / 6.0)
     );
 }
@@ -680,12 +683,12 @@ fn test_acos() {
 
     // 1 = 0
     let _ = engine.acos();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     // 0.5 = pi/3
     let _ = engine.acos();
     assert_eq!(
-        format!("{:.7}", engine.get_operands_as_f(1).unwrap()[0]),
+        format!("{:.7}", engine.get_operands_as_f::<1>().unwrap()[0]),
         format!("{:.7}", PI / 3.0)
     );
 }
@@ -703,13 +706,13 @@ fn test_atan() {
     // 1 = pi/4
     let _ = engine.atan();
     assert_eq!(
-        format!("{:.7}", engine.get_operands_as_f(1).unwrap()[0]),
+        format!("{:.7}", engine.get_operands_as_f::<1>().unwrap()[0]),
         format!("{:.7}", PI / 4.0)
     );
 
     // 0 = 0
     let _ = engine.atan();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 }
 
 #[test]
@@ -721,10 +724,10 @@ fn test_chs() {
 
     // evaluate from last stack entries to first
     let _ = engine.chs();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -4.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], -4.0);
 
     let _ = engine.chs();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 9.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 9.0);
 }
 
 #[test]
@@ -736,10 +739,10 @@ fn test_log() {
 
     // evaluate from last stack entries to first
     let _ = engine.log();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 2.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 2.0);
 
     let _ = engine.log();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 }
 
 #[test]
@@ -757,10 +760,10 @@ fn test_blog() {
 
     // evaluate from last stack entries to first
     let _ = engine.blog();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 3.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 3.0);
 
     let _ = engine.blog();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 3.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 3.0);
 
     // test division by zero error
     let result = engine.blog();
@@ -775,7 +778,7 @@ fn test_ln() {
 
     // evaluate from last stack entries to first
     let _ = engine.ln();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 }
 
 #[test]
@@ -788,13 +791,13 @@ fn test_abs() {
 
     // evaluate from last stack entries to first
     let _ = engine.abs();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 
     let _ = engine.abs();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     let _ = engine.abs();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 }
 
 #[test]
@@ -809,10 +812,10 @@ fn test_eq() {
 
     // evaluate from last stack entries to first
     let _ = engine.equal();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     let _ = engine.equal();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 }
 
 #[test]
@@ -830,13 +833,13 @@ fn test_gt() {
 
     // evaluate from last stack entries to first
     let _ = engine.gt();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     let _ = engine.gt();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 
     let _ = engine.gt();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 }
 
 #[test]
@@ -854,13 +857,13 @@ fn test_lt() {
 
     // evaluate from last stack entries to first
     let _ = engine.lt();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     let _ = engine.lt();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     let _ = engine.lt();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 }
 
 #[test]
@@ -878,13 +881,13 @@ fn test_geq() {
 
     // evaluate from last stack entries to first
     let _ = engine.geq();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 
     let _ = engine.geq();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 
     let _ = engine.geq();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 }
 
 #[test]
@@ -902,13 +905,13 @@ fn test_leq() {
 
     // evaluate from last stack entries to first
     let _ = engine.leq();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 
     let _ = engine.leq();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     let _ = engine.leq();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0);
 }
 
 #[test]
@@ -922,16 +925,16 @@ fn test_round() {
 
     // evaluate from last stack entries to first
     let _ = engine.round();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -2.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], -2.0);
 
     let _ = engine.round();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 3.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 3.0);
 
     let _ = engine.round();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.0);
 
     let _ = engine.round();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -1.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], -1.0);
 }
 
 #[test]
@@ -945,16 +948,16 @@ fn test_invert() {
 
     // evaluate from last stack entries to first
     let _ = engine.invert();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 0.25);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 0.25);
 
     let _ = engine.invert();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -0.25);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], -0.25);
 
     let _ = engine.invert();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], 1.0 / 3.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], 1.0 / 3.0);
 
     let _ = engine.invert();
-    assert_eq!(engine.get_operands_as_f(1).unwrap()[0], -1.0 / 3.0);
+    assert_eq!(engine.get_operands_as_f::<1>().unwrap()[0], -1.0 / 3.0);
 }
 
 #[test]

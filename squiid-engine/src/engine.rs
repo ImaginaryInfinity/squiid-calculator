@@ -141,9 +141,9 @@ impl Engine {
 
     /// Retrieves a specified number of operands from the stack as `f64` values.
     ///
-    /// # Arguments
+    /// # Generics
     ///
-    /// * `number` - The number of operands to retrieve from the stack.
+    /// * `N` - The number of operands to retrieve from the stack.
     ///
     /// # Behavior
     ///
@@ -182,15 +182,15 @@ impl Engine {
     /// engine.stack.push(Bucket::from(3.5));
     /// engine.stack.push(Bucket::from(2.0));
     ///
-    /// let result = engine.get_operands_as_f(2);
-    /// assert_eq!(result, Ok(vec![3.5, 2.0])); // Successfully retrieved operands.
+    /// let result = engine.get_operands_as_f::<2>();
+    /// assert_eq!(result, Ok([3.5, 2.0])); // Successfully retrieved operands.
     /// ```
-    pub fn get_operands_as_f(&mut self, number: usize) -> Result<Vec<f64>, String> {
+    pub fn get_operands_as_f<const N: usize>(&mut self) -> Result<[f64; N], String> {
         // check that all items are of expected type
         let start_index = self
             .stack
             .len()
-            .checked_sub(number)
+            .checked_sub(N)
             .ok_or(String::from("Not enough items on stack for operation"))?;
 
         if self
@@ -209,7 +209,7 @@ impl Engine {
         };
 
         // drain, parse, and collect from the stack
-        self.stack
+        let vec: Vec<_> = self.stack
             .drain(start_index..)
             .map(|item| {
                 item.value
@@ -217,14 +217,16 @@ impl Engine {
                     .parse::<f64>()
                     .map_err(|e| format!("Failed to parse operand as f64: {}", e))
             })
-            .collect()
+            .collect::<Result<_, _>>()?;
+
+        vec.try_into().map_err(|_| String::from("Stack drain size mismatch"))
     }
 
     /// Retrieves a specified number of operands from the stack as [`Decimal`] values.
     ///
-    /// # Arguments
+    /// # Generics
     ///
-    /// * `number` - The number of operands to retrieve from the stack.
+    /// * `N` - The number of operands to retrieve from the stack.
     ///
     /// # Behavior
     ///
@@ -264,15 +266,15 @@ impl Engine {
     /// engine.stack.push(Bucket::from(3.1415926535));
     /// engine.stack.push(Bucket::from(2.0));
     ///
-    /// let result = engine.get_operands_as_dec(2);
+    /// let result = engine.get_operands_as_dec::<2>();
     /// assert!(result.is_ok()); // Successfully retrieved operands as Decimals.
     /// ```
-    pub fn get_operands_as_dec(&mut self, number: usize) -> Result<Vec<Decimal>, String> {
+    pub fn get_operands_as_dec<const N: usize>(&mut self) -> Result<[Decimal; N], String> {
         // check that all items are of expected type
         let start_index = self
             .stack
             .len()
-            .checked_sub(number)
+            .checked_sub(N)
             .ok_or(String::from("Not enough items on stack for operation"))?;
 
         if self
@@ -291,7 +293,7 @@ impl Engine {
         }
 
         // Drain and convert operands
-        self.stack.drain(start_index..).map(|item| {
+        let vec: Vec<_> = self.stack.drain(start_index..).map(|item| {
             match item.bucket_type {
                     BucketTypes::Constant(ConstantTypes::Pi) => Ok(Decimal::PI),
                     BucketTypes::Constant(ConstantTypes::E) => Ok(Decimal::E),
@@ -310,14 +312,16 @@ impl Engine {
                         unreachable!("we've already checked that each operand on the stack is not an invalid type: operands as dec")
                     }
                 }
-        }).collect()
+        }).collect::<Result<_, _>>()?;
+
+        vec.try_into().map_err(|_| String::from("Stack drain size mismatch"))
     }
 
     /// Retrieves a specified number of operands from the stack as [`String`] values.
     ///
-    /// # Arguments
+    /// # Generics
     ///
-    /// * `number` - The number of operands to retrieve from the stack.
+    /// * `N` - The number of operands to retrieve from the stack.
     ///
     /// # Behavior
     ///
@@ -348,29 +352,25 @@ impl Engine {
     /// engine.stack.push(Bucket::from("hello"));
     /// engine.stack.push(Bucket::from("world"));
     ///
-    /// let result = engine.get_operands_as_string(2);
-    /// assert_eq!(result.unwrap(), vec!["hello", "world"]);
+    /// let result = engine.get_operands_as_string::<2>();
+    /// assert_eq!(result.unwrap(), ["hello", "world"]);
     /// ```
-    pub fn get_operands_as_string(&mut self, number: usize) -> Result<Vec<String>, String> {
+    pub fn get_operands_as_string<const N: usize>(&mut self) -> Result<[String; N], String> {
         // we can skip the type check since everything is already a string
         let start_index = self
             .stack
             .len()
-            .checked_sub(number)
+            .checked_sub(N)
             .ok_or(String::from("Not enough items on stack for operation"))?;
 
-        if start_index > self.stack.len() {
-            return Err(String::from("Not enough items on stack for operation"));
-        }
-
         // collect all the strings from the stack
-        let items: Vec<_> = self
+        let vec: Vec<_> = self
             .stack
             .drain(start_index..)
             .map(|i| i.to_string())
             .collect();
 
-        Ok(items)
+        vec.try_into().map_err(|_| String::from("Stack drain size mismatch"))
     }
 
     /// Retrieves a specified number of operands from the stack as raw [`Bucket`] values.
@@ -408,23 +408,20 @@ impl Engine {
     /// engine.stack.push(Bucket::from(3.14));
     /// engine.stack.push(Bucket::from("test"));
     ///
-    /// let result = engine.get_operands_raw(2);
+    /// let result = engine.get_operands_raw::<2>();
     /// assert!(result.is_ok());
-    /// assert_eq!(result.unwrap(), vec![Bucket::from(3.14), Bucket::from("test")]);
+    /// assert_eq!(result.unwrap(), [Bucket::from(3.14), Bucket::from("test")]);
     /// ```
-    pub fn get_operands_raw(&mut self, number: usize) -> Result<Vec<Bucket>, String> {
+    pub fn get_operands_raw<const N: usize>(&mut self) -> Result<[Bucket; N], String> {
         // we can skip the type check since everything is already a string
         let start_index = self
             .stack
             .len()
-            .checked_sub(number)
+            .checked_sub(N)
             .ok_or(String::from("Not enough items on stack for operation"))?;
 
-        if start_index > self.stack.len() {
-            return Err(String::from("Not enough items on stack for operation"));
-        }
-
-        Ok(self.stack.drain(start_index..).collect::<Vec<_>>())
+        let vec = self.stack.drain(start_index..).collect::<Vec<_>>();
+        vec.try_into().map_err(|_| String::from("Stack drain size mismatch"))
     }
 
     /// Updates the `previous_answer` variable to the last item on the stack.
@@ -505,7 +502,7 @@ impl Engine {
     /// assert_eq!(engine.stack.last().unwrap(), &Bucket::from(15));
     /// ```
     pub fn add(&mut self) -> Result<EngineSignal, String> {
-        let operands = self.get_operands_as_dec(2)?;
+        let operands = self.get_operands_as_dec::<2>()?;
 
         // Put result on stack
         let result = operands[0]
@@ -550,7 +547,7 @@ impl Engine {
     /// ```
     pub fn subtract(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec(2)?;
+        let operands = self.get_operands_as_dec::<2>()?;
 
         // Put result on stack
         let result = operands[0] - operands[1];
@@ -593,7 +590,7 @@ impl Engine {
     /// ```
     pub fn multiply(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec(2)?;
+        let operands = self.get_operands_as_dec::<2>()?;
 
         // manual handling for 2PI precision
         let check_pi = HashSet::from([Decimal::PI, dec!(2.0)]);
@@ -650,7 +647,7 @@ impl Engine {
     /// ```
     pub fn divide(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec(2)?;
+        let operands = self.get_operands_as_dec::<2>()?;
 
         if operands[1] == dec!(0.0) {
             return Err("cannot divide by 0".to_string());
@@ -727,7 +724,7 @@ impl Engine {
     /// ```
     pub fn power(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec(2)?;
+        let operands = self.get_operands_as_dec::<2>()?;
 
         let base = operands[0];
         let exponent = operands[1];
@@ -791,7 +788,7 @@ impl Engine {
     /// ```
     pub fn sqrt(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec(1)?;
+        let operands = self.get_operands_as_dec::<1>()?;
 
         // Put result on stack
         let Some(result) = operands[0].sqrt() else {
@@ -837,7 +834,7 @@ impl Engine {
     /// ```
     pub fn modulo(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f(2)?;
+        let operands = self.get_operands_as_f::<2>()?;
 
         if operands[1] == 0.0 {
             return Err("cannot divide by zero".to_owned());
@@ -889,7 +886,7 @@ impl Engine {
     /// ```
     pub fn sin(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_raw(1)?;
+        let operands = self.get_operands_raw::<1>()?;
 
         // Put result on stack
         let Some(result) = operands[0].sin() else {
@@ -933,7 +930,7 @@ impl Engine {
     /// ```
     pub fn cos(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_raw(1)?;
+        let operands = self.get_operands_raw::<1>()?;
 
         // Put result on stack
         let Some(result) = operands[0].cos() else {
@@ -977,7 +974,7 @@ impl Engine {
     /// ```
     pub fn tan(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_raw(1)?;
+        let operands = self.get_operands_raw::<1>()?;
         // Put result on stack
         let Some(result) = operands[0].tan() else {
             return Err("could not tan operand".to_string());
@@ -1020,7 +1017,7 @@ impl Engine {
     /// ```
     pub fn sec(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_raw(1)?;
+        let operands = self.get_operands_raw::<1>()?;
 
         // Put result on stack
         let Some(result) = operands[0].sec() else {
@@ -1064,7 +1061,7 @@ impl Engine {
     /// ```
     pub fn csc(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_raw(1)?;
+        let operands = self.get_operands_raw::<1>()?;
 
         // Put result on stack
         let Some(result) = operands[0].csc() else {
@@ -1108,7 +1105,7 @@ impl Engine {
     /// ```
     pub fn cot(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_raw(1)?;
+        let operands = self.get_operands_raw::<1>()?;
 
         // Put result on stack
         let Some(result) = operands[0].cot() else {
@@ -1153,7 +1150,7 @@ impl Engine {
     /// ```
     pub fn asin(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f(1)?;
+        let operands = self.get_operands_as_f::<1>()?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].asin().into());
@@ -1195,7 +1192,7 @@ impl Engine {
     /// ```
     pub fn acos(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f(1)?;
+        let operands = self.get_operands_as_f::<1>()?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].acos().into());
@@ -1237,7 +1234,7 @@ impl Engine {
     /// ```
     pub fn atan(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f(1)?;
+        let operands = self.get_operands_as_f::<1>()?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].atan().into());
@@ -1278,7 +1275,7 @@ impl Engine {
     /// ```
     pub fn chs(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f(1)?;
+        let operands = self.get_operands_as_f::<1>()?;
 
         // Put result on stack
         let result = operands[0] * -1.0;
@@ -1320,7 +1317,7 @@ impl Engine {
     /// ```
     pub fn log(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec(1)?;
+        let operands = self.get_operands_as_dec::<1>()?;
 
         // Put result on stack
         let Some(result) = operands[0].checked_log10() else {
@@ -1377,7 +1374,7 @@ impl Engine {
     /// ```
     pub fn blog(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec(2)?;
+        let operands = self.get_operands_as_dec::<2>()?;
 
         // change of base formula is defined as follows:
         // log_b(a) = (log_d(a))/(log_d(b))
@@ -1434,7 +1431,7 @@ impl Engine {
     /// ```
     pub fn ln(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_dec(1)?;
+        let operands = self.get_operands_as_dec::<1>()?;
 
         // Put result on stack
         let Some(result) = operands[0].checked_ln() else {
@@ -1478,7 +1475,7 @@ impl Engine {
     /// ```
     pub fn abs(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f(1)?;
+        let operands = self.get_operands_as_f::<1>()?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].abs().into());
@@ -1522,7 +1519,7 @@ impl Engine {
     pub fn equal(&mut self) -> Result<EngineSignal, String> {
         // Get operands
         // TODO: maybe make this work with strings
-        let operands = self.get_operands_as_f(2)?;
+        let operands = self.get_operands_as_f::<2>()?;
 
         // Put result on stack
         let result = (operands[0] == operands[1]) as u32;
@@ -1567,7 +1564,7 @@ impl Engine {
     /// ```
     pub fn gt(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f(2)?;
+        let operands = self.get_operands_as_f::<2>()?;
 
         // Put result on stack
         let result = (operands[0] > operands[1]) as u32;
@@ -1612,7 +1609,7 @@ impl Engine {
     /// ```
     pub fn lt(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f(2)?;
+        let operands = self.get_operands_as_f::<2>()?;
 
         // Put result on stack
         let result = (operands[0] < operands[1]) as u32;
@@ -1657,7 +1654,7 @@ impl Engine {
     /// ```
     pub fn geq(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f(2)?;
+        let operands = self.get_operands_as_f::<2>()?;
 
         // Put result on stack
         let result = (operands[0] >= operands[1]) as u32;
@@ -1702,7 +1699,7 @@ impl Engine {
     /// ```
     pub fn leq(&mut self) -> Result<EngineSignal, String> {
         // Get operands
-        let operands = self.get_operands_as_f(2)?;
+        let operands = self.get_operands_as_f::<2>()?;
 
         // Put result on stack
         let result = (operands[0] <= operands[1]) as u32;
@@ -1746,7 +1743,7 @@ impl Engine {
     /// ```
     pub fn round(&mut self) -> Result<EngineSignal, String> {
         // Get operand
-        let operands = self.get_operands_as_f(1)?;
+        let operands = self.get_operands_as_f::<1>()?;
 
         // Put result on stack
         let _ = self.add_item_to_stack(operands[0].round().into());
@@ -1789,7 +1786,7 @@ impl Engine {
     /// ```
     pub fn avg(&mut self) -> Result<EngineSignal, String> {
         let mut operands = Vec::new();
-        while let Ok(v) = self.get_operands_as_dec(1)
+        while let Ok(v) = self.get_operands_as_dec::<1>()
             && let Some(first) = v.first()
         {
             operands.push(*first);
@@ -1844,7 +1841,7 @@ impl Engine {
     /// ```
     pub fn invert(&mut self) -> Result<EngineSignal, String> {
         // Get operand
-        let operands = self.get_operands_as_f(1)?;
+        let operands = self.get_operands_as_f::<1>()?;
 
         if operands[0] == 0.0 {
             return Err("cannot divide by zero".to_string());
@@ -1933,7 +1930,7 @@ impl Engine {
     /// ```
     pub fn swap(&mut self) -> Result<EngineSignal, String> {
         // Get last two values from stack
-        let operands = self.get_operands_raw(2)?;
+        let operands = self.get_operands_raw::<2>()?;
 
         // Insert in reverse order
         let _ = self.add_item_to_stack(operands[1].clone());
@@ -1973,7 +1970,7 @@ impl Engine {
     /// ```
     pub fn dup(&mut self) -> Result<EngineSignal, String> {
         // Get the last value from the stack
-        let operands = self.get_operands_raw(1)?;
+        let operands = self.get_operands_raw::<1>()?;
 
         // Insert twice
         let _ = self.add_item_to_stack(operands[0].clone());
@@ -2098,7 +2095,7 @@ impl Engine {
     /// ```
     pub fn store(&mut self) -> Result<EngineSignal, String> {
         // Get 2 operands from stack
-        let operands = self.get_operands_raw(2)?;
+        let operands = self.get_operands_raw::<2>()?;
 
         // Only store if matches the identifier pattern
         let varname = operands[1].to_string();
@@ -2149,7 +2146,7 @@ impl Engine {
     /// ```
     pub fn purge(&mut self) -> Result<EngineSignal, String> {
         // Get operand from stack
-        let operands = self.get_operands_raw(1)?;
+        let operands = self.get_operands_raw::<1>()?;
 
         let varname = operands[0].to_string();
         if ID_REGEX.is_match(&varname) {

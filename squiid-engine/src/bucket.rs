@@ -2,7 +2,7 @@
 
 use std::{collections::HashMap, f64::consts, fmt::Display, sync::LazyLock};
 
-use rust_decimal::{prelude::FromPrimitive, Decimal, MathematicalOps};
+use rust_decimal::{Decimal, MathematicalOps, prelude::FromPrimitive};
 use rust_decimal_macros::dec;
 
 /// Types of constants

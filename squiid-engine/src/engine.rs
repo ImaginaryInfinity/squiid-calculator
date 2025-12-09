@@ -1,13 +1,13 @@
 use std::collections::{HashMap, VecDeque};
 
-use rust_decimal::{prelude::ToPrimitive, Decimal, MathematicalOps};
+use rust_decimal::{Decimal, MathematicalOps, prelude::ToPrimitive};
 use rust_decimal_macros::dec;
 
 use crate::{
-    bucket::{Bucket, BucketTypes, ConstantTypes, CONSTANT_IDENTIFIERS},
+    EngineSignal,
+    bucket::{Bucket, BucketTypes, CONSTANT_IDENTIFIERS, ConstantTypes},
     config_handler::{backend::noop::NoopBackend, config::Config},
     utils::ID_REGEX,
-    EngineSignal,
 };
 
 /// The core evaluation engine responsible for processing Reverse Polish Notation (RPN) operations.
@@ -2254,11 +2254,23 @@ impl Engine {
 
     /// Update stack and variables from the undo history
     fn update_engine_from_history(&mut self) {
-        self.stack =
-            self.undo_history[self.undo_history.len() - self.undo_state_pointer as usize].clone();
-        self.variables = self.undo_variable_history
-            [self.undo_variable_history.len() - self.undo_state_pointer as usize]
-            .clone();
+        if let Some(history_index) = self
+            .undo_history
+            .len()
+            .checked_sub(self.undo_state_pointer as usize)
+            && let Some(history_entry) = self.undo_history.get(history_index)
+        {
+            self.stack = history_entry.clone();
+        }
+
+        if let Some(variable_index) = self
+            .undo_variable_history
+            .len()
+            .checked_sub(self.undo_state_pointer as usize)
+            && let Some(variables_entry) = self.undo_variable_history.get(variable_index)
+        {
+            self.variables = variables_entry.clone();
+        }
     }
 
     /// Undoes the last operation by reverting the stack and variables to their previous state.
@@ -2303,9 +2315,15 @@ impl Engine {
                 // add current stack and variables to history and increment pointer by 1
                 self.undo_history.push_back(self.stack.clone());
                 self.undo_variable_history.push_back(self.variables.clone());
-                self.undo_state_pointer += 1;
+                self.undo_state_pointer = self
+                    .undo_state_pointer
+                    .checked_add(1)
+                    .ok_or_else(|| String::from("history length overflow in undo"))?;
             }
-            self.undo_state_pointer += 1;
+            self.undo_state_pointer = self
+                .undo_state_pointer
+                .checked_add(1)
+                .ok_or_else(|| String::from("history length overflow in undo"))?;
             self.update_engine_from_history();
             Ok(EngineSignal::StackUpdated)
         } else {
@@ -2355,7 +2373,11 @@ impl Engine {
     /// ```
     pub fn redo(&mut self) -> Result<EngineSignal, String> {
         if self.undo_state_pointer > 1 {
-            self.undo_state_pointer -= 1;
+            self.undo_state_pointer = self
+                .undo_state_pointer
+                .checked_sub(1)
+                .ok_or_else(|| String::from("history length underflow in redo"))?;
+
             self.update_engine_from_history();
             Ok(EngineSignal::StackUpdated)
         } else {

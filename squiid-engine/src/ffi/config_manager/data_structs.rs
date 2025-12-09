@@ -63,7 +63,7 @@ macro_rules! free_ffi_result {
             #[doc=""]
             #[doc="* `ffi_result` - The [`FFIResult`] to free"]
             #[unsafe(no_mangle)]
-            extern "C" fn [<free_ffi_ $name _result>](ffi_result: *mut FFIResult) {
+            extern "C" fn [<free_ $name _result>](ffi_result: *mut FFIResult) {
                 if !ffi_result.is_null() {
                     let result = unsafe { Box::from_raw(ffi_result) };
                     if !result.value.is_null() {
@@ -85,7 +85,7 @@ free_ffi_result!(FFIValue, *mut FFIValue);
 #[derive(Default, Copy, Clone)]
 pub enum FFIValueKind {
     #[default]
-    String,
+    String = 1,
     Integer,
     Float,
     Boolean,

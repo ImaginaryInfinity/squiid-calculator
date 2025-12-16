@@ -196,8 +196,8 @@ impl FFIValue {
                     }
                 }
                 FFIValueKind::Table => {
-                    if !self.table_vals.is_null() {
-                        let slice = std::slice::from_raw_parts_mut(self.table_vals, self.table_len);
+                    if !self.table_keys.is_null() {
+                        let slice = std::slice::from_raw_parts_mut(self.table_keys, self.table_len);
                         let keys = Box::from_raw(slice);
                         for k in keys.iter() {
                             if !k.is_null() {
@@ -206,8 +206,13 @@ impl FFIValue {
                         }
                     }
 
-                    if !self.table_keys.is_null() {
-                        let slice = std::slice::from_raw_parts_mut(self.table_keys, self.table_len);
+                    if !self.table_vals.is_null() {
+                        let slice = std::slice::from_raw_parts_mut(self.table_vals, self.table_len);
+
+                        for item in slice.iter_mut() {
+                            item.free();
+                        }
+
                         drop(Box::from_raw(slice));
                     }
                 }

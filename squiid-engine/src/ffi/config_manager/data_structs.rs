@@ -1,4 +1,4 @@
-use std::ffi::{CStr, CString, c_char, c_void};
+use std::ffi::{c_char, c_void, CStr, CString};
 
 use crate::ffi::config_manager::to_cstring;
 
@@ -187,12 +187,17 @@ impl FFIValue {
                 FFIValueKind::Array => {
                     if !self.array.is_null() {
                         let slice = std::slice::from_raw_parts_mut(self.array, self.array_len);
+
+                        for item in slice.iter_mut() {
+                            item.free();
+                        }
+
                         drop(Box::from_raw(slice));
                     }
                 }
                 FFIValueKind::Table => {
                     if !self.table_vals.is_null() {
-                        let slice = std::slice::from_raw_parts_mut(self.table_keys, self.table_len);
+                        let slice = std::slice::from_raw_parts_mut(self.table_vals, self.table_len);
                         let keys = Box::from_raw(slice);
                         for k in keys.iter() {
                             if !k.is_null() {
@@ -202,7 +207,7 @@ impl FFIValue {
                     }
 
                     if !self.table_keys.is_null() {
-                        let slice = std::slice::from_raw_parts_mut(self.table_vals, self.table_len);
+                        let slice = std::slice::from_raw_parts_mut(self.table_keys, self.table_len);
                         drop(Box::from_raw(slice));
                     }
                 }

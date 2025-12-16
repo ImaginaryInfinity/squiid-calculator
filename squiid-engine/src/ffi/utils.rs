@@ -1,4 +1,4 @@
-use std::ffi::{CString, c_char, c_int};
+use std::ffi::{c_char, c_int, CString};
 
 pub fn to_cstring<S: Into<Vec<u8>>>(s: S) -> *mut c_char {
     match CString::new(s) {
@@ -17,6 +17,8 @@ pub fn to_cstring<S: Into<Vec<u8>>>(s: S) -> *mut c_char {
 /// # Safety
 ///
 /// This function leaks memory which must be freed using `reclaim_ffi_array`.
+///
+/// WARN: we should eventually switch to c_size_t: https://github.com/rust-lang/rust/issues/88345
 pub unsafe fn vec_to_ffi_array<T>(v: Vec<T>, out_len: *mut c_int) -> *mut T {
     let boxed_slice = v.into_boxed_slice();
     let len = boxed_slice.len();

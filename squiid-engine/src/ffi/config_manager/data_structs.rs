@@ -187,33 +187,38 @@ impl FFIValue {
                 FFIValueKind::Array => {
                     if !self.array.is_null() {
                         let slice = std::slice::from_raw_parts_mut(self.array, self.array_len);
+                        let mut items = Box::from_raw(slice);
 
-                        for item in slice.iter_mut() {
+                        for item in items.iter_mut() {
                             item.free();
                         }
 
-                        drop(Box::from_raw(slice));
+                        drop(items);
                     }
                 }
                 FFIValueKind::Table => {
                     if !self.table_keys.is_null() {
                         let slice = std::slice::from_raw_parts_mut(self.table_keys, self.table_len);
                         let keys = Box::from_raw(slice);
+
                         for k in keys.iter() {
                             if !k.is_null() {
                                 drop(CString::from_raw(*k));
                             }
                         }
+
+                        drop(keys);
                     }
 
                     if !self.table_vals.is_null() {
                         let slice = std::slice::from_raw_parts_mut(self.table_vals, self.table_len);
+                        let mut vals = Box::from_raw(slice);
 
-                        for item in slice.iter_mut() {
+                        for item in vals.iter_mut() {
                             item.free();
                         }
 
-                        drop(Box::from_raw(slice));
+                        drop(vals);
                     }
                 }
                 FFIValueKind::Integer | FFIValueKind::Float | FFIValueKind::Boolean => (),
@@ -228,7 +233,7 @@ where
 {
     fn into(self) -> FFIResult {
         match self {
-            Ok(v) => FFIResult::ok(v),
+            Ok(v) => FFIResult::ok(to_cstring(v) as *mut c_void),
             Err(e) => FFIResult::err(e.to_string()),
         }
     }

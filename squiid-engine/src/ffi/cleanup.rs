@@ -1,6 +1,6 @@
 //! This module provides functions for freeing memory allocated for FFI (Foreign Function Interface) objects
 //! These functions ensure that memory allocated for strings, arrays, and custom data structures
-//! ([`EngineSignalSetFFI`], [`BucketFFI`], etc.) is properly deallocated when no longer needed.
+//! is properly deallocated when no longer needed.
 //!
 //! # Overview
 //!
@@ -10,10 +10,10 @@
 //!
 //! # Functions
 //!
-//! - [`free_engine_signal_set`]: Frees an error string contained within an [`EngineSignalSetFFI`] struct.
-//! - [`free_string_array`]: Frees an array of C strings (`char*`).
-//! - [`free_bucket_array`]: Frees an array of [`BucketFFI`] objects.
-//! - [`free_bucket`]: Frees a single [`BucketFFI`] object.
+//! - [`squiid_free_engine_signal_set`]: Frees an error string contained within an [`EngineSignalSetFFI`] struct.
+//! - [`squiid_free_bucket_array`]: Frees an array of [`BucketFFI`] objects.
+//! - [`squiid_free_bucket`]: Frees a single [`BucketFFI`] object.
+//! - [`squiid_free_string_array`]: Frees an array of C strings (`char*`).
 //!
 //! # Safety Considerations
 //!
@@ -23,9 +23,42 @@
 
 use std::ffi::{CString, c_char, c_int};
 
-use crate::ffi::utils::reclaim_ffi_array;
+use crate::ffi::{data_structs::EngineSignalSetFFI, utils::reclaim_ffi_array};
 
-use super::data_structs::{BucketFFI, EngineSignalSetFFI};
+use super::data_structs::BucketFFI;
+
+/// Free an array of Bucket objects that was returned over the FFI boundary.
+///
+/// # Arguments
+///
+/// * `array` - the bucket array to free
+/// * `len` - the length of the bucket array
+///
+/// # Panics
+///
+/// If the array pointer is null or if the vec or Bucket are invalid data
+#[unsafe(no_mangle)]
+extern "C" fn squiid_free_bucket_array(array: *mut BucketFFI, len: c_int) {
+    let v = unsafe { reclaim_ffi_array(array, len) };
+    for bucket_ffi in v.iter() {
+        squiid_free_string(bucket_ffi.value);
+    }
+}
+
+/// Free a Bucket object that was returned over the FFI boundary.
+///
+/// # Arguments
+///
+/// * `bucket_ffi` - The Bucket to free
+#[unsafe(no_mangle)]
+extern "C" fn squiid_free_bucket(bucket_ffi: *mut BucketFFI) {
+    if !bucket_ffi.is_null() {
+        let bucket = unsafe { Box::from_raw(bucket_ffi) };
+
+        // drop the bucket's string value
+        squiid_free_string(bucket.value);
+    }
+}
 
 /// Free the error string contained within the [`EngineSignalSetFFI`] struct
 ///
@@ -33,9 +66,9 @@ use super::data_structs::{BucketFFI, EngineSignalSetFFI};
 ///
 /// * `ptr` - Pointer to an [`EngineSignalSetFFI`] struct which was returned from Rust
 #[unsafe(no_mangle)]
-extern "C" fn free_engine_signal_set(ptr: EngineSignalSetFFI) {
+extern "C" fn squiid_free_engine_signal_set(ptr: EngineSignalSetFFI) {
     if !ptr.error.is_null() {
-        free_string(ptr.error);
+        squiid_free_string(ptr.error);
         // the string will be automatically dropped after this
     }
 }
@@ -51,68 +84,20 @@ extern "C" fn free_engine_signal_set(ptr: EngineSignalSetFFI) {
 ///
 /// If the array pointer is null or if the vec or strings are invalid data
 #[unsafe(no_mangle)]
-extern "C" fn free_string_array(array: *mut *mut c_char, len: c_int) {
+extern "C" fn squiid_free_string_array(array: *mut *mut c_char, len: c_int) {
     unsafe {
         let v = reclaim_ffi_array(array, len);
         for elem in v.iter() {
-            free_string(*elem);
+            squiid_free_string(*elem);
         }
 
         // Afterwards the vector will be dropped and thus freed.
     }
 }
 
-/// Free a string that was returned over the FFI boundary.
-///
-/// # Arguments
-///
-/// * `string` - the string to free
 #[unsafe(no_mangle)]
-extern "C" fn free_string(string: *mut c_char) {
-    if string.is_null() {
-        return;
+pub extern "C" fn squiid_free_string(s: *mut c_char) {
+    if !s.is_null() {
+        std::mem::drop(unsafe { CString::from_raw(s) });
     }
-
-    unsafe {
-        std::mem::drop(CString::from_raw(string));
-    }
-}
-
-/// Free an array of Bucket objects that was returned over the FFI boundary.
-///
-/// # Arguments
-///
-/// * `array` - the bucket array to free
-/// * `len` - the length of the bucket array
-///
-/// # Panics
-///
-/// If the array pointer is null or if the vec or Bucket are invalid data
-#[unsafe(no_mangle)]
-extern "C" fn free_bucket_array(array: *mut *mut BucketFFI, len: c_int) {
-    unsafe {
-        let v = reclaim_ffi_array(array, len);
-        for bucket_ffi in v.iter() {
-            free_bucket(*bucket_ffi);
-        }
-
-        // vec to auto dropped here
-    }
-}
-
-/// Free a Bucket object that was returned over the FFI boundary.
-///
-/// # Arguments
-///
-/// * `bucket_ffi` - The Bucket to free
-#[unsafe(no_mangle)]
-extern "C" fn free_bucket(bucket_ffi: *mut BucketFFI) {
-    if bucket_ffi.is_null() {
-        return;
-    }
-
-    let bucket = unsafe { Box::from_raw(bucket_ffi) };
-
-    // drop the bucket's string value
-    free_string(bucket.value);
 }

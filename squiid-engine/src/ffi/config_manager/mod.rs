@@ -4,7 +4,7 @@ use crate::{
     config_handler::ConfigBackend,
     ffi::{
         config_manager::data_structs::{FFIResult, FFIValue, FFIValueKind},
-        utils::{to_cstring, vec_to_ffi_array},
+        utils::{string_to_ffi, vec_to_ffi_array},
     },
 };
 
@@ -61,7 +61,7 @@ extern "C" fn config_load_exposed() -> () {
 #[unsafe(no_mangle)]
 extern "C" fn config_directory_exposed() -> *const c_char {
     match crate::config().config_directory() {
-        Some(p) => to_cstring(p.to_string_lossy().to_string()),
+        Some(p) => string_to_ffi(p.to_string_lossy()),
         None => std::ptr::null_mut(),
     }
 }
@@ -76,44 +76,19 @@ extern "C" fn config_get_key_exposed(section: *const c_char, key: *const c_char)
 }
 
 #[unsafe(no_mangle)]
-extern "C" fn config_contains_key_exposed(section: *const c_char, key: *const c_char) -> bool {
-    let section = cstr_arg!(section, bool);
-    let key = cstr_arg!(key, bool);
-    crate::config().contains_key(section, key).unwrap_or(false)
-}
-
-#[unsafe(no_mangle)]
-extern "C" fn config_list_sections_exposed(outlen: *mut c_int) -> *const *mut c_char {
+extern "C" fn config_list_sections_exposed() -> FFIResult {
     let sections = crate::config().list_sections();
-    let sections_raw: Vec<_> = sections.into_iter().map(|s| to_cstring(s)).collect();
+    let sections_raw: Vec<_> = sections.into_iter().map(FFIValue::from).collect();
 
-    unsafe { vec_to_ffi_array(sections_raw, outlen) }
-}
+    let mut len = 0;
+    let ptr = unsafe { vec_to_ffi_array(sections_raw, &mut len as *mut c_int) };
 
-#[unsafe(no_mangle)]
-extern "C" fn config_list_keys_exposed(section: *const c_char, outlen: *mut c_int) -> FFIResult {
-    let section = cstr_arg!(section, FFIResult);
-
-    let keys = match crate::config().list_keys(section) {
-        Ok(v) => v,
-        Err(e) => return FFIResult::err(e.to_string()),
-    };
-
-    let keys_raw: Vec<_> = keys.into_iter().map(|s| to_cstring(s)).collect();
-    FFIResult::ok(unsafe { vec_to_ffi_array(keys_raw, outlen) })
-}
-
-#[unsafe(no_mangle)]
-extern "C" fn config_list_values_exposed(section: *const c_char, outlen: *mut c_int) -> FFIResult {
-    let section = cstr_arg!(section, FFIResult);
-
-    let values = match crate::config().list_values(section) {
-        Ok(v) => v,
-        Err(e) => return FFIResult::err(e.to_string()),
-    };
-
-    let values_raw: Vec<_> = values.into_iter().map(FFIValue::from).collect();
-    FFIResult::ok(unsafe { vec_to_ffi_array(values_raw, outlen) })
+    FFIResult::ok(FFIValue {
+        kind: FFIValueKind::Array,
+        array: ptr,
+        array_len: len as usize,
+        ..Default::default()
+    })
 }
 
 #[unsafe(no_mangle)]
@@ -126,7 +101,7 @@ extern "C" fn config_list_items_exposed(section: *const c_char) -> FFIResult {
             let mut vals: Vec<FFIValue> = Vec::with_capacity(items.len());
 
             for (k, v) in items {
-                keys.push(to_cstring(k));
+                keys.push(string_to_ffi(k));
                 vals.push(FFIValue::from(v));
             }
 
@@ -150,15 +125,25 @@ extern "C" fn config_list_items_exposed(section: *const c_char) -> FFIResult {
 extern "C" fn config_set_key_exposed(
     section: *const c_char,
     key: *const c_char,
-    value: FFIValue,
+    value: *mut FFIValue,
 ) -> FFIResult {
     let section = cstr_arg!(section, FFIResult);
     let key = cstr_arg!(key, FFIResult);
 
-    let value = match value.try_into() {
+    if value.is_null() {
+        return FFIResult::err("value cannot be null");
+    }
+
+    let mut ffi_value = unsafe { Box::from_raw(value) };
+    let value = match (&*ffi_value).try_into() {
         Ok(v) => v,
-        Err(e) => return FFIResult::err(e),
+        Err(e) => {
+            unsafe { ffi_value.free() };
+            return FFIResult::err(e);
+        }
     };
+
+    unsafe { ffi_value.free() };
 
     crate::config().set_key(section, key, value).into()
 }

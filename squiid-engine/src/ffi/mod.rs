@@ -35,7 +35,7 @@ use data_structs::{BucketFFI, EngineSignalSetFFI};
 
 use crate::{
     EngineSignalSet, execute_multiple_rpn,
-    ffi::utils::{to_cstring, vec_to_ffi_array},
+    ffi::utils::{string_to_ffi, vec_to_ffi_array},
 };
 
 mod cleanup;
@@ -95,11 +95,11 @@ extern "C" fn execute_multiple_rpn_exposed(
 ///
 /// * `outlen` - A pointer to an integer to store the length of the output array
 #[unsafe(no_mangle)]
-extern "C" fn get_stack_exposed(outlen: *mut c_int) -> *mut *mut BucketFFI {
+extern "C" fn get_stack_exposed(outlen: *mut c_int) -> *mut BucketFFI {
     // Create a vector of CStrings from the stack
-    let stack_ptr: Vec<*mut BucketFFI> = crate::get_stack()
-        .iter()
-        .map(|b| Box::into_raw(Box::new(BucketFFI::from(b.clone()))))
+    let stack_ptr: Vec<BucketFFI> = crate::get_stack()
+        .into_iter()
+        .map(BucketFFI::from)
         .collect();
 
     unsafe { vec_to_ffi_array(stack_ptr, outlen) }
@@ -115,7 +115,7 @@ extern "C" fn get_commands_exposed(outlen: *mut c_int) -> *mut *mut c_char {
     // convert Vec of Strings into vec of raw pointers
     let commands: Vec<*mut c_char> = crate::get_commands()
         .into_iter()
-        .map(|s| to_cstring(s))
+        .map(string_to_ffi)
         .collect();
 
     unsafe { vec_to_ffi_array(commands, outlen) }

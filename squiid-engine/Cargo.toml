@@ -28,7 +28,7 @@ rust_decimal = { version = "1.36.0", features = ["maths"] }
 rust_decimal_macros = "1.36.0"
 semver = { version = "1.0.25", optional = true }
 thiserror = "2.0.17"
-toml = "0.9.8"
+toml = "1.1.6"
 
 [target.'cfg(any(unix, windows))'.dependencies]
 directories = "6.0.0"

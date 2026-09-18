@@ -16,6 +16,115 @@ pub enum FFIValueKind {
 }
 
 #[repr(C)]
+#[derive(Default, Copy, Clone)]
+pub struct FFIDatetime {
+    pub has_date: bool,
+    pub year: u16,
+    pub month: u8,
+    pub day: u8,
+
+    pub has_time: bool,
+    pub hour: u8,
+    pub minute: u8,
+    pub second: u8,
+    pub has_second: bool,
+    pub nanosecond: u32,
+    pub has_nanosecond: bool,
+
+    pub has_offset: bool,
+    pub is_offset_z: bool,
+    /// this is set if [`is_offset_z`] is false
+    pub offset_minutes: i16,
+}
+
+impl From<toml::value::Datetime> for FFIDatetime {
+    fn from(value: toml::value::Datetime) -> Self {
+        let date = value.date;
+        let time = value.time;
+        let offset = value.offset;
+        Self {
+            has_date: date.is_some(),
+            year: date.map(|d| d.year).unwrap_or_default(),
+            month: date.map(|d| d.month).unwrap_or_default(),
+            day: date.map(|d| d.day).unwrap_or_default(),
+
+            has_time: time.is_some(),
+            hour: time.map(|t| t.hour).unwrap_or_default(),
+            minute: time.map(|t| t.minute).unwrap_or_default(),
+            second: time
+                .map(|t| t.second.unwrap_or_default())
+                .unwrap_or_default(),
+            has_second: time.map(|t| t.second.is_some()).unwrap_or(false),
+            nanosecond: time
+                .map(|t| t.nanosecond.unwrap_or_default())
+                .unwrap_or_default(),
+            has_nanosecond: time.map(|t| t.nanosecond.is_some()).unwrap_or(false),
+
+            has_offset: offset.is_some(),
+            is_offset_z: offset
+                .map(|o| matches!(o, toml::value::Offset::Z))
+                .unwrap_or(false),
+            offset_minutes: offset
+                .map(|o| {
+                    if let toml::value::Offset::Custom { minutes } = o {
+                        minutes
+                    } else {
+                        0
+                    }
+                })
+                .unwrap_or_default(),
+        }
+    }
+}
+
+impl From<&FFIDatetime> for toml::value::Datetime {
+    fn from(value: &FFIDatetime) -> Self {
+        let date = if value.has_date {
+            Some(toml::value::Date {
+                year: value.year,
+                month: value.month,
+                day: value.day,
+            })
+        } else {
+            None
+        };
+
+        let time = if value.has_time {
+            Some(toml::value::Time {
+                hour: value.hour,
+                minute: value.minute,
+                second: if value.has_second {
+                    Some(value.second)
+                } else {
+                    None
+                },
+                nanosecond: if value.has_nanosecond {
+                    Some(value.nanosecond)
+                } else {
+                    None
+                },
+            })
+        } else {
+            None
+        };
+
+        let offset = if value.has_offset {
+            if value.is_offset_z {
+                Some(toml::value::Offset::Z)
+            } else {
+                Some(toml::value::Offset::Custom {
+                    minutes: value.offset_minutes,
+                })
+            }
+        } else {
+            None
+        };
+
+        toml::value::Datetime { date, time, offset }
+    }
+}
+
+#[repr(C)]
 #[derive(Default)]
 pub struct FFIValue {
     pub kind: FFIValueKind,
@@ -23,6 +132,7 @@ pub struct FFIValue {
     pub int_val: i64,
     pub float_val: f64,
     pub bool_val: bool,
+    pub datetime_val: *mut FFIDatetime,
     pub array: *mut FFIValue,
     pub array_len: usize,
     pub table_keys: *mut *mut c_char,
@@ -39,7 +149,7 @@ impl From<toml::Value> for FFIValue {
             toml::Value::Boolean(b) => b.into(),
             toml::Value::Datetime(datetime) => Self {
                 kind: FFIValueKind::Datetime,
-                string_val: string_to_ffi(datetime.to_string()),
+                datetime_val: Box::into_raw(Box::new(datetime.into())),
                 ..Default::default()
             },
             toml::Value::Array(values) => {
@@ -115,9 +225,14 @@ impl FFIValue {
     pub unsafe fn free(&mut self) {
         unsafe {
             match self.kind {
-                FFIValueKind::String | FFIValueKind::Datetime => {
+                FFIValueKind::String => {
                     if !self.string_val.is_null() {
                         drop(CString::from_raw(self.string_val));
+                    }
+                }
+                FFIValueKind::Datetime => {
+                    if !self.datetime_val.is_null() {
+                        drop(Box::from_raw(self.datetime_val));
                     }
                 }
                 FFIValueKind::Array => {
@@ -182,19 +297,12 @@ impl TryFrom<&FFIValue> for toml::Value {
             FFIValueKind::Float => Ok(toml::Value::Float(value.float_val)),
             FFIValueKind::Boolean => Ok(toml::Value::Boolean(value.bool_val)),
             FFIValueKind::Datetime => {
-                if value.string_val.is_null() {
-                    return Err("string variant of FFIValue::String mustn't be null".to_owned());
+                if value.datetime_val.is_null() {
+                    return Err("FFIValue::Datetime mustn't be null".to_owned());
                 }
 
-                let str = match unsafe { CStr::from_ptr(value.string_val) }.to_str() {
-                    Ok(v) => v.to_owned(),
-                    Err(e) => return Err(e.to_string()),
-                };
-
-                let dt: toml::value::Datetime = str
-                    .parse()
-                    .map_err(|e: toml::value::DatetimeParseError| e.to_string())?;
-                Ok(toml::Value::Datetime(dt))
+                let dt = unsafe { &*value.datetime_val };
+                Ok(toml::Value::Datetime(dt.into()))
             }
             FFIValueKind::Array => {
                 if value.array.is_null() {

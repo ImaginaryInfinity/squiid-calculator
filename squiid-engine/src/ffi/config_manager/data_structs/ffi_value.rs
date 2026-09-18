@@ -398,10 +398,16 @@ pub extern "C" fn ffi_value_new_boolean(val: bool) -> *mut FFIValue {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn ffi_value_new_datetime(s: *const c_char) -> *mut FFIValue {
+pub extern "C" fn ffi_value_new_datetime(dt: *const FFIDatetime) -> *mut FFIValue {
+    let ptr = if dt.is_null() {
+        std::ptr::null_mut()
+    } else {
+        Box::into_raw(Box::new(unsafe { *dt }))
+    };
+
     Box::into_raw(Box::new(FFIValue {
         kind: FFIValueKind::Datetime,
-        string_val: squiid_string_clone(s),
+        datetime_val: ptr,
         ..Default::default()
     }))
 }
